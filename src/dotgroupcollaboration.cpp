@@ -140,7 +140,7 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
   // Add directories
   if ( !gd->getDirs().empty() )
   {
-    for(const auto def : gd->getDirs())
+    for(const auto &def : gd->getDirs())
     {
       makeURL(def,url);
       addCollaborationMember( def, url, DotGroupCollaboration::tdir );

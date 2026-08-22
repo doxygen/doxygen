@@ -31,6 +31,7 @@
 #include "definitionimpl.h"
 #include "filedef.h"
 #include "trace.h"
+#include "portable.h"
 
 //----------------------------------------------------------------------
 
@@ -336,7 +337,7 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
 {
   AUTO_TRACE();
   int numSubdirs = 0;
-  for(const auto dd : m_subdirs)
+  for(const auto &dd : m_subdirs)
   {
     if (dd->hasDocumentation() || !dd->getFiles().empty())
     {
@@ -352,7 +353,7 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
     ol.parseText(theTranslator->trDir(true,false));
     ol.endMemberHeader();
     ol.startMemberList();
-    for(const auto dd : m_subdirs)
+    for(const auto &dd : m_subdirs)
     {
       if (dd->hasDocumentation() || !dd->getFiles().empty())
       {
@@ -522,7 +523,7 @@ void DirDefImpl::writeTagFile(TextStream &tagFile)
         {
           if (m_subdirs.size()>0)
           {
-            for(const auto dd : m_subdirs)
+            for (const auto &dd : m_subdirs)
             {
               tagFile << "    <dir>" << convertToXML(dd->displayName()) << "</dir>\n";
             }
@@ -900,7 +901,7 @@ DirDef *DirDefImpl::mergeDirectoryInTree(const DString &path)
     DString part=path.left(i+1);
     if (!matchPath(part) && (part!="/" && part!="//" && part!="//?/"))
     {
-      dir=createNewDir(removeLongPathMarker(part));
+      dir=createNewDir(Portable::removeLongPathMarker(part));
     }
     p=i+1;
   }
@@ -1022,7 +1023,7 @@ static void computeCommonDirPrefix()
   if (!Doxygen::dirLinkedMap->empty()) // we have at least one dir
   {
     // start will full path of first dir
-    path=removeLongPathMarker((*it)->name());
+    path=Portable::removeLongPathMarker((*it)->name());
     size_t i = path.length()>=2 ? path.rfind('/',path.length()-2) : DString::npos;
     bool done=false;
     if (i==DString::npos)
@@ -1038,7 +1039,7 @@ static void computeCommonDirPrefix()
         size_t count=0;
         for (const auto &dir : *Doxygen::dirLinkedMap)
         {
-          DString dirName = removeLongPathMarker(dir->name());
+          DString dirName = Portable::removeLongPathMarker(dir->name());
           //printf("dirName='%s' (l=%d) path='%s' (l=%d)\n",qPrint(dirName),dirName.length(),qPrint(path),path.length());
           if (dirName.length()>path.length())
           {

@@ -51,6 +51,7 @@
 #include "portable.h"
 #include "moduledef.h"
 #include "sitemap.h"
+#include "conceptdef.h"
 
 #define MAX_ITEMS_BEFORE_MULTIPAGE_INDEX 200
 #define MAX_ITEMS_BEFORE_QUICK_INDEX 30

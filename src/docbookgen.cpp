@@ -23,6 +23,7 @@
 #include "config.h"
 #include "classlist.h"
 #include "classdef.h"
+#include "conceptdef.h"
 #include "diagram.h"
 #include "util.h"
 #include "defargs.h"

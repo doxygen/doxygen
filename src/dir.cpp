@@ -329,7 +329,7 @@ bool Dir::rename(const std::string &orgName,const std::string &newName,bool acce
 
 bool Dir::copy(const std::string &srcName,const std::string &dstName,bool acceptsAbsPath) const
 {
-  const auto copyOptions = fs::copy_options::overwrite_existing;
+  const auto &copyOptions = fs::copy_options::overwrite_existing;
   std::error_code ec, ec_perm;
   std::string sn = filePath(srcName,acceptsAbsPath);
   std::string dn = filePath(dstName,acceptsAbsPath);

@@ -51,6 +51,7 @@
 #include "portable.h"
 #include "moduledef.h"
 #include "requirement.h"
+#include "conceptdef.h"
 
 // no debug info
 #define XML_DB(x) do {} while(0)
@@ -1431,7 +1432,7 @@ static void writeInnerDirs(const DirList *dl,TextStream &t)
 {
   if (dl)
   {
-    for(const auto subdir : *dl)
+    for(const auto &subdir : *dl)
     {
       t << "    <innerdir refid=\"" << subdir->getOutputFileBase()
         << "\">" << convertToXML(subdir->displayName()) << "</innerdir>\n";

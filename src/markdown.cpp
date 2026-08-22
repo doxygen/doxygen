@@ -51,11 +51,13 @@
 #include "message.h"
 #include "portable.h"
 #include "regex.h"
+#include "filedef.h"
 #include "fileinfo.h"
 #include "trace.h"
 #include "anchor.h"
 #include "stringutil.h"
 #include "filename.h"
+#include "section.h"
 
 #if !ENABLE_MARKDOWN_TRACING
 #undef  AUTO_TRACE

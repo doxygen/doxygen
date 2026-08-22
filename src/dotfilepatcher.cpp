@@ -25,6 +25,7 @@
 #include "dir.h"
 #include "portable.h"
 #include "stringutil.h"
+#include "textstream.h"
 
 // top part of the interactive SVG header
 static const char svgZoomHeader0[] = R"svg(

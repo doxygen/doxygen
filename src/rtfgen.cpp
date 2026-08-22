@@ -50,6 +50,7 @@
 #include "datetime.h"
 #include "outputlist.h"
 #include "moduledef.h"
+#include "conceptdef.h"
 
 //#define DBG_RTF(x) x;
 #define DBG_RTF(x)

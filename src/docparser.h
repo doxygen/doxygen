@@ -20,7 +20,6 @@
 #include <memory>
 
 #include "dstring.h"
-#include "growvector.h"
 #include "construct.h"
 #include "types.h"
 #include "docoptions.h"
@@ -100,5 +99,10 @@ IDocNodeASTPtr createRef(IDocParser &parser,const DString &target,const DString 
 void docFindSections(const DString &input,
                      const Definition *d,
                      const DString &fileName);
+
+DString parseCommentAsText(const Definition *scope,const MemberDef *md,
+                           const DString &doc,const DString &fileName,int lineNr);
+DString parseCommentAsHtml(const Definition *scope,const MemberDef *member,
+                           const DString &doc,const DString &fileName,int lineNr);
 
 #endif

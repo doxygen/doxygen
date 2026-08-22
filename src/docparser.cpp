@@ -40,6 +40,9 @@
 #include "trace.h"
 #include "stringutil.h"
 #include "filename.h"
+#include "textdocvisitor.h"
+#include "outputlist.h"
+#include "htmldocvisitor.h"
 
 #if !ENABLE_DOCPARSER_TRACING
 #undef  AUTO_TRACE
@@ -2459,5 +2462,151 @@ void docFindSections(const DString &input,
 {
   DocParser parser;
   parser.tokenizer.findSections(input,d,fileName);
+}
+
+//--------------------------------------------------------------------------------------
+
+static int nextUTF8CharPosition(const DString &utf8Str,uint32_t len,uint32_t startPos)
+{
+  if (startPos>=len) return len;
+  uint8_t c = static_cast<uint8_t>(utf8Str[startPos]);
+  int bytes=getUTF8CharNumBytes(c);
+  if (c=='&') // skip over character entities
+  {
+    bytes=1;
+    int (*matcher)(int) = nullptr;
+    c = static_cast<uint8_t>(utf8Str[startPos+bytes]);
+    if (c=='#') // numerical entity?
+    {
+      bytes++;
+      c = static_cast<uint8_t>(utf8Str[startPos+bytes]);
+      if (c=='x') // hexadecimal entity?
+      {
+        bytes++;
+        matcher = std::isxdigit;
+      }
+      else // decimal entity
+      {
+        matcher = std::isdigit;
+      }
+    }
+    else if (std::isalnum(c)) // named entity?
+    {
+      bytes++;
+      matcher = std::isalnum;
+    }
+    if (matcher)
+    {
+      while ((c = static_cast<uint8_t>(utf8Str[startPos+bytes]))!=0 && matcher(c))
+      {
+        bytes++;
+      }
+    }
+    if (c!=';')
+    {
+      bytes=1; // not a valid entity, reset bytes counter
+    }
+  }
+  return startPos+bytes;
+}
+
+
+DString parseCommentAsText(const Definition *scope,const MemberDef *md,
+                           const DString &doc,const DString &fileName,int lineNr)
+{
+  if (doc.empty()) return "";
+  static std::mutex                              s_docCacheMutex;
+  static std::unordered_map<std::string,DString> s_docCache;
+
+  std::lock_guard lock(s_docCacheMutex);
+  auto it = s_docCache.find(doc.str());
+  if (it != s_docCache.end())
+  {
+    //printf("Cache: [%s]->[%s]\n",qPrint(doc),qPrint(it->second));
+    return it->second;
+  }
+  //printf("parseCommentAsText(%s)\n",qPrint(doc));
+  TextStream t;
+  auto parser { createDocParser() };
+  auto ast    { validatingParseDoc(*parser.get(),
+                                   fileName,
+                                   lineNr,
+                                   scope,
+                                   md,
+                                   doc,
+                                   DocOptions()
+                                   .setAutolinkSupport(false))
+              };
+  auto astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
+  if (astImpl)
+  {
+    TextDocVisitor visitor(t);
+    std::visit(visitor,astImpl->root);
+  }
+  DString result = HtmlEntityMapper::instance().convertCharEntitiesToUTF8(t.str()).stripWhiteSpace();
+  int i=0;
+  int charCnt=0;
+  int l=static_cast<int>(result.length());
+  while ((i=nextUTF8CharPosition(result,l,i))<l)
+  {
+    charCnt++;
+    if (charCnt>=80) break;
+  }
+  if (charCnt>=80) // try to truncate the string
+  {
+    while ((i=nextUTF8CharPosition(result,l,i))<l && charCnt<100)
+    {
+      charCnt++;
+      if (result.at(i)==',' ||
+          result.at(i)=='.' ||
+          result.at(i)=='!' ||
+          result.at(i)=='?' ||
+          result.at(i)=='}')    // good for UTF-16 characters and } otherwise also a good point to stop the string
+      {
+        i++; // we want to be "behind" last inspected character
+        break;
+      }
+    }
+  }
+  if ( i < l) result=result.left(i)+"...";
+  s_docCache.insert(std::make_pair(doc.str(),result));
+  return result.data();
+}
+
+//--------------------------------------------------------------------------------------
+
+DString parseCommentAsHtml(const Definition *scope,const MemberDef *member,
+                           const DString &doc,const DString &fileName,int lineNr)
+{
+  static std::mutex                              s_docCacheMutex;
+  static std::unordered_map<std::string,DString> s_docCache;
+
+  std::lock_guard lock(s_docCacheMutex);
+  auto it = s_docCache.find(doc.str());
+  if (it != s_docCache.end())
+  {
+    //printf("Cache: [%s]->[%s]\n",qPrint(doc),qPrint(it->second));
+    return it->second;
+  }
+  auto parser { createDocParser() };
+  auto ast    { validatingParseTitle(*parser.get(),fileName,lineNr,doc) };
+  auto astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
+  DString result;
+  if (astImpl)
+  {
+    TextStream t;
+    OutputCodeList codeList;
+    codeList.add<HtmlCodeGenerator>(&t);
+    HtmlDocVisitor visitor(t,codeList,scope,fileName);
+    std::visit(visitor,astImpl->root);
+    result = t.str();
+  }
+  else // fallback, should not happen
+  {
+    result = filterTitle(doc);
+  }
+  //printf("Conversion: [%s]->[%s]\n",qPrint(doc),qPrint(result));
+  s_docCache.insert(std::make_pair(doc.str(),result));
+  return result;
 }
 

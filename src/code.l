@@ -58,6 +58,7 @@ typedef yyguts_t *yyscan_t;
 #include "config.h"
 #include "groupdef.h"
 #include "classlist.h"
+#include "conceptdef.h"
 #include "filedef.h"
 #include "filename.h"
 #include "namespacedef.h"

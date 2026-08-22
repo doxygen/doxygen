@@ -13,6 +13,8 @@
 *
 */
 
+#include "dotrunner.h"
+
 #include <cassert>
 #include <cmath>
 #include <map>
@@ -21,7 +23,7 @@
 #include <algorithm>
 #include <numeric>
 #include <random>
-#include "threadpool.h"
+#include <sstream>
 
 #ifdef _MSC_VER
 #pragma warning( push )
@@ -51,14 +53,14 @@
 #pragma warning( pop )
 #endif
 
-#include "dotrunner.h"
-#include "util.h"
-#include "portable.h"
-#include "dot.h"
-#include "message.h"
 #include "config.h"
 #include "dir.h"
+#include "dot.h"
 #include "doxygen.h"
+#include "message.h"
+#include "portable.h"
+#include "threadpool.h"
+#include "util.h"
 
 // the graphicx LaTeX has a limitation of maximum size of 16384
 // To be on the save side we take it a little bit smaller i.e. 150 inch * 72 dpi

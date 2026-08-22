@@ -30,6 +30,7 @@
 #include "language.h"
 #include "indexlist.h"
 #include "dir.h"
+#include "textstream.h"
 
 #define MAP_CMD "cmapx"
 

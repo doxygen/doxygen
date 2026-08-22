@@ -23,6 +23,7 @@
 #include "language.h"
 #include "dotfilepatcher.h"
 #include "dotnode.h"
+#include "textstream.h"
 
 void DotLegendGraph::writeGraph(const DString &path)
 {

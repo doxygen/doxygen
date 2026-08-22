@@ -327,5 +327,6 @@ class OutputGenIntf
     virtual void endEmbeddedDoc() = 0;
 };
 
+size_t updateColumnCount(const char *s,size_t col);
 
 #endif

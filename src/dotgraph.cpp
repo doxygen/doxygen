@@ -30,6 +30,7 @@
 #include "dotfilepatcher.h"
 #include "fileinfo.h"
 #include "portable.h"
+#include "textstream.h"
 
 //DString DotGraph::DOT_FONTNAME; // will be initialized in initDot
 //int DotGraph::DOT_FONTSIZE;      // will be initialized in initDot

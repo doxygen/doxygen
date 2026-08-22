@@ -1100,7 +1100,7 @@ static contexts_t getParagraphContext(const DocPara &p,bool &isFirst,bool &isLas
   isLast=false;
   if (p.parent())
   {
-    const auto parBlock = std::get_if<DocParBlock>(p.parent());
+    const auto &parBlock = std::get_if<DocParBlock>(p.parent());
     if (parBlock)
     {
       // hierarchy: node N -> para -> parblock -> para
@@ -1130,7 +1130,7 @@ static contexts_t getParagraphContext(const DocPara &p,bool &isFirst,bool &isLas
       }
       return t;
     }
-    const auto docAutoListItem = std::get_if<DocAutoListItem>(p.parent());
+    const auto &docAutoListItem = std::get_if<DocAutoListItem>(p.parent());
     if (docAutoListItem)
     {
       isFirst=isFirstChildNode(docAutoListItem,p);
@@ -1138,7 +1138,7 @@ static contexts_t getParagraphContext(const DocPara &p,bool &isFirst,bool &isLas
       t=contexts_t::STARTLI; // not used
       return t;
     }
-    const auto docSimpleListItem = std::get_if<DocSimpleListItem>(p.parent());
+    const auto &docSimpleListItem = std::get_if<DocSimpleListItem>(p.parent());
     if (docSimpleListItem)
     {
       isFirst=true;
@@ -1146,7 +1146,7 @@ static contexts_t getParagraphContext(const DocPara &p,bool &isFirst,bool &isLas
       t=contexts_t::STARTLI; // not used
       return t;
     }
-    const auto docParamList = std::get_if<DocParamList>(p.parent());
+    const auto &docParamList = std::get_if<DocParamList>(p.parent());
     if (docParamList)
     {
       isFirst=true;
@@ -1154,7 +1154,7 @@ static contexts_t getParagraphContext(const DocPara &p,bool &isFirst,bool &isLas
       t=contexts_t::STARTLI; // not used
       return t;
     }
-    const auto docHtmlListItem = std::get_if<DocHtmlListItem>(p.parent());
+    const auto &docHtmlListItem = std::get_if<DocHtmlListItem>(p.parent());
     if (docHtmlListItem)
     {
       isFirst=isFirstChildNode(docHtmlListItem,p);
@@ -1164,7 +1164,7 @@ static contexts_t getParagraphContext(const DocPara &p,bool &isFirst,bool &isLas
       if (!isFirst && !isLast) t = contexts_t::INTERLI;
       return t;
     }
-    const auto docSecRefItem = std::get_if<DocSecRefItem>(p.parent());
+    const auto &docSecRefItem = std::get_if<DocSecRefItem>(p.parent());
     if (docSecRefItem)
     {
       isFirst=isFirstChildNode(docSecRefItem,p);
@@ -1174,7 +1174,7 @@ static contexts_t getParagraphContext(const DocPara &p,bool &isFirst,bool &isLas
       if (!isFirst && !isLast) t = contexts_t::INTERLI;
       return t;
     }
-    const auto docHtmlDescData = std::get_if<DocHtmlDescData>(p.parent());
+    const auto &docHtmlDescData = std::get_if<DocHtmlDescData>(p.parent());
     if (docHtmlDescData)
     {
       isFirst=isFirstChildNode(docHtmlDescData,p);
@@ -1184,7 +1184,7 @@ static contexts_t getParagraphContext(const DocPara &p,bool &isFirst,bool &isLas
       if (!isFirst && !isLast) t = contexts_t::INTERDD;
       return t;
     }
-    const auto docXRefItem = std::get_if<DocXRefItem>(p.parent());
+    const auto &docXRefItem = std::get_if<DocXRefItem>(p.parent());
     if (docXRefItem)
     {
       isFirst=isFirstChildNode(docXRefItem,p);
@@ -1194,7 +1194,7 @@ static contexts_t getParagraphContext(const DocPara &p,bool &isFirst,bool &isLas
       if (!isFirst && !isLast) t = contexts_t::INTERDD;
       return t;
     }
-    const auto docSimpleSect = std::get_if<DocSimpleSect>(p.parent());
+    const auto &docSimpleSect = std::get_if<DocSimpleSect>(p.parent());
     if (docSimpleSect)
     {
       isFirst=isFirstChildNode(docSimpleSect,p);
@@ -1211,7 +1211,7 @@ static contexts_t getParagraphContext(const DocPara &p,bool &isFirst,bool &isLas
       if (!isFirst && !isLast) t = contexts_t::INTERDD;
       return t;
     }
-    const auto docHtmlCell = std::get_if<DocHtmlCell>(p.parent());
+    const auto &docHtmlCell = std::get_if<DocHtmlCell>(p.parent());
     if (docHtmlCell)
     {
       isFirst=isFirstChildNode(docHtmlCell,p);

@@ -72,4 +72,9 @@ int isUTF8NonBreakableSpace(const char *input);
 /** Check if the given Unicode character represents a punctuation character */
 bool isUTF8PunctuationCharacter(uint32_t unicode);
 
+/** Recodes the input string from the given input encoding to UTF8.
+ *  Returns true if successful, false otherwise.
+ */
+[[maybe_unused]] bool transcodeCharacterStringToUTF8(std::string &input,const char *inputEncoding);
+
 #endif

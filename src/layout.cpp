@@ -31,6 +31,7 @@
 #include "docnode.h"
 #include "debug.h"
 #include "regex.h"
+#include "textstream.h"
 
 inline DString compileOptions(const DString &def)
 {

@@ -322,7 +322,7 @@ void ModuleDefImpl::mergeSymbolsFrom(ModuleDefImpl *other)
   }
   auto mergeMemberList = [this,other](MemberListType lt)
   {
-    const auto srcMl = other->getMemberList(lt);
+    const auto &srcMl = other->getMemberList(lt);
     if (srcMl)
     {
       auto &dstMl = m_memberLists.get(lt,srcMl->container());

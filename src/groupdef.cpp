@@ -22,6 +22,7 @@
 
 #include "groupdef.h"
 #include "classdef.h"
+#include "conceptdef.h"
 #include "filedef.h"
 #include "classlist.h"
 #include "outputlist.h"
@@ -1029,7 +1030,7 @@ void GroupDefImpl::writeDirs(OutputList &ol,const DString &title)
     ol.parseText(title);
     ol.endMemberHeader();
     ol.startMemberList();
-    for(const auto dd : m_dirList)
+    for(const auto &dd : m_dirList)
     {
       if (!dd->hasDocumentation()) continue;
       ol.startMemberDeclaration();

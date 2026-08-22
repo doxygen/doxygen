@@ -49,6 +49,7 @@
 #include "dir.h"
 #include "datetime.h"
 #include "moduledef.h"
+#include "conceptdef.h"
 
 #include <sys/stat.h>
 #include <string.h>
@@ -1348,7 +1349,7 @@ static void writeInnerFiles(const FileList &fl, struct Refid outer_refid)
 
 static void writeInnerDirs(const DirList &dl, struct Refid outer_refid)
 {
-  for (const auto subdir : dl)
+  for (const auto &subdir : dl)
   {
     struct Refid inner_refid = insertRefid(subdir->getOutputFileBase());
 

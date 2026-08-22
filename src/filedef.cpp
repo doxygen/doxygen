@@ -283,7 +283,7 @@ FileDefImpl::FileDefImpl(const DString &p,const DString &nm,
                  const DString &lref,const DString &dn)
    : DefinitionMixin(p+nm,1,1,nm,nullptr,nullptr,!p.empty())
 {
-  m_path=removeLongPathMarker(p);
+  m_path=Portable::removeLongPathMarker(p);
   m_filePath=p+nm;
   m_fileName=nm;
 

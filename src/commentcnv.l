@@ -48,6 +48,7 @@ typedef yyguts_t *yyscan_t;
 #include "util.h"
 #include "aliases.h"
 #include "condparser.h"
+#include "filedef.h"
 #include "fileinfo.h"
 #include "stringutil.h"
 #include "regex.h"

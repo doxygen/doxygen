@@ -28,6 +28,7 @@
 #include "config.h"
 #include "groupdef.h"
 #include "classdef.h"
+#include "conceptdef.h"
 #include "classlist.h"
 #include "filename.h"
 #include "membername.h"

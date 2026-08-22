@@ -456,6 +456,7 @@ std::unique_ptr<MemberDef> createMemberDef(const DString &defFileName,int defLin
 std::unique_ptr<MemberDef> createMemberDefAlias(const Definition *newScope,const MemberDef *aliasMd);
 
 void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *mdef);
+void mergeMemberOverrideOptions(MemberDefMutable *md1,MemberDefMutable *md2);
 void addDocCrossReference(const MemberDef *src,const MemberDef *dst);
 
 #endif

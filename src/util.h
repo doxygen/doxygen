@@ -20,28 +20,21 @@
  *  \brief A bunch of utility functions.
  */
 
-#include <memory>
-#include <unordered_map>
-#include <algorithm>
 #include <functional>
-#include <fstream>
 #include <variant>
-#include <string_view>
+#include <cctype>
 
-#include <ctype.h>
-#include "types.h"
-#include "docparser.h"
-#include "containers.h"
-#include "outputgen.h"
-#include "regex.h"
-#include "conceptdef.h"
 #include "construct.h"
-#include "htmlentity.h"
+#include "containers.h"
+#include "types.h"
 
 //--------------------------------------------------------------------
 
 class ClassDef;
 class FileDef;
+class ConceptDef;
+class ModuleDef;
+class ExampleList;
 class NamespaceDef;
 class ArgumentList;
 class OutputList;
@@ -246,6 +239,9 @@ DString stripFromPath(const DString &path);
 DString stripFromIncludePath(const DString &path);
 DString stripPath(const DString &s);
 DString stripIndentation(const DString &s,bool skipFirstLine=false);
+DString stripExtensionGeneral(const DString &fName, const DString &ext);
+DString stripExtension(const DString &fName);
+DString stripLeadingAndTrailingEmptyLines(const DString &s,int &docLine);
 void stripIndentationVerbatim(DString &doc,size_t indentationLevel, bool skipFirstLine=true);
 
 DString removeRedundantWhiteSpace(const DString &s);
@@ -310,71 +306,22 @@ DString convertToJSString(const DString &s,bool keepEntities=false,bool singleQu
 
 //---------------------------------------------------------------
 
-void extractNamespaceName(const DString &scopeName,
-                          DString &className,DString &namespaceName,
-                          bool allowEmptyClass=false);
-
-int extractClassNameFromType(const DString &type,int &pos,
-                              DString &name,DString &templSpec,SrcLangExt=SrcLangExt::Unknown);
-
-
-/** Returns true if the names of the symbols can be case sensitive. */
-bool useCaseSenseNames();
-
-void addGroupListToTitle(OutputList &ol,const Definition *d);
-
-bool checkExtension(const DString &fName, const DString &ext);
-void addHtmlExtensionIfMissing(DString &fName);
-DString stripExtensionGeneral(const DString &fName, const DString &ext);
-DString stripExtension(const DString &fName);
-
-DString makeBaseName(const DString &name, const DString &ext);
-
-DString determineAbsoluteIncludeName(const DString &curFile,const DString &incFileName);
-
-DString removeLongPathMarker(const DString &path);
-
-bool findAndRemoveWord(DString &s,const char *word);
-
-DString stripLeadingAndTrailingEmptyLines(const DString &s,int &docLine);
-
-//---------------------------------------------------------------
 bool updateLanguageMapping(const DString &extension,const DString &parser);
 SrcLangExt getLanguageFromFileName(const DString& fileName, SrcLangExt defLang=SrcLangExt::Cpp);
 SrcLangExt getLanguageFromCodeLang(DString &fileName);
 DString getFileNameExtension(const DString &fn);
 void initDefaultExtensionMapping();
 void addCodeOnlyMappings();
-//---------------------------------------------------------------
-
-bool checkIfTypedef(const Definition *scope,const FileDef *fileScope,const DString &n);
-
-DString parseCommentAsText(const Definition *scope,const MemberDef *member,const DString &doc,const DString &fileName,int lineNr);
-DString parseCommentAsHtml(const Definition *scope,const MemberDef *member,const DString &doc,const DString &fileName,int lineNr);
-
-bool transcodeCharacterStringToUTF8(std::string &input,const char *inputEncoding);
-DString recodeString(const DString &str,const char *fromEncoding,const char *toEncoding);
-
-void writeTypeConstraints(OutputList &ol,const Definition *d,const ArgumentList &al);
-
-void stackTrace();
-
-DString filterTitle(const DString &title);
-
-DString externalLinkTarget(const bool parent = false);
-DString createHtmlUrl(const DString &relPath,
-                       const DString &ref,
-                       bool islocalFile,
-                       const DString &targetFileName,
-                       const DString &anchor);
 
 //---------------------------------------------------------------
+
 void writeMarkerList(OutputList &ol,const std::string &markerText,size_t numMarkers,
                      std::function<void(size_t)> replaceFunc);
 DString writeMarkerList(const std::string &markerText,size_t numMarkers,
                      std::function<DString(size_t)> replaceFunc);
 
 DString replaceColorMarkers(const DString &str);
+
 //---------------------------------------------------------------
 
 void createSubDirs(const Dir &d);
@@ -394,33 +341,12 @@ bool openOutputFile(const DString &outFile,std::ofstream &f);
 //---------------------------------------------------------------
 
 bool isURL(const DString &url);
-
 DString correctURL(const DString &url,const DString &relPath);
-
-bool protectionLevelVisible(Protection prot);
-
-/*! Returns the file extension to use for dot files as specified via the DOT_IMAGE_FORMAT configuration option. */
-DString getDotImageExtension();
-
-void convertProtectionLevel(
-                   MemberListType inListType,
-                   Protection inProt,
-                   MemberListType *outListType1,
-                   MemberListType *outListType2
-                  );
-
-
-DString getEncoding(const FileInfo &fi);
-
-bool mainPageHasTitle();
-DString getProjectId();
-DString projectLogoFile();
-DString projectLogoSize();
-DString showDate(const DString &fmt);
-
-void mergeMemberOverrideOptions(MemberDefMutable *md1,MemberDefMutable *md2);
-
-size_t updateColumnCount(const char *s,size_t col);
+DString createHtmlUrl(const DString &relPath,
+                       const DString &ref,
+                       bool islocalFile,
+                       const DString &targetFileName,
+                       const DString &anchor);
 
 //---------------------------------------------------------------
 
@@ -430,5 +356,58 @@ DString demangleCSharpGenericName(const DString &name,const DString &templArgs);
 //---------------------------------------------------------------
 DString extractBeginRawStringDelimiter(const char *rawStart);
 DString extractEndRawStringDelimiter(const char *rawEnd);
+
+//---------------------------------------------------------------
+
+void extractNamespaceName(const DString &scopeName,
+                          DString &className,DString &namespaceName,
+                          bool allowEmptyClass=false);
+
+int extractClassNameFromType(const DString &type,int &pos,
+                              DString &name,DString &templSpec,SrcLangExt=SrcLangExt::Unknown);
+
+
+/** Returns true if the names of the symbols can be case sensitive. */
+bool useCaseSenseNames();
+
+bool checkExtension(const DString &fName, const DString &ext);
+
+void addHtmlExtensionIfMissing(DString &fName);
+
+bool checkIfTypedef(const Definition *scope,const FileDef *fileScope,const DString &n);
+
+void addGroupListToTitle(OutputList &ol,const Definition *d);
+
+void writeTypeConstraints(OutputList &ol,const Definition *d,const ArgumentList &al);
+
+void stackTrace();
+
+bool protectionLevelVisible(Protection prot);
+
+void convertProtectionLevel(
+                   MemberListType inListType,
+                   Protection inProt,
+                   MemberListType *outListType1,
+                   MemberListType *outListType2
+                  );
+
+DString makeBaseName(const DString &name, const DString &ext);
+
+DString determineAbsoluteIncludeName(const DString &curFile,const DString &incFileName);
+
+DString filterTitle(const DString &title);
+
+/*! Returns the file extension to use for dot files as specified via the DOT_IMAGE_FORMAT configuration option. */
+DString getDotImageExtension();
+
+DString externalLinkTarget(const bool parent = false);
+
+DString getEncoding(const FileInfo &fi);
+
+bool mainPageHasTitle();
+DString getProjectId();
+DString projectLogoFile();
+DString projectLogoSize();
+DString showDate(const DString &fmt);
 
 #endif

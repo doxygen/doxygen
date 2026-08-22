@@ -637,6 +637,23 @@ size_t Portable::recodeUtf8StringToW(const DString &inputStr,uint16_t **outBuf)
   return len;
 }
 
+DString Portable::removeLongPathMarker(const DString &path)
+{
+  DString result;
+#if defined(_WIN32)
+  if (path.startsWith("//?/")) // strip leading "\\?\" part from path
+  {
+    result = path.mid(4);
+  }
+  else
+#endif
+  {
+    result = path;
+  }
+  return result;
+}
+
+
 //----------------------------------------------------------------------------------------
 // We need to do this part last as including filesystem.hpp earlier
 // causes the code above to fail to compile on Windows.

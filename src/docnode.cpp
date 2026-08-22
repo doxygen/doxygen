@@ -5648,7 +5648,7 @@ static bool checkIfHtmlEndTagEndsAutoList(DocParser *parser,const DocNodeVariant
   // step 2
   n = parent(n);
   int indent = 0;
-  const auto docAutoList = std::get_if<DocAutoList>(n);
+  const auto &docAutoList = std::get_if<DocAutoList>(n);
   if (docAutoList) // capture indent
   {
     indent = docAutoList->indent();
@@ -5660,7 +5660,7 @@ static bool checkIfHtmlEndTagEndsAutoList(DocParser *parser,const DocNodeVariant
 
   // step 3
   n = parent(n);
-  const auto docPara = std::get_if<DocPara>(n);
+  const auto &docPara = std::get_if<DocPara>(n);
   if (docPara)
   {
     DString tagNameLower = DString(parser->context.token->name).lower();

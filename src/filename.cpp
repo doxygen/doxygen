@@ -68,7 +68,7 @@ FileDef *FileNameLinkedMap::findFileDef(const DString &n, bool &ambig) const
                     sp0!=DString::npos ? sp0 : sp1;
   if (slashPos!=DString::npos)
   {
-    path=removeLongPathMarker(name.left(slashPos+1));
+    path=Portable::removeLongPathMarker(name.left(slashPos+1));
     name=name.mid(slashPos+1);
   }
   if (name.empty()) return nullptr;
@@ -137,7 +137,7 @@ DString FileNameLinkedMap::showFileDefMatches(const DString &n) const
                     sp0!=DString::npos ? sp0 : sp1;
   if (slashPos!=DString::npos)
   {
-    path=removeLongPathMarker(name.left(slashPos+1));
+    path=Portable::removeLongPathMarker(name.left(slashPos+1));
     name=name.mid(slashPos+1);
   }
   const FileName *fn=this->find(name);

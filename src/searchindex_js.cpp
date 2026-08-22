@@ -37,6 +37,8 @@
 #include "threadpool.h"
 #include "moduledef.h"
 #include "section.h"
+#include "docparser.h"
+#include "conceptdef.h"
 
 void SearchTerm::makeTitle()
 {

@@ -13,13 +13,6 @@
 *
 */
 
-#include "dotdirdeps.h"
-#include "util.h"
-#include "doxygen.h"
-#include "config.h"
-#include "image.h"
-#include "dotnode.h"
-
 #include <algorithm>
 #include <iterator>
 #include <utility>
@@ -30,6 +23,15 @@
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "dotdirdeps.h"
+#include "util.h"
+#include "doxygen.h"
+#include "config.h"
+#include "image.h"
+#include "dotnode.h"
+#include "textstream.h"
+
 
 using DirDefMap = std::map<std::string,const DirDef *>;
 
@@ -216,7 +218,7 @@ static void addDependencies(DirRelations &dependencies,const DirDef *const srcDi
 {
   for (const auto &usedDirectory : srcDir->usedDirs())
   {
-    const auto dstDir = usedDirectory->dir();
+    const auto &dstDir = usedDirectory->dir();
     if (!dstDir->isParentOf(srcDir) && (isLeaf || usedDirectory->hasDirectSrcDeps()))
     {
       DString relationName;
@@ -257,7 +259,7 @@ static void drawTree(DirRelations &dependencies, TextStream &t, const DirDef *co
       }
 
       // process all sub directories
-      for (const auto subDirectory : directory->subDirs())
+      for (const auto &subDirectory : directory->subDirs())
       {
         drawTree(dependencies, t, subDirectory, startLevel, directoriesInGraph, false);
       }
@@ -306,7 +308,7 @@ void writeDotDirDepGraph(TextStream &t,const DirDef *dd,bool linkRelations)
   };
 
   // if dd has a parent draw it as the outer layer
-  const auto parent = dd->parent();
+  const auto &parent = dd->parent();
   if (parent)
   {
     const DotDirProperty parentDirProperty = DotDirPropertyBuilder().
@@ -316,7 +318,7 @@ void writeDotDirDepGraph(TextStream &t,const DirDef *dd,bool linkRelations)
 
     {
       // draw all directories which have `dd->parent()` as parent and `dd` as dependent
-      const auto newEnd = std::stable_partition(usedDirsNotDrawn.begin(), usedDirsNotDrawn.end(),
+      const auto &newEnd = std::stable_partition(usedDirsNotDrawn.begin(), usedDirsNotDrawn.end(),
         [&](const DirDef *const usedDir)
         {
           if (dd!=usedDir && dd->parent()==usedDir->parent()) // usedDir and dd share the same parent
@@ -342,7 +344,7 @@ void writeDotDirDepGraph(TextStream &t,const DirDef *dd,bool linkRelations)
 
   // add nodes for other used directories (i.e. outside of the cluster of directories directly connected to dd)
   {
-    const auto newEnd = std::stable_partition(usedDirsNotDrawn.begin(), usedDirsNotDrawn.end(),
+    const auto &newEnd = std::stable_partition(usedDirsNotDrawn.begin(), usedDirsNotDrawn.end(),
      [&](const DirDef *const usedDir) // for each used dir (=directly used or a parent of a directly used dir)
      {
        const DirDef *dir=dd;
@@ -370,16 +372,16 @@ void writeDotDirDepGraph(TextStream &t,const DirDef *dd,bool linkRelations)
     {
       const auto &relation         = relationPair.first;
       const bool directRelation    = relationPair.second;
-      const auto udir              = relation->destination();
-      const auto usedDir           = udir->dir();
+      const auto &udir             = relation->destination();
+      const auto &usedDir          = udir->dir();
       const bool destIsSibling     = std::find(std::begin(usedDirsDrawn), std::end(usedDirsDrawn), usedDir) != std::end(usedDirsDrawn);
       const bool destIsDrawn       = dirsInGraph.find(usedDir->getOutputFileBase().str())!=dirsInGraph.end(); // only point to nodes that are in the graph
       const bool atMaxDepth        = isAtMaxDepth(usedDir, dd->level());
 
       if (destIsSibling || (destIsDrawn && (directRelation || atMaxDepth)))
       {
-        const auto relationName = relation->getOutputFileBase();
-        const auto dir = relation->source();
+        const auto &relationName = relation->getOutputFileBase();
+        const auto &dir = relation->source();
         Doxygen::dirRelations.add(relationName,
             std::make_unique<DirRelation>(
                relationName,dir,udir));

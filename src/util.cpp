@@ -14,68 +14,55 @@
  *
  */
 
-#include <stdlib.h>
-#include <errno.h>
-#include <math.h>
-#include <limits.h>
-#include <string.h>
-#include <assert.h>
+// own include first
+#include "util.h"
 
-#include <mutex>
-#include <unordered_set>
-#include <codecvt>
+// std includes (sorted)
 #include <algorithm>
-#include <ctime>
+#include <cassert>
 #include <cctype>
 #include <cinttypes>
-#include <sstream>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
+#include <mutex>
+#include <unordered_set>
 
-#include "md5hash.h"
-
-#include "regex.h"
-#include "util.h"
-#include "message.h"
-#include "classdef.h"
-#include "filedef.h"
-#include "doxygen.h"
-#include "outputlist.h"
-#include "defargs.h"
-#include "language.h"
-#include "config.h"
-#include "htmlhelp.h"
-#include "example.h"
-#include "version.h"
-#include "groupdef.h"
-#include "reflist.h"
-#include "pagedef.h"
-#include "debug.h"
-#include "searchindex.h"
-#include "textdocvisitor.h"
-#include "latexdocvisitor.h"
-#include "htmldocvisitor.h"
-#include "portable.h"
-#include "parserintf.h"
-#include "image.h"
-#include "entry.h"
+// other includes (sorted)
 #include "arguments.h"
-#include "memberlist.h"
+#include "classdef.h"
 #include "classlist.h"
-#include "namespacedef.h"
-#include "membername.h"
-#include "filename.h"
-#include "membergroup.h"
-#include "dirdef.h"
-#include "htmlentity.h"
-#include "symbolresolver.h"
-#include "fileinfo.h"
-#include "dir.h"
-#include "utf8.h"
-#include "textstream.h"
-#include "indexlist.h"
+#include "conceptdef.h"
+#include "config.h"
 #include "datetime.h"
+#include "debug.h"
+#include "defargs.h"
+#include "dir.h"
+#include "dirdef.h"
+#include "doxygen.h"
+#include "example.h"
+#include "filedef.h"
+#include "fileinfo.h"
+#include "filename.h"
+#include "groupdef.h"
+#include "htmlentity.h"
+#include "image.h"
+#include "language.h"
+#include "md5hash.h"
+#include "membername.h"
+#include "message.h"
 #include "moduledef.h"
-#include "trace.h"
+#include "namespacedef.h"
+#include "outputlist.h"
+#include "pagedef.h"
+#include "parserintf.h"
+#include "portable.h"
+#include "regex.h"
 #include "stringutil.h"
+#include "symbolresolver.h"
+#include "textstream.h"
+#include "trace.h"
+#include "utf8.h"
 
 #define ENABLE_TRACINGSUPPORT 0
 
@@ -87,7 +74,6 @@
 #include <execinfo.h>
 #include <unistd.h>
 #endif
-
 
 //------------------------------------------------------------------------
 
@@ -209,27 +195,11 @@ done:
   return newScope;
 }
 
-DString removeLongPathMarker(const DString &path)
-{
-  DString result;
-#if defined(_WIN32)
-  if (path.startsWith("//?/")) // strip leading "\\?\" part from path
-  {
-    result = path.mid(4);
-  }
-  else
-#endif
-  {
-    result = path;
-  }
-  return result;
-}
-
 static inline DString stripFromPath(const DString &p,StringVector l)
 {
   // look at all the strings in the list and strip the longest match
   DString potential;
-  DString path=removeLongPathMarker(p);
+  DString path=Portable::removeLongPathMarker(p);
   size_t length = 0;
   for (const auto &s : l)
   {
@@ -1080,41 +1050,6 @@ DString getFileFilter(const DString &name,bool isSourceCode)
     }
     return filterName;
   }
-}
-
-
-bool transcodeCharacterStringToUTF8(std::string &input, const char *inputEncoding)
-{
-  const char *outputEncoding = "UTF-8";
-  if (inputEncoding==nullptr || dstricmp(inputEncoding,outputEncoding)==0) return true;
-  size_t inputSize=input.length();
-  size_t outputSize=inputSize*4;
-  DString output(outputSize, DString::ExplicitSize);
-  void *cd = portable_iconv_open(outputEncoding,inputEncoding);
-  if (cd==reinterpret_cast<void *>(-1))
-  {
-    return false;
-  }
-  bool ok=true;
-  size_t iLeft=inputSize;
-  size_t oLeft=outputSize;
-  const char *inputPtr = input.data();
-  char *outputPtr = output.rawData();
-  if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
-  {
-    outputSize-=static_cast<int>(oLeft);
-    output.resize(outputSize);
-    output.at(outputSize)='\0';
-    // replace input
-    input=output.str();
-    //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,qPrint(srcBuf));
-  }
-  else
-  {
-    ok=false;
-  }
-  portable_iconv_close(cd);
-  return ok;
 }
 
 DString fileToString(const DString &name,bool filter,bool isSourceCode)
@@ -4345,138 +4280,6 @@ bool checkIfTypedef(const Definition *scope,const FileDef *fileScope,const DStri
     return false;
 }
 
-static int nextUTF8CharPosition(const DString &utf8Str,uint32_t len,uint32_t startPos)
-{
-  if (startPos>=len) return len;
-  uint8_t c = static_cast<uint8_t>(utf8Str[startPos]);
-  int bytes=getUTF8CharNumBytes(c);
-  if (c=='&') // skip over character entities
-  {
-    bytes=1;
-    int (*matcher)(int) = nullptr;
-    c = static_cast<uint8_t>(utf8Str[startPos+bytes]);
-    if (c=='#') // numerical entity?
-    {
-      bytes++;
-      c = static_cast<uint8_t>(utf8Str[startPos+bytes]);
-      if (c=='x') // hexadecimal entity?
-      {
-        bytes++;
-        matcher = std::isxdigit;
-      }
-      else // decimal entity
-      {
-        matcher = std::isdigit;
-      }
-    }
-    else if (std::isalnum(c)) // named entity?
-    {
-      bytes++;
-      matcher = std::isalnum;
-    }
-    if (matcher)
-    {
-      while ((c = static_cast<uint8_t>(utf8Str[startPos+bytes]))!=0 && matcher(c))
-      {
-        bytes++;
-      }
-    }
-    if (c!=';')
-    {
-      bytes=1; // not a valid entity, reset bytes counter
-    }
-  }
-  return startPos+bytes;
-}
-
-DString parseCommentAsText(const Definition *scope,const MemberDef *md,
-    const DString &doc,const DString &fileName,int lineNr)
-{
-  if (doc.empty()) return "";
-  //printf("parseCommentAsText(%s)\n",qPrint(doc));
-  TextStream t;
-  auto parser { createDocParser() };
-  auto ast    { validatingParseDoc(*parser.get(),
-                                   fileName,
-                                   lineNr,
-                                   scope,
-                                   md,
-                                   doc,
-                                   DocOptions()
-                                   .setAutolinkSupport(false))
-              };
-  auto astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
-  if (astImpl)
-  {
-    TextDocVisitor visitor(t);
-    std::visit(visitor,astImpl->root);
-  }
-  DString result = HtmlEntityMapper::instance().convertCharEntitiesToUTF8(t.str()).stripWhiteSpace();
-  int i=0;
-  int charCnt=0;
-  int l=static_cast<int>(result.length());
-  while ((i=nextUTF8CharPosition(result,l,i))<l)
-  {
-    charCnt++;
-    if (charCnt>=80) break;
-  }
-  if (charCnt>=80) // try to truncate the string
-  {
-    while ((i=nextUTF8CharPosition(result,l,i))<l && charCnt<100)
-    {
-      charCnt++;
-      if (result.at(i)==',' ||
-          result.at(i)=='.' ||
-          result.at(i)=='!' ||
-          result.at(i)=='?' ||
-          result.at(i)=='}')    // good for UTF-16 characters and } otherwise also a good point to stop the string
-      {
-        i++; // we want to be "behind" last inspected character
-        break;
-      }
-    }
-  }
-  if ( i < l) result=result.left(i)+"...";
-  return result.data();
-}
-
-//--------------------------------------------------------------------------------------
-
-static std::mutex                               g_docCacheMutex;
-static std::unordered_map<std::string,DString> g_docCache;
-
-DString parseCommentAsHtml(const Definition *scope,const MemberDef *member,const DString &doc,const DString &fileName,int lineNr)
-{
-  std::lock_guard lock(g_docCacheMutex);
-  auto it = g_docCache.find(doc.str());
-  if (it != g_docCache.end())
-  {
-    //printf("Cache: [%s]->[%s]\n",qPrint(doc),qPrint(it->second));
-    return it->second;
-  }
-  auto parser { createDocParser() };
-  auto ast    { validatingParseTitle(*parser.get(),fileName,lineNr,doc) };
-  auto astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
-  DString result;
-  if (astImpl)
-  {
-    TextStream t;
-    OutputCodeList codeList;
-    codeList.add<HtmlCodeGenerator>(&t);
-    HtmlDocVisitor visitor(t,codeList,scope,fileName);
-    std::visit(visitor,astImpl->root);
-    result = t.str();
-  }
-  else // fallback, should not happen
-  {
-    result = filterTitle(doc);
-  }
-  //printf("Conversion: [%s]->[%s]\n",qPrint(doc),qPrint(result));
-  g_docCache.insert(std::make_pair(doc.str(),result));
-  return result;
-}
-
-
 //--------------------------------------------------------------------------------------
 
 void writeTypeConstraints(OutputList &ol,const Definition *d,const ArgumentList &al)
@@ -5509,54 +5312,6 @@ int computeQualifiedIndex(const DString &name)
     if (c=='<') break;
   }
   return lastSepPos;
-}
-
-void mergeMemberOverrideOptions(MemberDefMutable *md1,MemberDefMutable *md2)
-{
-  if (Config_getBool(CALL_GRAPH)  !=md1->hasCallGraph())   md2->overrideCallGraph(md1->hasCallGraph());
-  if (Config_getBool(CALLER_GRAPH)!=md1->hasCallerGraph()) md2->overrideCallerGraph(md1->hasCallerGraph());
-  if (Config_getBool(CALL_GRAPH)  !=md2->hasCallGraph())   md1->overrideCallGraph( md2->hasCallGraph());
-  if (Config_getBool(CALLER_GRAPH)!=md2->hasCallerGraph()) md1->overrideCallerGraph(md2->hasCallerGraph());
-
-  if (Config_getBool(SHOW_ENUM_VALUES)  !=md1->hasEnumValues())   md2->overrideEnumValues(md1->hasEnumValues());
-  if (Config_getBool(SHOW_ENUM_VALUES)  !=md2->hasEnumValues())   md1->overrideEnumValues( md2->hasEnumValues());
-
-  if (Config_getBool(REFERENCED_BY_RELATION)!=md1->hasReferencedByRelation()) md2->overrideReferencedByRelation(md1->hasReferencedByRelation());
-  if (Config_getBool(REFERENCES_RELATION)   !=md1->hasReferencesRelation())   md2->overrideReferencesRelation(md1->hasReferencesRelation());
-  if (Config_getBool(REFERENCED_BY_RELATION)!=md2->hasReferencedByRelation()) md1->overrideReferencedByRelation(md2->hasReferencedByRelation());
-  if (Config_getBool(REFERENCES_RELATION)   !=md2->hasReferencesRelation())   md1->overrideReferencesRelation(md2->hasReferencesRelation());
-
-  if (Config_getBool(INLINE_SOURCES)!=md1->hasInlineSource()) md2->overrideInlineSource(md1->hasInlineSource());
-  if (Config_getBool(INLINE_SOURCES)!=md2->hasInlineSource()) md1->overrideInlineSource(md2->hasInlineSource());
-}
-
-size_t updateColumnCount(const char *s,size_t col)
-{
-  if (s)
-  {
-    const int tabSize = Config_getInt(TAB_SIZE);
-    char c;
-    while ((c=*s++))
-    {
-      switch(c)
-      {
-        case '\t': col+=tabSize - (col%tabSize);
-                   break;
-        case '\n': col=0;
-                   break;
-        default:
-                   col++;
-                   if (c<0) // multi-byte character
-                   {
-                     int numBytes = getUTF8CharNumBytes(c);
-                     for (int i=0;i<numBytes-1 && (c=*s++);i++) {} // skip over extra chars
-                     if (c==0) return col; // end of string half way a multibyte char
-                   }
-                   break;
-      }
-    }
-  }
-  return col;
 }
 
 // in C# A, A<T>, and A<T,S> are different classes, so we need some way to disguish them using this name mangling

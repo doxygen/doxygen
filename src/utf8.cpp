@@ -19,6 +19,7 @@
 #include "utf8.h"
 #include "caseconvert.h"
 #include "textstream.h"
+#include "portable.h"
 
 uint8_t getUTF8CharNumBytes(char c)
 {
@@ -235,5 +236,39 @@ bool isUTF8PunctuationCharacter(uint32_t unicode)
 {
   bool b = isPunctuationCharacter(unicode);
   return b;
+}
+
+bool transcodeCharacterStringToUTF8(std::string &input, const char *inputEncoding)
+{
+  const char *outputEncoding = "UTF-8";
+  if (inputEncoding==nullptr || dstricmp(inputEncoding,outputEncoding)==0) return true;
+  size_t inputSize=input.length();
+  size_t outputSize=inputSize*4;
+  DString output(outputSize, DString::ExplicitSize);
+  void *cd = portable_iconv_open(outputEncoding,inputEncoding);
+  if (cd==reinterpret_cast<void *>(-1))
+  {
+    return false;
+  }
+  bool ok=true;
+  size_t iLeft=inputSize;
+  size_t oLeft=outputSize;
+  const char *inputPtr = input.data();
+  char *outputPtr = output.rawData();
+  if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
+  {
+    outputSize-=static_cast<int>(oLeft);
+    output.resize(outputSize);
+    output.at(outputSize)='\0';
+    // replace input
+    input=output.str();
+    //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,qPrint(srcBuf));
+  }
+  else
+  {
+    ok=false;
+  }
+  portable_iconv_close(cd);
+  return ok;
 }
 

@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2026 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -58,4 +56,35 @@ DString OutputGenerator::fileName() const
 {
   return m_fileName;
 }
+
+size_t updateColumnCount(const char *s,size_t col)
+{
+  if (s)
+  {
+    const int tabSize = Config_getInt(TAB_SIZE);
+    char c;
+    while ((c=*s++))
+    {
+      switch(c)
+      {
+        case '\t': col+=tabSize - (col%tabSize);
+                   break;
+        case '\n': col=0;
+                   break;
+        default:
+                   col++;
+                   if (c<0) // multi-byte character
+                   {
+                     int numBytes = getUTF8CharNumBytes(c);
+                     for (int i=0;i<numBytes-1 && (c=*s++);i++) {} // skip over extra chars
+                     if (c==0) return col; // end of string half way a multibyte char
+                   }
+                   break;
+      }
+    }
+  }
+  return col;
+}
+
+
 

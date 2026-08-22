@@ -664,7 +664,7 @@ bool DString::findAndRemoveWord(const char *word)
   size_t p=0;
   for ( ; it!=end ; ++it)
   {
-    const auto match = *it;
+    const auto &match = *it;
     std::string part = match[1].str();
     if (part!=word)
     {

@@ -43,6 +43,7 @@ namespace Portable
   size_t         recodeUtf8StringToW(const DString &inputStr,uint16_t **buf);
   std::ofstream  openOutputStream(const DString &name,bool append=false);
   std::ifstream  openInputStream(const DString &name,bool binary=false,bool openAtEnd=false);
+  DString        removeLongPathMarker(const DString &path);
 }
 
 

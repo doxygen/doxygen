@@ -47,6 +47,7 @@
 #include "datetime.h"
 #include "outputlist.h"
 #include "moduledef.h"
+#include "conceptdef.h"
 
 static DString g_header;
 static DString g_header_file;
