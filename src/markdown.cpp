@@ -56,6 +56,7 @@
 #include "anchor.h"
 #include "stringutil.h"
 #include "filename.h"
+#include "plantuml.h"
 
 #if !ENABLE_MARKDOWN_TRACING
 #undef  AUTO_TRACE
@@ -3362,7 +3363,7 @@ DString Markdown::Private::processQuotations(std::string_view data,size_t refInd
           if (addNewLines) out+='\n';
         };
 
-        if (!Config_getString(PLANTUML_JAR_PATH).empty() && lang=="plantuml")
+        if (PlantumlManager::isEnabled() && lang=="plantuml")
         {
           addSpecialCommand("startuml","enduml");
         }
