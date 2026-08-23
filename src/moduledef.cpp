@@ -23,6 +23,7 @@
 #include "config.h"
 #include "outputlist.h"
 #include "language.h"
+#include "layout.h"
 #include "util.h"
 #include "groupdef.h"
 #include "message.h"
@@ -31,6 +32,8 @@
 #include "textstream.h"
 #include "trace.h"
 #include "filename.h"
+#include "filedef.h"
+#include "doxygen.h"
 
 class ModuleDefImpl;
 

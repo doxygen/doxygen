@@ -14,13 +14,16 @@
 */
 
 #include "dotgroupcollaboration.h"
+
 #include "classlist.h"
+#include "config.h"
 #include "doxygen.h"
+#include "groupdef.h"
 #include "namespacedef.h"
 #include "pagedef.h"
-#include "util.h"
-#include "config.h"
 #include "textstream.h"
+#include "util.h"
+#include "filedef.h"
 
 DotGroupCollaboration::DotGroupCollaboration(const GroupDef* gd)
 {

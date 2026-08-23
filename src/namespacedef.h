@@ -19,20 +19,20 @@
 #include <memory>
 #include <unordered_set>
 
+#include "classdef.h"
 #include "definition.h"
-#include "filedef.h"
 #include "linkedmap.h"
-#include "membergroup.h"
 
-class MemberList;
 class ClassDef;
-class ConceptDef;
-class OutputList;
 class ClassLinkedRefMap;
+class ConceptDef;
 class ConceptLinkedRefMap;
+class FileDef;
 class MemberDef;
+class MemberGroupList;
+class MemberList;
 class NamespaceDef;
-class NamespaceDefMutable;
+class OutputList;
 
 // --- Set of namespaces
 

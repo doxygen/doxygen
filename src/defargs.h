@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2026 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -18,8 +16,9 @@
 #ifndef DEFARGS_H
 #define DEFARGS_H
 
-#include "types.h"
 #include <memory>
+
+#include "types.h"
 
 class ArgumentList;
 class DString;

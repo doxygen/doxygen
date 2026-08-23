@@ -1,8 +1,5 @@
-#ifndef CONDPARSER_H
-#define CONDPARSER_H
-
 /**
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2026 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -21,6 +18,10 @@
  *         ||    OR  operator
  *         !     NOT operator
  */
+
+#ifndef CONDPARSER_H
+#define CONDPARSER_H
+
 
 #include "dstring.h"
 

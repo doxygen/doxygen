@@ -1,9 +1,6 @@
 /******************************************************************************
  *
- *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2026 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -19,16 +16,15 @@
 #ifndef CONFIGIMPL_H
 #define CONFIGIMPL_H
 
-#include <vector>
-#include <unordered_map>
-#include <string>
 #include <memory>
-#include <iostream>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
-#include "containers.h"
-#include "dstring.h"
 #include "config.h"
 #include "construct.h"
+#include "containers.h"
+#include "dstring.h"
 #include "message.h"
 
 class TextStream;

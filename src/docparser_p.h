@@ -21,19 +21,18 @@
  */
 
 #include <cassert>
-#include <stack>
-#include <iterator>
-#include <vector>
-#include <deque>
 #include <cstdint>
+#include <deque>
+#include <stack>
+#include <vector>
 
-#include "containers.h"
-#include "docparser.h"
-#include "docnode.h"
-#include "doctokenizer.h"
-#include "searchindex.h"
-#include "construct.h"
 #include "cmdmapper.h"
+#include "construct.h"
+#include "containers.h"
+#include "docnode.h"
+#include "docparser.h"
+
+class TokenInfo;
 
 using DefinitionStack = std::vector<const Definition *>;
 using DocNodeStack = std::stack<DocNodeVariant *>;

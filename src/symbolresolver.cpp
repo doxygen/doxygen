@@ -26,6 +26,8 @@
 #include "config.h"
 #include "defargs.h"
 #include "trace.h"
+#include "cache.h"
+#include "filedef.h"
 
 #if !ENABLE_SYMBOLRESOLVER_TRACING
 #undef  AUTO_TRACE

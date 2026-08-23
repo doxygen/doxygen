@@ -17,8 +17,8 @@
 #define RTFGEN_H
 
 #include <array>
+#include <memory>
 
-#include "config.h"
 #include "outputgen.h"
 
 class OutputCodeList;

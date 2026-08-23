@@ -16,8 +16,8 @@
 #ifndef CONSTEXP_H
 #define CONSTEXP_H
 
-#include <string>
 #include <memory>
+#include <string>
 
 #include "construct.h"
 

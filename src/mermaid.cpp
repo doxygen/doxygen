@@ -13,19 +13,21 @@
  *
  */
 
+#include "mermaid.h"
+
 #include <mutex>
 #include <fstream>
 
-#include "mermaid.h"
-#include "util.h"
-#include "portable.h"
 #include "config.h"
-#include "doxygen.h"
-#include "message.h"
 #include "debug.h"
 #include "dir.h"
+#include "doxygen.h"
+#include "fileinfo.h"
 #include "indexlist.h"
+#include "message.h"
+#include "portable.h"
 #include "threadpool.h"
+#include "util.h"
 
 static std::mutex g_mermaidMutex;
 static int        g_mermaidIndex = 1;

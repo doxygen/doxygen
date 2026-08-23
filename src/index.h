@@ -16,16 +16,15 @@
 #ifndef INDEX_H
 #define INDEX_H
 
+#include <map>
 #include <memory>
 #include <vector>
-#include <map>
+
 #include "dstring.h"
 #include "construct.h"
 
-class Definition;
 class OutputList;
 class DefinitionMutable;
-class NamespaceDef;
 class MemberDef;
 
 enum class IndexSection

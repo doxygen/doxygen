@@ -13,16 +13,15 @@
 #ifndef DSTRING_H
 #define DSTRING_H
 
-#include <string>
-#include <string_view>
 #include <algorithm>
-
 #include <cctype>
-#include <cstring>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
-#include <cstdint>
+#include <cstring>
 #include <ostream>
+#include <string>
+#include <string_view>
 
 #include "utf8.h"
 

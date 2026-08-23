@@ -19,12 +19,6 @@
 
 #include "parserintf.h"
 
-class OutputCodeList;
-class FileDef;
-class MemberDef;
-class DString;
-class Definition;
-
 /** XML scanner. Only support syntax highlighting of code at the moment.
  */
 class XMLCodeParser final : public CodeParserInterface

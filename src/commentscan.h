@@ -19,8 +19,8 @@
 #include <memory>
 #include <stack>
 
-#include "types.h"
 #include "construct.h"
+#include "types.h"
 
 class Entry;
 class OutlineParserInterface;

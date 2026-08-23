@@ -13,10 +13,9 @@
 #ifndef DOCBOOKGEN_H
 #define DOCBOOKGEN_H
 
-#include <memory>
 #include <array>
+#include <memory>
 
-#include "config.h"
 #include "outputgen.h"
 
 #if 0

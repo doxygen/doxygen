@@ -16,16 +16,16 @@
 #ifndef TEXTSTREAM_H
 #define TEXTSTREAM_H
 
-#include <string>
-#include <iostream>
-#include <sstream>
 #include <cstdint>
 #include <cstdio>
 #include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
 #include <type_traits>
 
-#include "dstring.h"
 #include "construct.h"
+#include "dstring.h"
 
 /** @brief Text streaming class that buffers data.
  *

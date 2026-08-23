@@ -1,7 +1,5 @@
 /******************************************************************************
  *
- *
- *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -19,12 +17,6 @@
 #define FORTRANCODE_H
 
 #include "parserintf.h"
-
-class OutputCodeList;
-class FileDef;
-class MemberDef;
-class DString;
-class Definition;
 
 class FortranCodeParser : public CodeParserInterface
 {

@@ -16,12 +16,14 @@
 #ifndef LINKIFYTEXT_H
 #define LINKIFYTEXT_H
 
-#include "construct.h"
-#include "dstring.h"
+#include <string_view>
 
-class Definition;
-class FileDef;
+#include "construct.h"
+
 class ArgumentList;
+class Definition;
+class DString;
+class FileDef;
 
 /** Abstract interface for a hyperlinked text fragment. */
 class TextGeneratorIntf

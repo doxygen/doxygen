@@ -16,8 +16,8 @@
 #ifndef HTMLDOCVISITOR_H
 #define HTMLDOCVISITOR_H
 
-#include "docvisitor.h"
 #include "docnode.h"
+#include "docvisitor.h"
 #include "dstring.h"
 
 class Definition;

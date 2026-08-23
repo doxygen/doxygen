@@ -17,11 +17,11 @@
 #define SYMBOLMAP_H
 
 #include <algorithm>
-#include <unordered_map>
-#include <vector>
-#include <string>
-#include <utility>
 #include <cassert>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 //! Class implementing a symbol map that maps symbol names to objects.
 //! Symbol names do not have to be unique.

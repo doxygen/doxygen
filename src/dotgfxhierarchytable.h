@@ -51,7 +51,7 @@ class DotGfxHierarchyTable final : public DotGraph
 
     using DotNodeMap = std::unordered_multimap< std::string, std::unique_ptr<DotNode> >;
     int                    m_graphId;
-    DString               m_prefix;
+    DString                m_prefix;
     ClassDef::CompoundType m_classType;
     std::vector<DotNode*>  m_rootNodes;
     DotNodeMap             m_usedNodes;

@@ -23,33 +23,26 @@
 #include "dirdef.h"
 #include "memberlist.h"
 #include "define.h"
-#include "cache.h"
 #include "symbolmap.h"
 #include "searchindex.h"
 
 #define THREAD_LOCAL thread_local
 #define AtomicInt    std::atomic_int
 
-class RefList;
-class PageLinkedMap;
-class PageDef;
-class ParserManager;
-class MemberDef;
-class GroupDef;
-class GroupLinkedMap;
-class FileDef;
-class ClassDef;
 class ClassLinkedMap;
 class ConceptLinkedMap;
-class MemberNameLinkedMap;
-class FileNameLinkedMap;
-class NamespaceLinkedMap;
-class NamespaceDef;
 class DirRelationLinkedMap;
+class FileNameLinkedMap;
+class GroupLinkedMap;
 class IndexList;
-class Preprocessor;
-struct MemberGroupInfo;
+class MemberDef;
+class MemberNameLinkedMap;
+class NamespaceDef;
 class NamespaceDefMutable;
+class NamespaceLinkedMap;
+class PageDef;
+class PageLinkedMap;
+class ParserManager;
 
 struct LookupInfo
 {

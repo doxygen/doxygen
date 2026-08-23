@@ -16,16 +16,17 @@
 #ifndef DOCPARSER_H
 #define DOCPARSER_H
 
-#include <stdio.h>
+#include <cstdio>
 #include <memory>
 
-#include "dstring.h"
 #include "construct.h"
-#include "types.h"
 #include "docoptions.h"
+#include "dstring.h"
+#include "types.h"
 
-class MemberDef;
+class DString;
 class Definition;
+class MemberDef;
 
 //---------------------------------------------------------------------------
 

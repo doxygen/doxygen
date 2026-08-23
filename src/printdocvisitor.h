@@ -1,9 +1,6 @@
 /******************************************************************************
  *
- *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2026 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -19,10 +16,10 @@
 #ifndef PRINTDOCVISITOR_H
 #define PRINTDOCVISITOR_H
 
-#include "htmlentity.h"
+#include "docnode.h"
 #include "emoji.h"
+#include "htmlentity.h"
 #include "message.h"
-#include "cite.h"
 
 /*! Visitor implementation for pretty printing */
 class PrintDocVisitor

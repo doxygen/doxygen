@@ -16,9 +16,8 @@
 #ifndef REFLIST_H
 #define REFLIST_H
 
-#include <vector>
 #include <unordered_map>
-#include <memory>
+#include <vector>
 
 #include "dstring.h"
 #include "linkedmap.h"

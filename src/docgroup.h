@@ -17,15 +17,14 @@
 #define DOCGROUP_H
 
 #include <vector>
-#include "membergroup.h"
+
+#include "dstring.h"
 
 class Entry;
+class MemberGroupInfo;
 
-class DocGroup
+class DocGroup final
 {
-  public:
-    DocGroup() {}
-
   public:
     void enterFile(const DString &fileName,int);
     void leaveFile(const DString &fileName,int line);
@@ -41,13 +40,13 @@ class DocGroup
 
   private:
     int findExistingGroup(const MemberGroupInfo *info);
-    int              m_openCount = 0;
-    DString         m_memberGroupHeader;
-    int              m_memberGroupId = 0;
-    DString         m_memberGroupRelates;
-    DString         m_memberGroupDocs;
+    int                   m_openCount = 0;
+    DString               m_memberGroupHeader;
+    int                   m_memberGroupId = 0;
+    DString               m_memberGroupRelates;
+    DString               m_memberGroupDocs;
     std::vector<Grouping> m_autoGroupStack;
-    DString         m_compoundName;
+    DString               m_compoundName;
 };
 
 #endif

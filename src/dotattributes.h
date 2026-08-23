@@ -19,8 +19,8 @@
 #include <map>
 #include <string>
 
-#include "regex.h"
 #include "dstring.h"
+#include "regex.h"
 
 //! Class representing an attribute list of a dot graph object.
 class DotAttributes

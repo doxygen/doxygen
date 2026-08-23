@@ -16,7 +16,6 @@
 #ifndef DIRDEF_H
 #define DIRDEF_H
 
-
 #include <vector>
 #include <map>
 
@@ -24,14 +23,13 @@
 #include "linkedmap.h"
 #include "definition.h"
 
-class FileList;
-class FileDef;
-class OutputList;
-class UsedDir;
-class FilePair;
-class FilePairDict;
 class DirDef;
 class DirList;
+class FileDef;
+class FileList;
+class FilePair;
+class OutputList;
+class UsedDir;
 
 bool compareDirDefs(const DirDef *item1, const DirDef *item2);
 

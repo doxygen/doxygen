@@ -18,9 +18,9 @@
 
 #include <memory>
 
-#include "dstring.h"
 #include "classdef.h"
 #include "construct.h"
+#include "dstring.h"
 
 class Definition;
 class FileDef;

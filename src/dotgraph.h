@@ -19,9 +19,9 @@
 #include <iostream>
 #include <map>
 
-#include "dstring.h"
-#include "dir.h"
 #include "construct.h"
+#include "dir.h"
+#include "dstring.h"
 
 class DotNode;
 class TextStream;

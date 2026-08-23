@@ -13,15 +13,16 @@
 *
 */
 
+#include "dotclassgraph.h"
+
 #include <algorithm>
 
+#include "config.h"
 #include "containers.h"
-#include "dotclassgraph.h"
 #include "dotnode.h"
 #include "textstream.h"
-
-#include "config.h"
 #include "util.h"
+#include "classdef.h"
 
 void DotClassGraph::addClass(const ClassDef *cd,DotNode *n,EdgeInfo::Colors color,
   const DString &label,const DString &usedName,const DString &templSpec,bool base,int distance)

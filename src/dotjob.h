@@ -17,6 +17,7 @@
 #define DOTJOB_H
 
 #include <vector>
+
 #include "dstring.h"
 
 struct DotJob

@@ -18,14 +18,13 @@
 
 #include <memory>
 
-#include "indexlist.h"
-#include "dstring.h"
 #include "construct.h"
+#include "indexlist.h"
 
-class TextStream;
-
+class DString;
 class Definition;
 class MemberDef;
+class TextStream;
 
 /** A class that generates docset files.
  *

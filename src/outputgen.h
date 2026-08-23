@@ -17,26 +17,23 @@
 #define OUTPUTGEN_H
 
 #include <memory>
-#include <stack>
-#include <iostream>
-#include <fstream>
 
-#include "types.h"
+#include "construct.h"
+#include "docparser.h"
 #include "index.h"
 #include "section.h"
 #include "textstream.h"
-#include "docparser.h"
-#include "construct.h"
+#include "types.h"
 
 class ClassDiagram;
-class DotClassGraph;
-class DotInclDepGraph;
+class Definition;
 class DotCallGraph;
+class DotClassGraph;
 class DotDirDeps;
 class DotGfxHierarchyTable;
 class DotGroupCollaboration;
+class DotInclDepGraph;
 class MemberDef;
-class Definition;
 class OutputCodeList;
 
 struct DocLinkInfo

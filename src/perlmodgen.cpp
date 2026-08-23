@@ -35,6 +35,7 @@
 #include "namespacedef.h"
 #include "membergroup.h"
 #include "section.h"
+#include "docvisitor.h"
 #include "util.h"
 #include "htmlentity.h"
 #include "emoji.h"

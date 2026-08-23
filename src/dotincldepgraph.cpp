@@ -14,10 +14,12 @@
 */
 
 #include "dotincldepgraph.h"
-#include "dotnode.h"
-#include "util.h"
+
 #include "config.h"
+#include "dotnode.h"
+#include "filedef.h"
 #include "textstream.h"
+#include "util.h"
 
 void DotInclDepGraph::buildGraph(DotNode *n,const FileDef *fd,int distance)
 {

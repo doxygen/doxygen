@@ -19,9 +19,9 @@
 #include <string>
 #include <unordered_map>
 
+#include "construct.h"
 #include "dstring.h"
 #include "linkedmap.h"
-#include "construct.h"
 
 class Definition;
 

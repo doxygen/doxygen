@@ -18,9 +18,11 @@
 
 #include <memory>
 
-#include "dotnode.h"
 #include "dotgraph.h"
-#include "memberdef.h"
+#include "dotnode.h"
+
+class Definition;
+class MemberDef;
 
 /** Representation of an call graph */
 class DotCallGraph final : public DotGraph

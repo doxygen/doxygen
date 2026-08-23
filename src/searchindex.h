@@ -22,13 +22,12 @@
 #ifndef SEARCHINDEX_H
 #define SEARCHINDEX_H
 
-#include <memory>
-#include <vector>
 #include <map>
-#include <unordered_map>
+#include <memory>
 #include <string>
-#include <array>
+#include <unordered_map>
 #include <variant>
+#include <vector>
 
 #include "dstring.h"
 

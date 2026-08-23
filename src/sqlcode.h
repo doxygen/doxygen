@@ -17,12 +17,9 @@
 #ifndef SQLCODE_H
 #define SQLCODE_H
 
-#include "parserintf.h"
+#include <memory>
 
-class FileDef;
-class MemberDef;
-class DString;
-class Definition;
+#include "parserintf.h"
 
 /** SQL scanner. Only support syntax highlighting of code at the moment.
  */

@@ -16,15 +16,14 @@
 #ifndef DOCNODE_H
 #define DOCNODE_H
 
-#include <cstdio>
 #include <cstdint>
-#include <vector>
+#include <cstdio>
 #include <memory>
-#include <variant>
 #include <type_traits>
+#include <variant>
+#include <vector>
 
 #include "dstring.h"
-#include "docvisitor.h"
 #include "docparser.h"
 #include "htmlattrib.h"
 #include "htmlentity.h"
@@ -115,23 +114,24 @@ class DocNode
     DocNodeVariant *m_thisVariant = nullptr;
 };
 
-struct DocNodeList final : public GrowVector<DocNodeVariant>
+class DocNodeList final : public GrowVector<DocNodeVariant>
 {
-  /** Append a new DocNodeVariant to the list by constructing it with type T and
-   *  parameters Args.
-   */
-  template<class T,class...Args>
-  void append(Args&&... args);
+  public:
+    /** Append a new DocNodeVariant to the list by constructing it with type T and
+     *  parameters Args.
+     */
+    template<class T,class...Args>
+    void append(Args&&... args);
 
-  /** moves the element of list \a l at the end of this list.
-   * List \a l will become empty. */
-  void move_append(DocNodeList &l);
+    /** moves the element of list \a l at the end of this list.
+     * List \a l will become empty. */
+    void move_append(DocNodeList &l);
 
-  /** Returns a pointer to the last element in the list if that element exists and
-   *  holds a T, otherwise nullptr is returned.
-   */
-  template<class T>
-  T *get_last();
+    /** Returns a pointer to the last element in the list if that element exists and
+     *  holds a T, otherwise nullptr is returned.
+     */
+    template<class T>
+    T *get_last();
 };
 
 /** Base class for nodes with children */

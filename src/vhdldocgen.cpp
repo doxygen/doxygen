@@ -38,6 +38,7 @@
 #include "config.h"
 #include "doxygen.h"
 #include "util.h"
+#include "stringutil.h"
 #include "language.h"
 #include "commentscan.h"
 #include "definition.h"

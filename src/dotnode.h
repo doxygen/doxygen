@@ -16,13 +16,12 @@
 #ifndef DOTNODE_H
 #define DOTNODE_H
 
-#include <vector>
-#include <map>
 #include <deque>
-#include <iostream>
+#include <map>
+#include <vector>
 
-#include "types.h"
 #include "dotgraph.h"
+#include "types.h"
 
 class ClassDef;
 class DotNode;

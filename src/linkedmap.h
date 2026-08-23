@@ -16,12 +16,12 @@
 #ifndef LINKEDMAP_H
 #define LINKEDMAP_H
 
-#include <unordered_map>
-#include <vector>
-#include <memory>
-#include <string>
 #include <algorithm>
 #include <cctype>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 #include "dstring.h"
 

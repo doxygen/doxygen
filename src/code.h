@@ -1,7 +1,5 @@
 /******************************************************************************
  *
- *
- *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -18,13 +16,10 @@
 #ifndef CODE_H
 #define CODE_H
 
-#include "parserintf.h"
 #include "construct.h"
+#include "parserintf.h"
 
-class FileDef;
-class MemberDef;
 class DString;
-class Definition;
 
 class CCodeParser final : public CodeParserInterface
 {

@@ -1,8 +1,5 @@
 /******************************************************************************
  *
- *
- *
- *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -19,12 +16,11 @@
 #ifndef MANDOCVISITOR_H
 #define MANDOCVISITOR_H
 
-#include <iostream>
 #include <array>
 
-#include "dstring.h"
-#include "docvisitor.h"
 #include "docnode.h"
+#include "docvisitor.h"
+#include "dstring.h"
 
 class OutputCodeList;
 class TextStream;

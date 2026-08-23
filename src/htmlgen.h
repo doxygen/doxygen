@@ -17,9 +17,6 @@
 #define HTMLGEN_H
 
 #include "outputgen.h"
-#include "containers.h"
-
-class OutputCodeList;
 
 /** Generator for HTML code fragments */
 class HtmlCodeGenerator final : public OutputCodeIntf

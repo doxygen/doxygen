@@ -42,6 +42,7 @@
 #include "aliases.h"
 #include "requirement.h"
 #include "filename.h"
+#include "filedef.h"
 
 #if !ENABLE_DOCPARSER_TRACING
 #undef  AUTO_TRACE

@@ -16,9 +16,9 @@
 #ifndef RTFSTYLE_H
 #define RTFSTYLE_H
 
+#include <cstdint>
 #include <map>
 #include <string>
-#include <cstdint>
 
 #include "dstring.h"
 

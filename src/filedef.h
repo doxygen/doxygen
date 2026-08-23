@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2026 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -25,19 +23,18 @@
 #include "memberlist.h"
 #include "containers.h"
 
-class MemberList;
+class ClangTUParser;
+class ClassDef;
+class ClassLinkedRefMap;
+class ConceptDef;
+class ConceptLinkedRefMap;
+class DirDef;
 class FileDef;
 class FileList;
-class ClassDef;
-class ConceptDef;
 class MemberDef;
-class OutputList;
 class NamespaceDef;
 class NamespaceLinkedRefMap;
-class ConceptLinkedRefMap;
-class ClassLinkedRefMap;
-class DirDef;
-class ClangTUParser;
+class OutputList;
 
 // --- Set of files
 
@@ -71,14 +68,15 @@ DString includeOpen(SrcLangExt lang,IncludeKind kind);
 DString includeClose(SrcLangExt lang,IncludeKind kind);
 
 /** Class representing the data associated with a \#include statement. */
-struct IncludeInfo
+class IncludeInfo
 {
-  IncludeInfo() {}
-  IncludeInfo(const FileDef *fd,const DString &in,IncludeKind k)
-    : fileDef(fd), includeName(in), kind(k) {}
-  const FileDef *fileDef = nullptr;
-  DString includeName;
-  IncludeKind kind = IncludeKind::IncludeSystem;
+  public:
+    IncludeInfo() {}
+    IncludeInfo(const FileDef *fd,const DString &in,IncludeKind k)
+      : fileDef(fd), includeName(in), kind(k) {}
+    const FileDef *fileDef = nullptr;
+    DString includeName;
+    IncludeKind kind = IncludeKind::IncludeSystem;
 };
 
 class IncludeInfoList final : public std::vector<IncludeInfo>

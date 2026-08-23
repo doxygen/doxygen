@@ -16,9 +16,10 @@
 #ifndef CMDMAPPER_H
 #define CMDMAPPER_H
 
-#include <unordered_map>
-#include <string>
 #include <memory>
+#include <string>
+#include <unordered_map>
+
 #include "dstring.h"
 
 template<typename T>

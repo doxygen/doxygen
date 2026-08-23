@@ -18,12 +18,12 @@
 
 #include <stack>
 
-#include "dstring.h"
-#include "docvisitor.h"
 #include "docnode.h"
+#include "docvisitor.h"
+#include "dstring.h"
 
-class OutputCodeList;
 class LatexCodeGenerator;
+class OutputCodeList;
 class TextStream;
 
 enum class TexOrPdf

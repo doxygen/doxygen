@@ -20,9 +20,9 @@
  *  \brief A bunch of utility functions.
  */
 
+#include <cctype>
 #include <functional>
 #include <variant>
-#include <cctype>
 
 #include "construct.h"
 #include "containers.h"
@@ -30,19 +30,19 @@
 
 //--------------------------------------------------------------------
 
-class ClassDef;
-class FileDef;
-class ConceptDef;
-class ModuleDef;
-class ExampleList;
-class NamespaceDef;
 class ArgumentList;
-class OutputList;
-class MemberDef;
-class GroupDef;
+class ClassDef;
+class ConceptDef;
 class Definition;
-class FileInfo;
 class Dir;
+class ExampleList;
+class FileDef;
+class FileInfo;
+class GroupDef;
+class MemberDef;
+class ModuleDef;
+class NamespaceDef;
+class OutputList;
 
 /*! Returns the scope separator to use given the programming language \a lang */
 DString getLanguageSpecificSeparator(SrcLangExt lang,bool classScope=false);

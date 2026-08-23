@@ -16,25 +16,21 @@
 #ifndef OUTPUTLIST_H
 #define OUTPUTLIST_H
 
+#include <functional>
+#include <memory>
 #include <utility>
 #include <vector>
-#include <memory>
-#include <variant>
-#include <stack>
-#include <functional>
 
-#include "outputgen.h"
-#include "doxygen.h"
-
+#include "devnullgen.h"
+#include "docbookgen.h"
+#include "docoptions.h"
 #include "htmlgen.h"
 #include "latexgen.h"
-#include "rtfgen.h"
-#include "mangen.h"
-#include "docbookgen.h"
-#include "xmlgen.h"
-#include "devnullgen.h"
-#include "docoptions.h"
 #include "linkifytext.h"
+#include "mangen.h"
+#include "outputgen.h"
+#include "rtfgen.h"
+#include "xmlgen.h"
 
 class OutputCodeList;
 

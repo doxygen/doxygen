@@ -25,11 +25,6 @@
 
 #include "parserintf.h"
 
-class FileDef;
-class MemberDef;
-class DString;
-class Definition;
-
 class PythonCodeParser final : public CodeParserInterface
 {
   public:

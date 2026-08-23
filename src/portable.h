@@ -1,16 +1,13 @@
 #ifndef PORTABLE_H
 #define PORTABLE_H
 
-#include <stdio.h>
-#include <sys/types.h>
-#include <stdint.h>
-
+#include <cstdint>
+#include <cstdio>
 #include <fstream>
+#include <sys/types.h>
 
 #include "containers.h"
 #include "dstring.h"
-
-class Buf;
 
 /** @file
  *  @brief Portable versions of functions that are platform dependent.

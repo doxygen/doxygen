@@ -16,6 +16,7 @@
 #define TOOLTIP_H
 
 #include <memory>
+
 #include "construct.h"
 
 class Definition;

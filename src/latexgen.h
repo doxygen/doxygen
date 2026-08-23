@@ -16,7 +16,6 @@
 #ifndef LATEXGEN_H
 #define LATEXGEN_H
 
-#include "config.h"
 #include "outputgen.h"
 
 #define LATEX_STYLE_EXTENSION ".sty"

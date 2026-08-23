@@ -1,8 +1,5 @@
 /******************************************************************************
  *
- *
- *
- *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -20,8 +17,9 @@
 #define DIAGRAM_H
 
 #include <memory>
-#include "dstring.h"
+
 #include "construct.h"
+#include "dstring.h"
 
 class ClassDef;
 class TextStream;

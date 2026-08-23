@@ -1,7 +1,5 @@
 /******************************************************************************
  *
- *
- *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -18,30 +16,29 @@
 #ifndef MEMBERDEF_H
 #define MEMBERDEF_H
 
-#include <vector>
 #include <memory>
 #include <optional>
-
 #include <sys/types.h>
+#include <vector>
 
-#include "types.h"
-#include "definition.h"
 #include "arguments.h"
-#include "classdef.h"
+#include "containers.h"
+#include "definition.h"
+#include "types.h"
 
-class NamespaceDef;
-class GroupDef;
-class FileDef;
-class MemberList;
-class MemberGroup;
+class ClassDef;
+class ClassDefMutable;
 class ExampleList;
-class OutputList;
+class FileDef;
 class GroupDef;
-struct TagInfo;
 class MemberDefMutable;
-class MemberGroupList;
+class MemberGroup;
+class MemberList;
 class MemberVector;
 class ModuleDef;
+class NamespaceDef;
+class OutputList;
+class TagInfo;
 
 /** A model of a class/file/namespace member symbol. */
 class MemberDef : public Definition

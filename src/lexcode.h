@@ -19,11 +19,6 @@
 
 #include "parserintf.h"
 
-class FileDef;
-class MemberDef;
-class DString;
-class Definition;
-
 /** LEX code scanner.
  */
 class LexCodeParser final : public CodeParserInterface

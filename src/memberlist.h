@@ -16,15 +16,15 @@
 #ifndef MEMBERLIST_H
 #define MEMBERLIST_H
 
-#include <vector>
 #include <algorithm>
 #include <utility>
+#include <vector>
 
-#include "memberdef.h"
-#include "linkedmap.h"
-#include "types.h"
-#include "membergroup.h"
 #include "construct.h"
+#include "linkedmap.h"
+#include "memberdef.h"
+#include "membergroup.h"
+#include "types.h"
 
 class GroupDef;
 

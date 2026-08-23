@@ -1,8 +1,8 @@
 #ifndef TRANSLATOR_ADAPTER_H
 #define TRANSLATOR_ADAPTER_H
 
-#include "version.h"
 #include "translator.h"
+#include "version.h"
 
 /** Base of the translator adapter tree.
  *

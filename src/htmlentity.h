@@ -15,10 +15,10 @@
 #ifndef HTMLENTITY_H
 #define HTMLENTITY_H
 
-#include <unordered_map>
-#include <string>
 #include <cassert>
 #include <functional>
+#include <string>
+#include <unordered_map>
 
 #include "dstring.h"
 #include "construct.h"

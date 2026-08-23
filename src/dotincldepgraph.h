@@ -18,12 +18,11 @@
 
 #include <memory>
 
-#include "dstring.h"
-#include "filedef.h"
-
-#include "dotnode.h"
 #include "dotgraph.h"
+#include "dotnode.h"
+#include "dstring.h"
 
+class FileDef;
 class TextStream;
 
 /** Representation of an include dependency graph */

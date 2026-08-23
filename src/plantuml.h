@@ -25,7 +25,6 @@
 #define DIVIDE_COUNT            4
 #define MIN_PLANTUML_COUNT      8
 
-class DString;
 struct PlantumlContent
 {
   PlantumlContent(const DString &content_, const DString &outDir_, const DString &srcFile_, int srcLine_)

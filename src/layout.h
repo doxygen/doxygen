@@ -17,15 +17,14 @@
 #define LAYOUT_H
 
 #include <memory>
-#include <vector>
 #include <utility>
+#include <vector>
 
-#include "types.h"
 #include "construct.h"
+#include "types.h"
 
 class LayoutParser;
 struct LayoutNavEntry;
-class MemberList;
 
 /** @brief Base class representing a piece of a documentation page */
 struct LayoutDocEntry

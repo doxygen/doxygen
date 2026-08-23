@@ -1,18 +1,9 @@
 #ifndef VHDLJJPARSER_H
 #define VHDLJJPARSER_H
 
-#include <vector>
 #include <memory>
-#include <string>
 
 #include "parserintf.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <ctype.h>
-
-#include "types.h"
-#include "entry.h"
 #include "vhdldocgen.h"
 #include "config.h"
 #include "util.h"

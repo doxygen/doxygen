@@ -21,14 +21,13 @@
 #define SEARCHINDEX_JS_H
 
 #include <array>
-#include <vector>
+#include <functional>
 #include <map>
 #include <string>
-#include <functional>
 #include <variant>
+#include <vector>
 
 #include "dstring.h"
-#include "utf8.h"
 
 #define NUM_SEARCH_INDICES 22
 

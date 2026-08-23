@@ -16,13 +16,12 @@
 #ifndef MEMBERGROUP_H
 #define MEMBERGROUP_H
 
-#include <vector>
-#include <map>
 #include <memory>
+#include <vector>
 
-#include "types.h"
 #include "reflist.h"
 #include "requirement.h"
+#include "types.h"
 
 #define DOX_NOGROUP -1
 
@@ -36,7 +35,6 @@ class GroupDef;
 class OutputList;
 class Definition;
 class DefinitionMutable;
-class RefItem;
 class TextStream;
 
 /** A class representing a group of members. */
@@ -115,17 +113,18 @@ class MemberGroupList final : public std::vector< std::unique_ptr<MemberGroup> >
 };
 
 /** Data collected for a member group */
-struct MemberGroupInfo
+class MemberGroupInfo
 {
-  void setRefItems(const RefItemVector &sli);
-  void setRequirementReferences(const RequirementRefs &rqli);
-  DString header;
-  DString doc;
-  DString docFile;
-  int docLine = -1;
-  DString compoundName;
-  RefItemVector m_sli;
-  RequirementRefs m_rqli;
+  public:
+    void setRefItems(const RefItemVector &sli);
+    void setRequirementReferences(const RequirementRefs &rqli);
+    DString header;
+    DString doc;
+    DString docFile;
+    int docLine = -1;
+    DString compoundName;
+    RefItemVector m_sli;
+    RequirementRefs m_rqli;
 };
 
 using MemberGroupInfoMap = std::unordered_map< int,std::unique_ptr<MemberGroupInfo> >;

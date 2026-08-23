@@ -16,14 +16,15 @@
 #ifndef INDEXLIST_H
 #define INDEXLIST_H
 
-#include <utility>
-#include <vector>
 #include <memory>
 #include <mutex>
+#include <utility>
+#include <vector>
 
-#include "dstring.h"
 #include "construct.h"
+#include "dstring.h"
 
+class DString;
 class Definition;
 class MemberDef;
 class OutputList;

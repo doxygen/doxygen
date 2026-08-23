@@ -18,10 +18,11 @@
 
 #include <memory>
 
-#include "dotnode.h"
 #include "dotgraph.h"
-#include "groupdef.h"
+#include "dotnode.h"
 
+class Definition;
+class GroupDef;
 class TextStream;
 
 /** Representation of a group collaboration graph */
@@ -85,7 +86,7 @@ class DotGroupCollaboration final : public DotGraph
 
     DotNode        *m_rootNode;
     DotNodeMap      m_usedNodes;
-    DString        m_diskName;
+    DString         m_diskName;
     std::vector< std::unique_ptr<Edge> >     m_edges;
 };
 

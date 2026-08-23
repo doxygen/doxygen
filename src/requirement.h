@@ -23,11 +23,11 @@
 #include "dstring.h"
 
 class Definition;
-class MemberDef;
 class Entry;
+class MemberDef;
 class OutputList;
-class TextStream;
 class PageDef;
+class TextStream;
 
 /// Types are references to a requirement
 enum class RequirementRefType { Satisfies, Verifies };

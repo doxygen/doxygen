@@ -15,42 +15,44 @@
  *
  */
 
+#include "rtfgen.h"
+
+#include <algorithm>
 #include <mutex>
 #include <stdlib.h>
-#include <algorithm>
 #include <unordered_map>
 
-#include "rtfgen.h"
+#include "classlist.h"
+#include "conceptdef.h"
 #include "config.h"
-#include "message.h"
-#include "doxygen.h"
-#include "util.h"
+#include "datetime.h"
+#include "debug.h"
 #include "diagram.h"
-#include "language.h"
+#include "dir.h"
+#include "dirdef.h"
+#include "docparser.h"
 #include "dot.h"
 #include "dotcallgraph.h"
 #include "dotclassgraph.h"
 #include "dotdirdeps.h"
 #include "dotincldepgraph.h"
-#include "version.h"
-#include "pagedef.h"
-#include "rtfstyle.h"
-#include "rtfdocvisitor.h"
-#include "docparser.h"
-#include "dirdef.h"
-#include "vhdldocgen.h"
-#include "portable.h"
-#include "groupdef.h"
-#include "classlist.h"
+#include "doxygen.h"
+#include "fileinfo.h"
 #include "filename.h"
-#include "namespacedef.h"
-#include "dir.h"
-#include "utf8.h"
-#include "debug.h"
-#include "datetime.h"
-#include "outputlist.h"
+#include "groupdef.h"
+#include "language.h"
+#include "message.h"
 #include "moduledef.h"
-#include "conceptdef.h"
+#include "namespacedef.h"
+#include "outputlist.h"
+#include "pagedef.h"
+#include "portable.h"
+#include "rtfdocvisitor.h"
+#include "rtfstyle.h"
+#include "utf8.h"
+#include "util.h"
+#include "version.h"
+#include "vhdldocgen.h"
 
 //#define DBG_RTF(x) x;
 #define DBG_RTF(x)

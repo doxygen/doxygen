@@ -22,23 +22,20 @@
  */
 
 #include "dstring.h"
-#include "layout.h"
-#include "arguments.h"
 #include "entry.h"
 
-class Entry;
 class ClassDef;
-class MemberList;
-class MemberDef;
-class ModuleDef;
-class MemberDefMutable;
-class OutputList;
 class Definition;
-class GroupDef;
+class Entry;
 class FileDef;
+class GroupDef;
+class MemberDef;
+class MemberDefMutable;
+class MemberList;
+class ModuleDef;
 class NamespaceDef;
+class OutputList;
 class TextStream;
-struct Argument;
 
 struct VhdlConfNode
 {

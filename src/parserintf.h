@@ -17,20 +17,19 @@
 #define PARSERINTF_H
 
 #include <functional>
-#include <memory>
 #include <map>
+#include <memory>
 #include <string>
 
-#include "types.h"
-#include "containers.h"
 #include "construct.h"
+#include "types.h"
 
+class ClangTUParser;
+class Definition;
 class Entry;
 class FileDef;
-class OutputCodeList;
 class MemberDef;
-class Definition;
-class ClangTUParser;
+class OutputCodeList;
 
 /** \brief Abstract interface for outline parsers.
  *

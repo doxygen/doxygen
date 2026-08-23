@@ -1,7 +1,5 @@
 /******************************************************************************
  *
- *
- *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -20,9 +18,9 @@
 
 #include "classdef.h"
 #include "config.h"
+#include "construct.h"
 #include "datetime.h"
 #include "index.h"
-#include "construct.h"
 
 /** Abstract base class for all translatable text fragments. */
 class Translator

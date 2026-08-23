@@ -17,11 +17,12 @@
 #define SCOPEDTYPEVARIANT_H
 
 #include <utility>
-#include <vector>
 #include <variant>
+#include <vector>
 
 #include "dstring.h"
-#include "definition.h"
+
+class Definition;
 
 //! Class representing a local class definition found while
 //! generating syntax highlighted code.

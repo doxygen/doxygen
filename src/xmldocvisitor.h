@@ -1,8 +1,5 @@
 /******************************************************************************
  *
- *
- *
- *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -19,15 +16,12 @@
 #ifndef XMLDOCVISITOR_H
 #define XMLDOCVISITOR_H
 
-#include <iostream>
-
-#include "dstring.h"
-#include "docvisitor.h"
 #include "docnode.h"
+#include "docvisitor.h"
+#include "dstring.h"
 #include "textstream.h"
 
 class OutputCodeList;
-class DString;
 
 /*! @brief Concrete visitor implementation for XML output. */
 class XmlDocVisitor final : public DocVisitor

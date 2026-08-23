@@ -17,8 +17,9 @@
 #define DEBUG_H
 
 #include <cstdint>
-#include "dstring.h"
+
 #include "construct.h"
+#include "dstring.h"
 #include "message.h"
 
 /** Class containing a print function for diagnostics. */

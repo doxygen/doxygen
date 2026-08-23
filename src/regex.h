@@ -16,11 +16,11 @@
 #ifndef FREGEX_H
 #define FREGEX_H
 
+#include <iterator>
 #include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
-#include <iterator>
 
 #include "construct.h"
 

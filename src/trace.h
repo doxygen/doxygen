@@ -42,9 +42,9 @@
 #include "spdlog/spdlog.h"
 #pragma pop_macro("warn")
 
-#include "message.h"
-#include "dstring.h"
 #include "construct.h"
+#include "dstring.h"
+#include "message.h"
 
 extern std::shared_ptr<spdlog::logger> g_tracer;
 

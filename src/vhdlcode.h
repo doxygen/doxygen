@@ -17,9 +17,6 @@
 
 #include "parserintf.h"
 
-class FileDef;
-class MemberDef;
-
 void codeFreeVhdlScanner();
 
 class VHDLCodeParser final : public CodeParserInterface

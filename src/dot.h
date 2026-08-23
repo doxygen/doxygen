@@ -19,14 +19,14 @@
 #include <map>
 #include <vector>
 
-#include "dstring.h"
-#include "dotgraph.h" // only for GraphOutputFormat
-#include "dotfilepatcher.h"
-#include "dotrunner.h"
-#include "dotjob.h"
-#include "doxygen.h"
 #include "construct.h"
+#include "dotfilepatcher.h"
+#include "dotgraph.h" // only for GraphOutputFormat
+#include "dotjob.h"
+#include "dotrunner.h"
+#include "doxygen.h"
 
+class DString;
 class TextStream;
 
 /** Singleton that manages dot invocations and patching files for embedding image maps */

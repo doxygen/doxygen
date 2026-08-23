@@ -17,37 +17,33 @@
 #define CLASSDEF_H
 
 #include <memory>
-#include <vector>
 #include <unordered_set>
+#include <vector>
 
+#include "configvalues.h"
 #include "containers.h"
 #include "definition.h"
-#include "arguments.h"
-#include "membergroup.h"
-#include "configvalues.h"
 
-struct Argument;
-class MemberDef;
-class MemberDefMutable;
-class MemberList;
-class MemberLists;
-class ClassLinkedRefMap;
-class OutputList;
-class FileDef;
-class FileList;
-class NamespaceDef;
-class MemberDef;
-class ExampleList;
-class MemberNameInfoLinkedMap;
-class GroupDef;
-struct IncludeInfo;
-class ClassDefImpl;
+class ArgumentList;
+class ArgumentLists;
 class ClassDef;
 class ClassDefMutable;
-class UsesClassList;
+class ClassLinkedRefMap;
 class ConstraintClassList;
+class ExampleList;
+class FileDef;
+class FileList;
+class GroupDef;
+class IncludeInfo;
+class MemberDef;
+class MemberDefMutable;
 class MemberGroupList;
+class MemberList;
+class MemberLists;
+class MemberNameInfoLinkedMap;
 class ModuleDef;
+class OutputList;
+class UsesClassList;
 
 /** Class that contains information about an inheritance relation.
  */
@@ -181,11 +177,6 @@ class ClassDef : public Definition
     /** Returns the template arguments of this class
      */
     virtual const ArgumentList &templateArguments() const = 0;
-
-    /** Returns the namespace this compound is in, or 0 if it has a global
-     *  scope.
-     */
-    //virtual NamespaceDef *getNamespaceDef() const = 0;
 
     /** Returns the file in which this compound's definition can be found.
      *  Should not return 0 (but it might be a good idea to check anyway).

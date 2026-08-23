@@ -19,8 +19,8 @@
 #include <memory>
 #include <string>
 
-#include "dstring.h"
 #include "containers.h"
+#include "dstring.h"
 
 class Dir;
 

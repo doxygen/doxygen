@@ -16,10 +16,10 @@
 #ifndef DEFINE_H
 #define DEFINE_H
 
-#include <vector>
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "dstring.h"
 #include "containers.h"

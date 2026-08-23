@@ -18,13 +18,10 @@
 
 #include <memory>
 
-#include "dstring.h"
 #include "construct.h"
 
+class DString;
 class OutputCodeList;
-class Definition;
-class MemberDef;
-class FileDef;
 
 class CodeFragmentManager
 {

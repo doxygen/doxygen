@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2021 by Dimitri van Heesch.
+ * Copyright (C) 1997-2026 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -26,14 +26,14 @@
 
 #include <memory>
 #include <vector>
-#include "dstring.h"
+
 #include "construct.h"
 #include "indexlist.h"
 
 class Definition;
+class DString;
 class MemberDef;
 class TextStream;
-
 
 /** A class that generates a dynamic tree view side panel.
  */
@@ -74,7 +74,7 @@ constexpr auto JAVASCRIPT_LICENSE_TEXT = R"LIC(/*
 
  The MIT License (MIT)
 
- Copyright (C) 1997-2020 by Dimitri van Heesch
+ Copyright (C) 1997-2026 by Dimitri van Heesch
 
  Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  and associated documentation files (the "Software"), to deal in the Software without restriction,

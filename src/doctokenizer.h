@@ -1,9 +1,6 @@
 /******************************************************************************
  *
- * $Id: $
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2026 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -19,12 +16,12 @@
 #ifndef DOCTOKENIZER_H
 #define DOCTOKENIZER_H
 
-#include <stdio.h>
+#include <cstdio>
 #include <memory>
 
-#include "htmlattrib.h"
-#include "dstring.h"
 #include "construct.h"
+#include "dstring.h"
+#include "htmlattrib.h"
 
 #define TOKEN_SPECIFICATIONS \
   TKSPEC(TK_EOF,          -1)                                   \
@@ -132,8 +129,9 @@ class Token
 };
 
 /** @brief Data associated with a token used by the comment block parser. */
-struct TokenInfo
+class TokenInfo
 {
+  public:
   // command token
   DString name;
 

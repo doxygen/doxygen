@@ -18,8 +18,8 @@
 
 #include <vector>
 
-#include "dstring.h"
 #include "dotjob.h"
+#include "dstring.h"
 
 /** Helper class to run dot from doxygen. Holds a queue of jobs, each
  *  specifying an input .dot file and output format. Call run() to execute

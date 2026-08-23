@@ -19,7 +19,8 @@
 #include <memory>
 
 #include "dotgraph.h"
-#include "dirdef.h"
+
+class DirDef;
 
 /** Representation of an directory dependency graph */
 class DotDirDeps final : public DotGraph

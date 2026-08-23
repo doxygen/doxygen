@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2026 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -18,20 +16,19 @@
 #ifndef ENTRY_H
 #define ENTRY_H
 
-#include <vector>
-#include <memory>
-#include <sstream>
 #include <functional>
+#include <memory>
+#include <vector>
 
-#include "types.h"
 #include "arguments.h"
+#include "configvalues.h"
 #include "reflist.h"
 #include "requirement.h"
 #include "textstream.h"
-#include "configvalues.h"
+#include "types.h"
 
-class SectionInfo;
 class FileDef;
+class SectionInfo;
 
 //--------------------------------------------------------------
 
@@ -100,11 +97,12 @@ struct BaseInfo
 /** This struct is used to capture the tag file information
  *  for an Entry.
  */
-struct TagInfo
+class TagInfo
 {
-  DString tagName;
-  DString fileName;
-  DString anchor;
+  public:
+    DString tagName;
+    DString fileName;
+    DString anchor;
 };
 
 /** Represents an unstructured piece of information, about an

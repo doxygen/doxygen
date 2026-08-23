@@ -23,8 +23,9 @@
  *         function or template
  *
  */
-struct Argument
+class Argument
 {
+  public:
   /*! return true if this argument is documentation and the argument has a
    *  non empty name.
    */
@@ -144,6 +145,8 @@ class ArgumentList
     bool m_noParameters = false;
 };
 
-using ArgumentLists = std::vector<ArgumentList>;
+class ArgumentLists : public std::vector<ArgumentList>
+{
+};
 
 #endif

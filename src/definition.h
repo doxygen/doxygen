@@ -18,10 +18,10 @@
 
 #include <vector>
 
-#include "types.h"
-#include "reflist.h"
 #include "construct.h"
+#include "reflist.h"
 #include "requirement.h"
+#include "types.h"
 
 #ifdef _MSC_VER
 // To disable 'inherits via dominance' warnings with MSVC.
@@ -29,17 +29,17 @@
 #pragma warning( disable: 4250 )
 #endif
 
+class Definition;
+class DefinitionImpl;
+class DefinitionMutable;
 class FileDef;
-class OutputList;
-class SectionRefs;
-class MemberDef;
-class MemberVector;
 class GroupDef;
 class GroupList;
+class MemberDef;
+class MemberVector;
+class OutputList;
 class SectionInfo;
-class Definition;
-class DefinitionMutable;
-class DefinitionImpl;
+class SectionRefs;
 class TextStream;
 
 /** Data associated with a detailed description. */

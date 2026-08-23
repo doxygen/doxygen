@@ -15,11 +15,11 @@
 #ifndef RESOURCEMGR_H
 #define RESOURCEMGR_H
 
-#include <memory>
 #include <initializer_list>
+#include <memory>
 
-#include "dstring.h"
 #include "construct.h"
+#include "dstring.h"
 
 /** @brief Compiled resource */
 struct Resource

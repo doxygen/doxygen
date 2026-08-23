@@ -17,6 +17,7 @@
 #define DOTLEGENDGRAPH_H
 
 #include "dotgraph.h"
+#include "dstring.h"
 
 /** Representation of a legend explaining the meaning of boxes, arrows, and colors */
 class DotLegendGraph final : public DotGraph

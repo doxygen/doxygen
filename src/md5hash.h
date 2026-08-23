@@ -17,9 +17,9 @@
 #define MD5HASH_H
 
 #include <array>
-#include <string_view>
 #include <cstdint>
 #include <md5.h>
+#include <string_view>
 
 #include "dstring.h"
 

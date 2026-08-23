@@ -16,10 +16,8 @@
 #ifndef DIR_H
 #define DIR_H
 
-#include <string>
 #include <memory>
-
-#include "fileinfo.h"
+#include <string>
 
 class DirEntry
 {

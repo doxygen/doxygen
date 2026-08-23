@@ -19,19 +19,20 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "message.h"
-#include "mangen.h"
 #include "config.h"
-#include "util.h"
-#include "doxygen.h"
-#include "docparser.h"
-#include "mandocvisitor.h"
-#include "language.h"
-#include "dir.h"
-#include "utf8.h"
 #include "datetime.h"
-#include "portable.h"
+#include "dir.h"
+#include "docparser.h"
+#include "doxygen.h"
+#include "fileinfo.h"
+#include "language.h"
+#include "mandocvisitor.h"
+#include "mangen.h"
+#include "message.h"
 #include "outputlist.h"
+#include "portable.h"
+#include "utf8.h"
+#include "util.h"
 
 static DString getExtension()
 {

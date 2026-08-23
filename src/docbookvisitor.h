@@ -19,12 +19,13 @@
 #include <iostream>
 
 #include "containers.h"
-#include "docvisitor.h"
 #include "docnode.h"
+#include "docvisitor.h"
 #include "dstring.h"
 
-class OutputCodeList;
 class DString;
+class DocNodeList;
+class OutputCodeList;
 class TextStream;
 
 /*! @brief Concrete visitor implementation for Docbook output. */

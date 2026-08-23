@@ -18,10 +18,11 @@
 
 #include <memory>
 
-#include "classdef.h"
-#include "dotnode.h"
 #include "dotgraph.h"
+#include "dotnode.h"
+#include "dstring.h"
 
+class ClassDef;
 class TextStream;
 
 /** Representation of a class inheritance or dependency graph */

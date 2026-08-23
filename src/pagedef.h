@@ -18,9 +18,9 @@
 
 #include "definition.h"
 
-class PageLinkedRefMap;
 class OutputList;
-struct TagInfo;
+class PageLinkedRefMap;
+class TagInfo;
 
 /** @brief A model of a page symbol. */
 class PageDef : public DefinitionMutable, public Definition

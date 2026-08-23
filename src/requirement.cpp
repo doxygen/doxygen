@@ -29,6 +29,7 @@
 #include "pagedef.h"
 #include "config.h"
 #include "trace.h"
+#include "doxygen.h"
 
 struct Requirement : RequirementIntf
 {

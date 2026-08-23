@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2026 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -21,31 +19,29 @@
 #include <memory>
 
 #include "definition.h"
-#include "dirdef.h"
-#include "layout.h"
-#include "membergroup.h"
 #include "linkedmap.h"
 
+class ClassDef;
+class ClassLinkedRefMap;
+class ConceptDef;
+class ConceptLinkedRefMap;
+class DirDef;
+class DirList;
+class Entry;
+class FileDef;
+class FileList;
+class GroupList;
+class MemberDef;
+class MemberGroupList;
 class MemberList;
 class MemberLists;
-class FileList;
-class ClassLinkedRefMap;
-class ConceptLinkedRefMap;
-class ModuleLinkedRefMap;
-class NamespaceLinkedRefMap;
-class FileDef;
-class ClassDef;
-class ConceptDef;
-class NamespaceDef;
-class GroupList;
-class OutputList;
-class PageLinkedRefMap;
-class PageDef;
-class DirDef;
-class FTVHelp;
-class Entry;
-class MemberDef;
 class ModuleDef;
+class ModuleLinkedRefMap;
+class NamespaceDef;
+class NamespaceLinkedRefMap;
+class OutputList;
+class PageDef;
+class PageLinkedRefMap;
 
 /** A model of a group of symbols. */
 class GroupDef : public DefinitionMutable, public Definition

@@ -17,20 +17,20 @@
 #define MODULE_H
 
 #include "definition.h"
-#include "linkedmap.h"
 #include "filedef.h"
+#include "linkedmap.h"
 
-class Entry;
 class ClassDef;
-class MemberDef;
-class NamespaceDef;
+class ClassLinkedRefMap;
 class ConceptDef;
-class OutputList;
+class ConceptLinkedRefMap;
+class Entry;
+class MemberDef;
+class MemberGroupList;
 class MemberList;
 class MemberLists;
-class MemberGroupList;
-class ClassLinkedRefMap;
-class ConceptLinkedRefMap;
+class NamespaceDef;
+class OutputList;
 class TextStream;
 
 class ModuleDef;

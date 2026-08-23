@@ -16,9 +16,9 @@
 #ifndef GROWVECTOR_H
 #define GROWVECTOR_H
 
-#include <vector>
-#include <memory>
 #include <iterator>
+#include <memory>
+#include <vector>
 
 #include "construct.h"
 

@@ -19,6 +19,7 @@
 #include <memory>
 #include <vector>
 
+#include "dstring.h"
 #include "linkedmap.h"
 #include "utf8.h"
 #include "util.h"

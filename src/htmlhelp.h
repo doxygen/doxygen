@@ -20,8 +20,9 @@
 #define HTMLHELP_H
 
 #include <memory>
-#include "dstring.h"
+
 #include "construct.h"
+#include "dstring.h"
 #include "indexlist.h"
 
 class Definition;

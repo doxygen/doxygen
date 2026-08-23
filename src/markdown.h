@@ -18,9 +18,9 @@
 
 #include <memory>
 
-#include "dstring.h"
 #include "parserintf.h"
 
+class DString;
 class Entry;
 
 /** processes string \a s and converts markdown into doxygen/html commands. */
