@@ -2,7 +2,7 @@
 <doxygenconfig lang="Français">
   <header>
     <docs filter="doxywizard,doxyfile">
-      <![CDATA[
+<![CDATA[
 Ce fichier décrit les paramètres à utiliser par le système de documentation
 Doxygen (www.doxygen.org) pour un projet.
 <br>
@@ -1233,7 +1233,6 @@ Pour un exemple, consultez la documentation.
  doit contenir le script `tex-<format>.js` (ou `<format>` est `chtml` ou `svg`).
  La valeur par défaut pointe vers le Reseau de Distribution de Contenu MathJax pour que
  vous puissiez voir rapidement le résultat sans installer MathJax. Cependant, il est fortement recommandé d'installer une copie locale de MathJax depuis https://www.mathjax.org avant le déploiement.
-
  La valeur par défaut est :
  - dans le cas de MathJax version 2 : https://cdn.jsdelivr.net/npm/mathjax@2
  - dans le cas de MathJax version 3 : https://cdn.jsdelivr.net/npm/mathjax@3
@@ -1823,6 +1822,34 @@ Pour une description des marqueurs et noms de blocs possibles, consultez la docu
 <![CDATA[Lors de l'utilisation de PlantUML, la balise \c PLANTUML_JAR_PATH devrait être utilisée pour spécifier le chemin ou java peut trouver le fichier \c plantuml.jar ou le nom de fichier du fichier \c jar a utiliser. Si laissé vide, il est suppose que PlantUML n'est pas utilise ou appelé lors d'une étape de prétraitement. Doxygen générera un avertissement lorsqu'il rencontrera une commande \ref cmdstartuml "\\startuml" dans ce cas et ne générera pas de sortie pour le diagramme.]]>
       </docs>
     </option>
+    <option type="string" id="PLANTUML_JAVA_PATH" format="file" defval="">
+      <docs>
+<![CDATA[
+ When using PlantUML, the \c PLANTUML_JAVA_PATH tag can be used to specify the
+ \c java executable that is used to run the jar file given via
+ \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH".
+ If left blank, the \c java executable of the Java runtime environment the
+ \c JAVA_HOME environment variable points to is used, if that variable is set, and
+ otherwise the \c java executable is searched for in the default search path.
+ <br>Note that this tag is not used when \ref cfg_plantuml_tool "PLANTUML_TOOL" is set.
+]]>
+      </docs>
+    </option>
+    <option type="string" id="PLANTUML_TOOL" format="file" defval="">
+      <docs>
+<![CDATA[
+ The \c PLANTUML_TOOL tag can be used to specify a PlantUML executable, e.g. a
+ PlantUML native image or a script wrapping PlantUML, that is run instead of the jar
+ file given via \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH". As such an executable
+ does not need a Java runtime environment, the tags
+ \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH" and
+ \ref cfg_plantuml_java_path "PLANTUML_JAVA_PATH" are not used in this case.
+ <br>Note that the paths given via
+ \ref cfg_plantuml_include_path "PLANTUML_INCLUDE_PATH" are passed to the executable
+ by means of the \c PLANTUML_INCLUDE_PATH environment variable.
+]]>
+      </docs>
+    </option>
     <option type="string" id="PLANTUML_CFG_FILE" format="file" defval="">
       <docs>
 <![CDATA[Lors de l'utilisation de PlantUML, la balise \c PLANTUML_CFG_FILE peut être utilisée pour spécifier un fichier de configuration pour PlantUML.]]>
@@ -1905,20 +1932,20 @@ L'URL CDN par défaut nécessite un accès Internet lors de la consultation de l
     </option>
   </group>
   <generator>
-    <message name='minmaxdefcode'><![CDATA[Valeur minimum : <code>{0}</code>, valeur maximum : <code>{1}</code>, valeur par défaut : <code>{2}</code>.]]></message>
-    <message name='possible'><![CDATA[Les valeurs possibles sont :]]></message>
-    <message name='defvalcode'><![CDATA[La valeur par défaut est : <code>{0}</code>.]]></message>
-    <message name='defdir'><![CDATA[Le répertoire par défaut est : <code>{0}</code>.]]></message>
-    <message name='deffile'><![CDATA[Le fichier par défaut est : <code>{0}</code>.]]></message>
-    <message name='deffileabs'><![CDATA[Le fichier par défaut (avec chemin absolu) est : <code>{0}</code>.]]></message>
-    <message name='deffilefull'><![CDATA[Le fichier doit être spécifié avec un chemin complet.]]></message>
-    <message name='defimg'><![CDATA[L'image par défaut est : <code>{0}</code>.]]></message>
-    <message name='defimgabs'><![CDATA[L'image par défaut (avec chemin absolu) est : <code>{0}</code>.]]></message>
-    <message name='defimgfull'><![CDATA[L'image doit être spécifiée avec un chemin complet.]]></message>
-    <message name='depstxt'><![CDATA[Cette balise nécessite que la balise {0} soit définie sur <code>YES</code>.]]></message>
-    <message name='depstxtref'><![CDATA[Cette balise nécessite que la balise \ref cfg_{0} "{1}" soit définie sur <code>YES</code>.]]></message>
-    <message name='andtxt'><![CDATA[et]]></message>
-    <message name='notetxt'><![CDATA[Note :]]></message>
-    <message name='seealsotxt'><![CDATA[Voir aussi :]]></message>
+    <message name="minmaxdefcode"><![CDATA[Valeur minimum : <code>{0}</code>, valeur maximum : <code>{1}</code>, valeur par défaut : <code>{2}</code>.]]></message>
+    <message name="possible"><![CDATA[Les valeurs possibles sont :]]></message>
+    <message name="defvalcode"><![CDATA[La valeur par défaut est : <code>{0}</code>.]]></message>
+    <message name="defdir"><![CDATA[Le répertoire par défaut est : <code>{0}</code>.]]></message>
+    <message name="deffile"><![CDATA[Le fichier par défaut est : <code>{0}</code>.]]></message>
+    <message name="deffileabs"><![CDATA[Le fichier par défaut (avec chemin absolu) est : <code>{0}</code>.]]></message>
+    <message name="deffilefull"><![CDATA[Le fichier doit être spécifié avec un chemin complet.]]></message>
+    <message name="defimg"><![CDATA[L'image par défaut est : <code>{0}</code>.]]></message>
+    <message name="defimgabs"><![CDATA[L'image par défaut (avec chemin absolu) est : <code>{0}</code>.]]></message>
+    <message name="defimgfull"><![CDATA[L'image doit être spécifiée avec un chemin complet.]]></message>
+    <message name="depstxt"><![CDATA[Cette balise nécessite que la balise {0} soit définie sur <code>YES</code>.]]></message>
+    <message name="depstxtref"><![CDATA[Cette balise nécessite que la balise \ref cfg_{0} "{1}" soit définie sur <code>YES</code>.]]></message>
+    <message name="andtxt"><![CDATA[et]]></message>
+    <message name="notetxt"><![CDATA[Note :]]></message>
+    <message name="seealsotxt"><![CDATA[Voir aussi :]]></message>
   </generator>
 </doxygenconfig>

@@ -2,7 +2,7 @@
 <doxygenconfig lang="Deutsch">
   <header>
     <docs filter="doxywizard,doxyfile">
-      <![CDATA[
+<![CDATA[
 Diese Datei beschreibt die Einstellungen, die vom Dokumentationssystem
 Doxygen (www.doxygen.org) für ein Projekt verwendet werden.
 <br>
@@ -239,7 +239,7 @@ Wenn Sie in einem Alias im Wertteil ein Literal wie `{`, `}` oder `,` benötigen
 mit einem Backslash (\c \\) maskieren. Dies kann zu Konflikten mit den
 Befehlen \c \\{ und \c \\} führen. Für diese empfiehlt es sich, die Versionen \c @@{ und \c @@} zu verwenden oder
 eine doppelte Maskierung (\c \\\\{ und \c \\\\}) zu verwenden.]]>
-    </docs>
+      </docs>
     </option>
     <option type="bool" id="OPTIMIZE_OUTPUT_FOR_C" defval="0">
       <docs>
@@ -1232,7 +1232,6 @@ eine doppelte Maskierung (\c \\\\{ und \c \\\\}) zu verwenden.]]>
  Der Standardwert verweist auf das MathJax Content Delivery Network, sodass Sie das Ergebnis
  schnell sehen können, ohne MathJax zu installieren. Es wird jedoch dringend empfohlen,
  eine lokale Kopie von MathJax von https://www.mathjax.org vor der Bereitstellung zu installieren.
-
  Der Standardwert ist:
  - im Fall von MathJax Version 2: https://cdn.jsdelivr.net/npm/mathjax@2
  - im Fall von MathJax Version 3: https://cdn.jsdelivr.net/npm/mathjax@3
@@ -1822,6 +1821,34 @@ eine doppelte Maskierung (\c \\\\{ und \c \\\\}) zu verwenden.]]>
 <![CDATA[Bei Verwendung von PlantUML sollte das \c PLANTUML_JAR_PATH-Tag verwendet werden, um den Pfad anzugeben, in dem Java die \c plantuml.jar-Datei finden kann, oder den Dateinamen der zu verwendenden \c jar-Datei. Wenn leer gelassen, wird angenommen, dass PlantUML nicht verwendet oder während eines Vorverarbeitungsschritts aufgerufen wird. Doxygen generiert eine Warnung, wenn es in diesem Fall auf einen \ref cmdstartuml "\\startuml"-Befehl stößt, und generiert keine Ausgabe für das Diagramm.]]>
       </docs>
     </option>
+    <option type="string" id="PLANTUML_JAVA_PATH" format="file" defval="">
+      <docs>
+<![CDATA[
+ When using PlantUML, the \c PLANTUML_JAVA_PATH tag can be used to specify the
+ \c java executable that is used to run the jar file given via
+ \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH".
+ If left blank, the \c java executable of the Java runtime environment the
+ \c JAVA_HOME environment variable points to is used, if that variable is set, and
+ otherwise the \c java executable is searched for in the default search path.
+ <br>Note that this tag is not used when \ref cfg_plantuml_tool "PLANTUML_TOOL" is set.
+]]>
+      </docs>
+    </option>
+    <option type="string" id="PLANTUML_TOOL" format="file" defval="">
+      <docs>
+<![CDATA[
+ The \c PLANTUML_TOOL tag can be used to specify a PlantUML executable, e.g. a
+ PlantUML native image or a script wrapping PlantUML, that is run instead of the jar
+ file given via \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH". As such an executable
+ does not need a Java runtime environment, the tags
+ \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH" and
+ \ref cfg_plantuml_java_path "PLANTUML_JAVA_PATH" are not used in this case.
+ <br>Note that the paths given via
+ \ref cfg_plantuml_include_path "PLANTUML_INCLUDE_PATH" are passed to the executable
+ by means of the \c PLANTUML_INCLUDE_PATH environment variable.
+]]>
+      </docs>
+    </option>
     <option type="string" id="PLANTUML_CFG_FILE" format="file" defval="">
       <docs>
 <![CDATA[Bei Verwendung von PlantUML kann das \c PLANTUML_CFG_FILE-Tag verwendet werden, um eine Konfigurationsdatei für PlantUML anzugeben.]]>
@@ -1917,7 +1944,7 @@ Die Standard-CDN-URL erfordert Internetzugang beim Anzeigen der generierten Doku
     <message name="depstxt"><![CDATA[Dieses Tag erfordert, dass das Tag {0} auf <code>YES</code> gesetzt ist.]]></message>
     <message name="depstxtref"><![CDATA[Dieses Tag erfordert, dass das Tag \ref cfg_{0} "{1}" auf <code>YES</code> gesetzt ist.]]></message>
     <message name="andtxt"><![CDATA[ und ]]></message>
-    <message name='notetxt'><![CDATA[Hinweis:]]></message>
-    <message name='seealsotxt'><![CDATA[Siehe auch:]]></message>
+    <message name="notetxt"><![CDATA[Hinweis:]]></message>
+    <message name="seealsotxt"><![CDATA[Siehe auch:]]></message>
   </generator>
 </doxygenconfig>

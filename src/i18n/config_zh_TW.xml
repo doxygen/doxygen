@@ -2,7 +2,7 @@
 <doxygenconfig lang="繁體中文">
   <header>
     <docs filter="doxywizard,doxyfile">
-      <![CDATA[
+<![CDATA[
 此檔案描述了專案文件系統
 Doxygen (www.doxygen.org) 所使用的設定。
 <br>
@@ -237,7 +237,7 @@ Doxygen (www.doxygen.org) 所使用的設定。
 <![CDATA[
 當別名的值部分需要使用字面值 `{`、`}` 或 `,` 時，必須使用反斜線 (\c \\) 來轉義。這可能會與命令 \c \\{ 和 \c \\} 衝突。建議使用版本 \c @@{ 和 \c @@} ，或使用雙重轉義 (\c \\\\{ 和 \c \\\\})
 ]]>
-    </docs>
+      </docs>
     </option>
     <option type="bool" id="OPTIMIZE_OUTPUT_FOR_C" defval="0">
       <docs>
@@ -1219,7 +1219,7 @@ Doxygen (www.doxygen.org) 所使用的設定。
       <value name="chtml" desc="（這是MathJax版本3的名稱，對於MathJax版本2將被轉換為&lt;code&gt;HTML-CSS&lt;/code&gt;）"/>
       <value name="SVG"/>
     </option>
-        <option type="string" id="MATHJAX_RELPATH" format="string" depends="USE_MATHJAX">
+    <option type="string" id="MATHJAX_RELPATH" format="string" depends="USE_MATHJAX">
       <docs>
 <![CDATA[
  當啟用 MathJax 時，您需要使用 \c MATHJAX_RELPATH 選項指定相對於 HTML 輸出目錄的位置。
@@ -1229,7 +1229,6 @@ Doxygen (www.doxygen.org) 所使用的設定。
  為 `chtml` 或 `svg`）。預設值指向 MathJax 內容傳遞網路，以便您無需安裝 MathJax
  即可快速查看結果。但是，強烈建議在部署前從 https://www.mathjax.org 安裝 MathJax
  的本地副本。
-
  預設值為：
  - MathJax 版本 2 的情況: https://cdn.jsdelivr.net/npm/mathjax@2
  - MathJax 版本 3 的情況: https://cdn.jsdelivr.net/npm/mathjax@3
@@ -1816,6 +1815,34 @@ Doxygen (www.doxygen.org) 所使用的設定。
 <![CDATA[使用 PlantUML 時，\c PLANTUML_JAR_PATH 標籤應用於指定 java 可以找到 \c plantuml.jar 檔案的路徑或要使用的 \c jar 檔案的檔案名。如果留空，則假設不使用 PlantUML 或在前置處理步骤中呼叫。在這种情况下，Doxygen 在遇到 \ref cmdstartuml "\\startuml" 命令時會產生警告，並且不會為圖資料表產生輸出。]]>
       </docs>
     </option>
+    <option type="string" id="PLANTUML_JAVA_PATH" format="file" defval="">
+      <docs>
+<![CDATA[
+ When using PlantUML, the \c PLANTUML_JAVA_PATH tag can be used to specify the
+ \c java executable that is used to run the jar file given via
+ \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH".
+ If left blank, the \c java executable of the Java runtime environment the
+ \c JAVA_HOME environment variable points to is used, if that variable is set, and
+ otherwise the \c java executable is searched for in the default search path.
+ <br>Note that this tag is not used when \ref cfg_plantuml_tool "PLANTUML_TOOL" is set.
+]]>
+      </docs>
+    </option>
+    <option type="string" id="PLANTUML_TOOL" format="file" defval="">
+      <docs>
+<![CDATA[
+ The \c PLANTUML_TOOL tag can be used to specify a PlantUML executable, e.g. a
+ PlantUML native image or a script wrapping PlantUML, that is run instead of the jar
+ file given via \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH". As such an executable
+ does not need a Java runtime environment, the tags
+ \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH" and
+ \ref cfg_plantuml_java_path "PLANTUML_JAVA_PATH" are not used in this case.
+ <br>Note that the paths given via
+ \ref cfg_plantuml_include_path "PLANTUML_INCLUDE_PATH" are passed to the executable
+ by means of the \c PLANTUML_INCLUDE_PATH environment variable.
+]]>
+      </docs>
+    </option>
     <option type="string" id="PLANTUML_CFG_FILE" format="file" defval="">
       <docs>
 <![CDATA[使用 PlantUML 時，\c PLANTUML_CFG_FILE 標籤可用於為 PlantUML 指定設定檔案。]]>
@@ -1898,20 +1925,20 @@ Doxygen (www.doxygen.org) 所使用的設定。
     </option>
   </group>
   <generator>
-    <message name='minmaxdefcode'><![CDATA[最小值：<code>{0}</code>，最大值：<code>{1}</code>，預設值：<code>{2}</code>。]]></message>
-    <message name='possible'><![CDATA[可能的值有：]]></message>
-    <message name='defvalcode'><![CDATA[預設值為： <code>{0}</code>。]]></message>
-    <message name='defdir'><![CDATA[預設目錄為：<code>{0}</code>。]]></message>
-    <message name='deffile'><![CDATA[預設檔案為：<code>{0}</code>。]]></message>
-    <message name='deffileabs'><![CDATA[預設檔案（帶絕對路徑）為：<code>{0}</code>。]]></message>
-    <message name='deffilefull'><![CDATA[檔案必須使用完整路徑指定。]]></message>
-    <message name='defimg'><![CDATA[預設影像為：<code>{0}</code>。]]></message>
-    <message name='defimgabs'><![CDATA[預設影像（帶絕對路徑）為：<code>{0}</code>。]]></message>
-    <message name='defimgfull'><![CDATA[影像必須使用完整路徑指定。]]></message>
-    <message name='depstxt'><![CDATA[此標籤要求標籤 {0} 設定為<code>YES</code>。]]></message>
-    <message name='depstxtref'><![CDATA[此標籤要求標籤 \ref cfg_{0} "{1}" 設定為<code>YES</code>。]]></message>
-    <message name='andtxt'><![CDATA[和]]></message>
-    <message name='notetxt'><![CDATA[注意：]]></message>
-    <message name='seealsotxt'><![CDATA[另請參閱：]]></message>
+    <message name="minmaxdefcode"><![CDATA[最小值：<code>{0}</code>，最大值：<code>{1}</code>，預設值：<code>{2}</code>。]]></message>
+    <message name="possible"><![CDATA[可能的值有：]]></message>
+    <message name="defvalcode"><![CDATA[預設值為： <code>{0}</code>。]]></message>
+    <message name="defdir"><![CDATA[預設目錄為：<code>{0}</code>。]]></message>
+    <message name="deffile"><![CDATA[預設檔案為：<code>{0}</code>。]]></message>
+    <message name="deffileabs"><![CDATA[預設檔案（帶絕對路徑）為：<code>{0}</code>。]]></message>
+    <message name="deffilefull"><![CDATA[檔案必須使用完整路徑指定。]]></message>
+    <message name="defimg"><![CDATA[預設影像為：<code>{0}</code>。]]></message>
+    <message name="defimgabs"><![CDATA[預設影像（帶絕對路徑）為：<code>{0}</code>。]]></message>
+    <message name="defimgfull"><![CDATA[影像必須使用完整路徑指定。]]></message>
+    <message name="depstxt"><![CDATA[此標籤要求標籤 {0} 設定為<code>YES</code>。]]></message>
+    <message name="depstxtref"><![CDATA[此標籤要求標籤 \ref cfg_{0} "{1}" 設定為<code>YES</code>。]]></message>
+    <message name="andtxt"><![CDATA[和]]></message>
+    <message name="notetxt"><![CDATA[注意：]]></message>
+    <message name="seealsotxt"><![CDATA[另請參閱：]]></message>
   </generator>
 </doxygenconfig>

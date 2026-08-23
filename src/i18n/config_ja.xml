@@ -2,7 +2,7 @@
 <doxygenconfig lang="日本語">
   <header>
     <docs filter="doxywizard,doxyfile">
-      <![CDATA[
+<![CDATA[
 このファイルは、プロジェクトのドキュメント生成システム
 Doxygen (www.doxygen.org) で使用される設定を記述します。
 <br>
@@ -237,7 +237,7 @@ Doxygen を使用して、使用した設定ファイルをテンプレート設
 <![CDATA[
 エイリアスの値部分にリテラルの `{`、`}`、または `,` が必要な場合は、バックスラッシュ (\c \\) でエスケープする必要があります。これは、コマンド \c \\{ および \c \\} と競合する可能性があります。これらのコマンドには、バージョン \c @@{ および \c @@} を使用するか、二重エスケープ (\c \\\\{ および \c \\\\}) を使用することをお勧めします。
 ]]>
-    </docs>
+      </docs>
     </option>
     <option type="bool" id="OPTIMIZE_OUTPUT_FOR_C" defval="0">
       <docs>
@@ -1219,7 +1219,7 @@ Doxygen を使用して、使用した設定ファイルをテンプレート設
       <value name="chtml" desc="(これはMathJaxバージョン3の名称で、MathJaxバージョン2では&lt;code&gt;HTML-CSS&lt;/code&gt;に変換されます)"/>
       <value name="SVG"/>
     </option>
-        <option type="string" id="MATHJAX_RELPATH" format="string" depends="USE_MATHJAX">
+    <option type="string" id="MATHJAX_RELPATH" format="string" depends="USE_MATHJAX">
       <docs>
 <![CDATA[
  MathJaxが有効な場合、\c MATHJAX_RELPATH オプションを使用してHTML出力ディレクトリからの
@@ -1231,7 +1231,6 @@ Doxygen を使用して、使用した設定ファイルをテンプレート設
  デフォルト値はMathJaxコンテンツ配信ネットワークを指しているため、MathJaxをインストール
  せずに結果をすぐに確認できます。ただし、デプロイ前にhttps://www.mathjax.orgから
  MathJaxのローカルコピーをインストールすることを強くお勧めします。
-
  デフォルト値は：
  - MathJaxバージョン2の場合: https://cdn.jsdelivr.net/npm/mathjax@2
  - MathJaxバージョン3の場合: https://cdn.jsdelivr.net/npm/mathjax@3
@@ -1819,6 +1818,34 @@ Doxygen を使用して、使用した設定ファイルをテンプレート設
 <![CDATA[PlantUMLを使用する場合、\c PLANTUML_JAR_PATH タグを使用して、javaが\c plantuml .jarファイルを見つけられるパス、または使用する\c jar ファイルのファイル名を指定する必要があります。空白のままにすると、PlantUMLは使用されないか、前処理ステップで呼び出されると仮定されます。この場合、Doxygenは\ref cmdstartuml "\\startuml"コマンドに遭遇すると警告を生成し、ダイアグラムの出力を生成しません。]]>
       </docs>
     </option>
+    <option type="string" id="PLANTUML_JAVA_PATH" format="file" defval="">
+      <docs>
+<![CDATA[
+ When using PlantUML, the \c PLANTUML_JAVA_PATH tag can be used to specify the
+ \c java executable that is used to run the jar file given via
+ \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH".
+ If left blank, the \c java executable of the Java runtime environment the
+ \c JAVA_HOME environment variable points to is used, if that variable is set, and
+ otherwise the \c java executable is searched for in the default search path.
+ <br>Note that this tag is not used when \ref cfg_plantuml_tool "PLANTUML_TOOL" is set.
+]]>
+      </docs>
+    </option>
+    <option type="string" id="PLANTUML_TOOL" format="file" defval="">
+      <docs>
+<![CDATA[
+ The \c PLANTUML_TOOL tag can be used to specify a PlantUML executable, e.g. a
+ PlantUML native image or a script wrapping PlantUML, that is run instead of the jar
+ file given via \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH". As such an executable
+ does not need a Java runtime environment, the tags
+ \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH" and
+ \ref cfg_plantuml_java_path "PLANTUML_JAVA_PATH" are not used in this case.
+ <br>Note that the paths given via
+ \ref cfg_plantuml_include_path "PLANTUML_INCLUDE_PATH" are passed to the executable
+ by means of the \c PLANTUML_INCLUDE_PATH environment variable.
+]]>
+      </docs>
+    </option>
     <option type="string" id="PLANTUML_CFG_FILE" format="file" defval="">
       <docs>
 <![CDATA[PlantUMLを使用する場合、\c PLANTUML_CFG_FILE タグを使用してPlantUMLの設定ファイルを指定できます。]]>
@@ -1901,20 +1928,20 @@ Doxygen を使用して、使用した設定ファイルをテンプレート設
     </option>
   </group>
   <generator>
-    <message name='minmaxdefcode'><![CDATA[最小値: <code>{0}</code>, 最大値: <code>{1}</code>, デフォルト値: <code>{2}</code>。]]></message>
-    <message name='possible'><![CDATA[可能な値は:]]></message>
-    <message name='defvalcode'><![CDATA[デフォルト値は <code>{0}</code> です。]]></message>
-    <message name='defdir'><![CDATA[デフォルトのディレクトリは <code>{0}</code> です。]]></message>
-    <message name='deffile'><![CDATA[デフォルトのファイルは <code>{0}</code> です。]]></message>
-    <message name='deffileabs'><![CDATA[デフォルトのファイル（絶対パス）は <code>{0}</code> です。]]></message>
-    <message name='deffilefull'><![CDATA[ファイルは完全パスで指定する必要があります。]]></message>
-    <message name='defimg'><![CDATA[デフォルトの画像は <code>{0}</code> です。]]></message>
-    <message name='defimgabs'><![CDATA[デフォルトの画像（絶対パス）は <code>{0}</code> です。]]></message>
-    <message name='defimgfull'><![CDATA[画像は完全パスで指定する必要があります。]]></message>
-    <message name='depstxt'><![CDATA[このタグはタグ {0} を <code>YES</code> に設定する必要があります。]]></message>
-    <message name='depstxtref'><![CDATA[このタグはタグ \ref cfg_{0} "{1}" を <code>YES</code> に設定する必要があります。]]></message>
-    <message name='andtxt'><![CDATA[と]]></message>
-    <message name='notetxt'><![CDATA[注:]]></message>
-    <message name='seealsotxt'><![CDATA[参照:]]></message>
+    <message name="minmaxdefcode"><![CDATA[最小値: <code>{0}</code>, 最大値: <code>{1}</code>, デフォルト値: <code>{2}</code>。]]></message>
+    <message name="possible"><![CDATA[可能な値は:]]></message>
+    <message name="defvalcode"><![CDATA[デフォルト値は <code>{0}</code> です。]]></message>
+    <message name="defdir"><![CDATA[デフォルトのディレクトリは <code>{0}</code> です。]]></message>
+    <message name="deffile"><![CDATA[デフォルトのファイルは <code>{0}</code> です。]]></message>
+    <message name="deffileabs"><![CDATA[デフォルトのファイル（絶対パス）は <code>{0}</code> です。]]></message>
+    <message name="deffilefull"><![CDATA[ファイルは完全パスで指定する必要があります。]]></message>
+    <message name="defimg"><![CDATA[デフォルトの画像は <code>{0}</code> です。]]></message>
+    <message name="defimgabs"><![CDATA[デフォルトの画像（絶対パス）は <code>{0}</code> です。]]></message>
+    <message name="defimgfull"><![CDATA[画像は完全パスで指定する必要があります。]]></message>
+    <message name="depstxt"><![CDATA[このタグはタグ {0} を <code>YES</code> に設定する必要があります。]]></message>
+    <message name="depstxtref"><![CDATA[このタグはタグ \ref cfg_{0} "{1}" を <code>YES</code> に設定する必要があります。]]></message>
+    <message name="andtxt"><![CDATA[と]]></message>
+    <message name="notetxt"><![CDATA[注:]]></message>
+    <message name="seealsotxt"><![CDATA[参照:]]></message>
   </generator>
 </doxygenconfig>
