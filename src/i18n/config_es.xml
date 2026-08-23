@@ -1822,30 +1822,12 @@ Para una descripción de los posibles marcadores y nombres de bloques, vea la do
     </option>
     <option type="string" id="PLANTUML_JAVA_PATH" format="file" defval="">
       <docs>
-<![CDATA[
- When using PlantUML, the \c PLANTUML_JAVA_PATH tag can be used to specify the
- \c java executable that is used to run the jar file given via
- \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH".
- If left blank, the \c java executable of the Java runtime environment the
- \c JAVA_HOME environment variable points to is used, if that variable is set, and
- otherwise the \c java executable is searched for in the default search path.
- <br>Note that this tag is not used when \ref cfg_plantuml_tool "PLANTUML_TOOL" is set.
-]]>
+<![CDATA[Cuando se usa PlantUML, la etiqueta \c PLANTUML_JAVA_PATH puede usarse para especificar el ejecutable \c java que se usa para ejecutar el archivo jar indicado mediante \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH". Si se deja vacío, se usa el ejecutable \c java del entorno de ejecución de Java al que apunta la variable de entorno \c JAVA_HOME, si esa variable está definida, y en caso contrario se busca el ejecutable \c java en la ruta de búsqueda predeterminada. <br>Tenga en cuenta que esta etiqueta no se usa cuando se establece \ref cfg_plantuml_tool "PLANTUML_TOOL".]]>
       </docs>
     </option>
     <option type="string" id="PLANTUML_TOOL" format="file" defval="">
       <docs>
-<![CDATA[
- The \c PLANTUML_TOOL tag can be used to specify a PlantUML executable, e.g. a
- PlantUML native image or a script wrapping PlantUML, that is run instead of the jar
- file given via \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH". As such an executable
- does not need a Java runtime environment, the tags
- \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH" and
- \ref cfg_plantuml_java_path "PLANTUML_JAVA_PATH" are not used in this case.
- <br>Note that the paths given via
- \ref cfg_plantuml_include_path "PLANTUML_INCLUDE_PATH" are passed to the executable
- by means of the \c PLANTUML_INCLUDE_PATH environment variable.
-]]>
+<![CDATA[La etiqueta \c PLANTUML_TOOL puede usarse para especificar un ejecutable de PlantUML, por ejemplo, una imagen nativa de PlantUML o un script que envuelve a PlantUML, que se ejecuta en lugar del archivo jar indicado mediante \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH". Dado que dicho ejecutable no necesita un entorno de ejecución de Java, las etiquetas \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH" y \ref cfg_plantuml_java_path "PLANTUML_JAVA_PATH" no se usan en este caso. <br>Tenga en cuenta que las rutas indicadas mediante \ref cfg_plantuml_include_path "PLANTUML_INCLUDE_PATH" se pasan al ejecutable mediante la variable de entorno \c PLANTUML_INCLUDE_PATH.]]>
       </docs>
     </option>
     <option type="string" id="PLANTUML_CFG_FILE" format="file" defval="">
