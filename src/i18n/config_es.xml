@@ -2,7 +2,7 @@
 <doxygenconfig lang="Español">
   <header>
     <docs filter="doxywizard,doxyfile">
-<![CDATA[
+      <![CDATA[
 Este archivo describe la configuración que utilizará el sistema de documentación
 Doxygen (www.doxygen.org) para un proyecto.
 <br>
@@ -237,7 +237,7 @@ sin reemplazar las variables de entorno o las variables de reemplazo de tipo CMa
 <![CDATA[
 Cuando necesites usar literalmente `{`, `}` o `,` en el valor de un alias, debes escaparlos con una barra invertida (\c \\). Esto puede generar conflictos con los comandos \c \\{ y \c \\}. Para estos últimos, se recomienda usar la versión \c @@{ y \c @@} o usar una doble secuencia de escape (\c \\\\{ y \c \\\\}).
 ]]>
-      </docs>
+    </docs>
     </option>
     <option type="bool" id="OPTIMIZE_OUTPUT_FOR_C" defval="0">
       <docs>
@@ -1231,6 +1231,7 @@ Para un ejemplo, vea la documentación.
  El valor predeterminado apunta a la Red de Distribución de Contenido de MathJax para que
  pueda ver rápidamente el resultado sin instalar MathJax. Sin embargo, se recomienda encarecidamente
  instalar una copia local de MathJax desde https://www.mathjax.org antes de la implementación.
+
  El valor predeterminado es:
  - en caso de MathJax versión 2: https://cdn.jsdelivr.net/npm/mathjax@2
  - en caso de MathJax versión 3: https://cdn.jsdelivr.net/npm/mathjax@3
@@ -1912,20 +1913,20 @@ La URL del CDN predeterminada requiere acceso a Internet al ver la documentació
     </option>
   </group>
   <generator>
-    <message name="minmaxdefcode"><![CDATA[Valor mínimo: <code>{0}</code>, valor máximo: <code>{1}</code>, valor predeterminado: <code>{2}</code>.]]></message>
-    <message name="possible"><![CDATA[Los valores posibles son:]]></message>
-    <message name="defvalcode"><![CDATA[El valor predeterminado es: <code>{0}</code>.]]></message>
-    <message name="defdir"><![CDATA[El directorio predeterminado es: <code>{0}</code>.]]></message>
-    <message name="deffile"><![CDATA[El archivo predeterminado es: <code>{0}</code>.]]></message>
-    <message name="deffileabs"><![CDATA[El archivo predeterminado (con ruta absoluta) es: <code>{0}</code>.]]></message>
-    <message name="deffilefull"><![CDATA[El archivo debe especificarse con la ruta completa.]]></message>
-    <message name="defimg"><![CDATA[La imagen predeterminada es: <code>{0}</code>.]]></message>
-    <message name="defimgabs"><![CDATA[La imagen predeterminada (con ruta absoluta) es: <code>{0}</code>.]]></message>
-    <message name="defimgfull"><![CDATA[La imagen debe especificarse con la ruta completa.]]></message>
-    <message name="depstxt"><![CDATA[Esta etiqueta requiere que la etiqueta {0} esté establecida en <code>YES</code>.]]></message>
-    <message name="depstxtref"><![CDATA[Esta etiqueta requiere que la etiqueta \ref cfg_{0} "{1}" esté establecida en <code>YES</code>.]]></message>
-    <message name="andtxt"><![CDATA[y]]></message>
-    <message name="notetxt"><![CDATA[Nota:]]></message>
-    <message name="seealsotxt"><![CDATA[Ver también:]]></message>
+    <message name='minmaxdefcode'><![CDATA[Valor mínimo: <code>{0}</code>, valor máximo: <code>{1}</code>, valor predeterminado: <code>{2}</code>.]]></message>
+    <message name='possible'><![CDATA[Los valores posibles son:]]></message>
+    <message name='defvalcode'><![CDATA[El valor predeterminado es: <code>{0}</code>.]]></message>
+    <message name='defdir'><![CDATA[El directorio predeterminado es: <code>{0}</code>.]]></message>
+    <message name='deffile'><![CDATA[El archivo predeterminado es: <code>{0}</code>.]]></message>
+    <message name='deffileabs'><![CDATA[El archivo predeterminado (con ruta absoluta) es: <code>{0}</code>.]]></message>
+    <message name='deffilefull'><![CDATA[El archivo debe especificarse con la ruta completa.]]></message>
+    <message name='defimg'><![CDATA[La imagen predeterminada es: <code>{0}</code>.]]></message>
+    <message name='defimgabs'><![CDATA[La imagen predeterminada (con ruta absoluta) es: <code>{0}</code>.]]></message>
+    <message name='defimgfull'><![CDATA[La imagen debe especificarse con la ruta completa.]]></message>
+    <message name='depstxt'><![CDATA[Esta etiqueta requiere que la etiqueta {0} esté establecida en <code>YES</code>.]]></message>
+    <message name='depstxtref'><![CDATA[Esta etiqueta requiere que la etiqueta \ref cfg_{0} "{1}" esté establecida en <code>YES</code>.]]></message>
+    <message name='andtxt'><![CDATA[y]]></message>
+    <message name='notetxt'><![CDATA[Nota:]]></message>
+    <message name='seealsotxt'><![CDATA[Ver también:]]></message>
   </generator>
 </doxygenconfig>

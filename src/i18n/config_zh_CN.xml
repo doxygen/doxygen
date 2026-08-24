@@ -2,7 +2,7 @@
 <doxygenconfig lang="简体中文">
   <header>
     <docs filter="doxywizard,doxyfile">
-<![CDATA[
+      <![CDATA[
 此文件描述了项目文档系统
 Doxygen (www.doxygen.org) 所使用的设置。
 <br>
@@ -1229,6 +1229,7 @@ Doxygen (www.doxygen.org) 所使用的设置。
  为 `chtml` 或 `svg`）。默认值指向 MathJax 内容分发网络，以便您无需安装 MathJax
  即可快速查看结果。但是，强烈建议在部署前从 https://www.mathjax.org 安装 MathJax
  的本地副本。
+
  默认值为：
  - MathJax 版本 2 的情况: https://cdn.jsdelivr.net/npm/mathjax@2
  - MathJax 版本 3 的情况: https://cdn.jsdelivr.net/npm/mathjax@3
@@ -1907,20 +1908,20 @@ Doxygen (www.doxygen.org) 所使用的设置。
     </option>
   </group>
   <generator>
-    <message name="minmaxdefcode"><![CDATA[最小值：<code>{0}</code>，最大值：<code>{1}</code>，默认值：<code>{2}</code>。]]></message>
-    <message name="possible"><![CDATA[可能的值有：]]></message>
-    <message name="defvalcode"><![CDATA[默认值为： <code>{0}</code>。]]></message>
-    <message name="defdir"><![CDATA[默认目录为：<code>{0}</code>。]]></message>
-    <message name="deffile"><![CDATA[默认文件为：<code>{0}</code>。]]></message>
-    <message name="deffileabs"><![CDATA[默认文件（带绝对路径）为：<code>{0}</code>。]]></message>
-    <message name="deffilefull"><![CDATA[文件必须使用完整路径指定。]]></message>
-    <message name="defimg"><![CDATA[默认图像为：<code>{0}</code>。]]></message>
-    <message name="defimgabs"><![CDATA[默认图像（带绝对路径）为：<code>{0}</code>。]]></message>
-    <message name="defimgfull"><![CDATA[图像必须使用完整路径指定。]]></message>
-    <message name="depstxt"><![CDATA[此标签要求标签 {0} 设置为<code>YES</code>。]]></message>
-    <message name="depstxtref"><![CDATA[此标签要求标签 \ref cfg_{0} "{1}" 设置为<code>YES</code>。]]></message>
-    <message name="andtxt"><![CDATA[和]]></message>
-    <message name="notetxt"><![CDATA[注意：]]></message>
-    <message name="seealsotxt"><![CDATA[另请参阅：]]></message>
+    <message name='minmaxdefcode'><![CDATA[最小值：<code>{0}</code>，最大值：<code>{1}</code>，默认值：<code>{2}</code>。]]></message>
+    <message name='possible'><![CDATA[可能的值有：]]></message>
+    <message name='defvalcode'><![CDATA[默认值为： <code>{0}</code>。]]></message>
+    <message name='defdir'><![CDATA[默认目录为：<code>{0}</code>。]]></message>
+    <message name='deffile'><![CDATA[默认文件为：<code>{0}</code>。]]></message>
+    <message name='deffileabs'><![CDATA[默认文件（带绝对路径）为：<code>{0}</code>。]]></message>
+    <message name='deffilefull'><![CDATA[文件必须使用完整路径指定。]]></message>
+    <message name='defimg'><![CDATA[默认图像为：<code>{0}</code>。]]></message>
+    <message name='defimgabs'><![CDATA[默认图像（带绝对路径）为：<code>{0}</code>。]]></message>
+    <message name='defimgfull'><![CDATA[图像必须使用完整路径指定。]]></message>
+    <message name='depstxt'><![CDATA[此标签要求标签 {0} 设置为<code>YES</code>。]]></message>
+    <message name='depstxtref'><![CDATA[此标签要求标签 \ref cfg_{0} "{1}" 设置为<code>YES</code>。]]></message>
+    <message name='andtxt'><![CDATA[和]]></message>
+    <message name='notetxt'><![CDATA[注意：]]></message>
+    <message name='seealsotxt'><![CDATA[另请参阅：]]></message>
   </generator>
 </doxygenconfig>

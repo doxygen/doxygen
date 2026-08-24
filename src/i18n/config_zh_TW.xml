@@ -2,7 +2,7 @@
 <doxygenconfig lang="繁體中文">
   <header>
     <docs filter="doxywizard,doxyfile">
-<![CDATA[
+      <![CDATA[
 此檔案描述了專案文件系統
 Doxygen (www.doxygen.org) 所使用的設定。
 <br>
@@ -237,7 +237,7 @@ Doxygen (www.doxygen.org) 所使用的設定。
 <![CDATA[
 當別名的值部分需要使用字面值 `{`、`}` 或 `,` 時，必須使用反斜線 (\c \\) 來轉義。這可能會與命令 \c \\{ 和 \c \\} 衝突。建議使用版本 \c @@{ 和 \c @@} ，或使用雙重轉義 (\c \\\\{ 和 \c \\\\})
 ]]>
-      </docs>
+    </docs>
     </option>
     <option type="bool" id="OPTIMIZE_OUTPUT_FOR_C" defval="0">
       <docs>
@@ -1219,7 +1219,7 @@ Doxygen (www.doxygen.org) 所使用的設定。
       <value name="chtml" desc="（這是MathJax版本3的名稱，對於MathJax版本2將被轉換為&lt;code&gt;HTML-CSS&lt;/code&gt;）"/>
       <value name="SVG"/>
     </option>
-    <option type="string" id="MATHJAX_RELPATH" format="string" depends="USE_MATHJAX">
+        <option type="string" id="MATHJAX_RELPATH" format="string" depends="USE_MATHJAX">
       <docs>
 <![CDATA[
  當啟用 MathJax 時，您需要使用 \c MATHJAX_RELPATH 選項指定相對於 HTML 輸出目錄的位置。
@@ -1229,6 +1229,7 @@ Doxygen (www.doxygen.org) 所使用的設定。
  為 `chtml` 或 `svg`）。預設值指向 MathJax 內容傳遞網路，以便您無需安裝 MathJax
  即可快速查看結果。但是，強烈建議在部署前從 https://www.mathjax.org 安裝 MathJax
  的本地副本。
+
  預設值為：
  - MathJax 版本 2 的情況: https://cdn.jsdelivr.net/npm/mathjax@2
  - MathJax 版本 3 的情況: https://cdn.jsdelivr.net/npm/mathjax@3
@@ -1907,20 +1908,20 @@ Doxygen (www.doxygen.org) 所使用的設定。
     </option>
   </group>
   <generator>
-    <message name="minmaxdefcode"><![CDATA[最小值：<code>{0}</code>，最大值：<code>{1}</code>，預設值：<code>{2}</code>。]]></message>
-    <message name="possible"><![CDATA[可能的值有：]]></message>
-    <message name="defvalcode"><![CDATA[預設值為： <code>{0}</code>。]]></message>
-    <message name="defdir"><![CDATA[預設目錄為：<code>{0}</code>。]]></message>
-    <message name="deffile"><![CDATA[預設檔案為：<code>{0}</code>。]]></message>
-    <message name="deffileabs"><![CDATA[預設檔案（帶絕對路徑）為：<code>{0}</code>。]]></message>
-    <message name="deffilefull"><![CDATA[檔案必須使用完整路徑指定。]]></message>
-    <message name="defimg"><![CDATA[預設影像為：<code>{0}</code>。]]></message>
-    <message name="defimgabs"><![CDATA[預設影像（帶絕對路徑）為：<code>{0}</code>。]]></message>
-    <message name="defimgfull"><![CDATA[影像必須使用完整路徑指定。]]></message>
-    <message name="depstxt"><![CDATA[此標籤要求標籤 {0} 設定為<code>YES</code>。]]></message>
-    <message name="depstxtref"><![CDATA[此標籤要求標籤 \ref cfg_{0} "{1}" 設定為<code>YES</code>。]]></message>
-    <message name="andtxt"><![CDATA[和]]></message>
-    <message name="notetxt"><![CDATA[注意：]]></message>
-    <message name="seealsotxt"><![CDATA[另請參閱：]]></message>
+    <message name='minmaxdefcode'><![CDATA[最小值：<code>{0}</code>，最大值：<code>{1}</code>，預設值：<code>{2}</code>。]]></message>
+    <message name='possible'><![CDATA[可能的值有：]]></message>
+    <message name='defvalcode'><![CDATA[預設值為： <code>{0}</code>。]]></message>
+    <message name='defdir'><![CDATA[預設目錄為：<code>{0}</code>。]]></message>
+    <message name='deffile'><![CDATA[預設檔案為：<code>{0}</code>。]]></message>
+    <message name='deffileabs'><![CDATA[預設檔案（帶絕對路徑）為：<code>{0}</code>。]]></message>
+    <message name='deffilefull'><![CDATA[檔案必須使用完整路徑指定。]]></message>
+    <message name='defimg'><![CDATA[預設影像為：<code>{0}</code>。]]></message>
+    <message name='defimgabs'><![CDATA[預設影像（帶絕對路徑）為：<code>{0}</code>。]]></message>
+    <message name='defimgfull'><![CDATA[影像必須使用完整路徑指定。]]></message>
+    <message name='depstxt'><![CDATA[此標籤要求標籤 {0} 設定為<code>YES</code>。]]></message>
+    <message name='depstxtref'><![CDATA[此標籤要求標籤 \ref cfg_{0} "{1}" 設定為<code>YES</code>。]]></message>
+    <message name='andtxt'><![CDATA[和]]></message>
+    <message name='notetxt'><![CDATA[注意：]]></message>
+    <message name='seealsotxt'><![CDATA[另請參閱：]]></message>
   </generator>
 </doxygenconfig>

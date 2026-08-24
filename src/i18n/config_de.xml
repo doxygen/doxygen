@@ -2,7 +2,7 @@
 <doxygenconfig lang="Deutsch">
   <header>
     <docs filter="doxywizard,doxyfile">
-<![CDATA[
+      <![CDATA[
 Diese Datei beschreibt die Einstellungen, die vom Dokumentationssystem
 Doxygen (www.doxygen.org) für ein Projekt verwendet werden.
 <br>
@@ -239,7 +239,7 @@ Wenn Sie in einem Alias im Wertteil ein Literal wie `{`, `}` oder `,` benötigen
 mit einem Backslash (\c \\) maskieren. Dies kann zu Konflikten mit den
 Befehlen \c \\{ und \c \\} führen. Für diese empfiehlt es sich, die Versionen \c @@{ und \c @@} zu verwenden oder
 eine doppelte Maskierung (\c \\\\{ und \c \\\\}) zu verwenden.]]>
-      </docs>
+    </docs>
     </option>
     <option type="bool" id="OPTIMIZE_OUTPUT_FOR_C" defval="0">
       <docs>
@@ -1232,6 +1232,7 @@ eine doppelte Maskierung (\c \\\\{ und \c \\\\}) zu verwenden.]]>
  Der Standardwert verweist auf das MathJax Content Delivery Network, sodass Sie das Ergebnis
  schnell sehen können, ohne MathJax zu installieren. Es wird jedoch dringend empfohlen,
  eine lokale Kopie von MathJax von https://www.mathjax.org vor der Bereitstellung zu installieren.
+
  Der Standardwert ist:
  - im Fall von MathJax Version 2: https://cdn.jsdelivr.net/npm/mathjax@2
  - im Fall von MathJax Version 3: https://cdn.jsdelivr.net/npm/mathjax@3
@@ -1926,7 +1927,7 @@ Die Standard-CDN-URL erfordert Internetzugang beim Anzeigen der generierten Doku
     <message name="depstxt"><![CDATA[Dieses Tag erfordert, dass das Tag {0} auf <code>YES</code> gesetzt ist.]]></message>
     <message name="depstxtref"><![CDATA[Dieses Tag erfordert, dass das Tag \ref cfg_{0} "{1}" auf <code>YES</code> gesetzt ist.]]></message>
     <message name="andtxt"><![CDATA[ und ]]></message>
-    <message name="notetxt"><![CDATA[Hinweis:]]></message>
-    <message name="seealsotxt"><![CDATA[Siehe auch:]]></message>
+    <message name='notetxt'><![CDATA[Hinweis:]]></message>
+    <message name='seealsotxt'><![CDATA[Siehe auch:]]></message>
   </generator>
 </doxygenconfig>

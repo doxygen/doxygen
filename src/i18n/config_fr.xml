@@ -2,7 +2,7 @@
 <doxygenconfig lang="Français">
   <header>
     <docs filter="doxywizard,doxyfile">
-<![CDATA[
+      <![CDATA[
 Ce fichier décrit les paramètres à utiliser par le système de documentation
 Doxygen (www.doxygen.org) pour un projet.
 <br>
@@ -1233,6 +1233,7 @@ Pour un exemple, consultez la documentation.
  doit contenir le script `tex-<format>.js` (ou `<format>` est `chtml` ou `svg`).
  La valeur par défaut pointe vers le Reseau de Distribution de Contenu MathJax pour que
  vous puissiez voir rapidement le résultat sans installer MathJax. Cependant, il est fortement recommandé d'installer une copie locale de MathJax depuis https://www.mathjax.org avant le déploiement.
+
  La valeur par défaut est :
  - dans le cas de MathJax version 2 : https://cdn.jsdelivr.net/npm/mathjax@2
  - dans le cas de MathJax version 3 : https://cdn.jsdelivr.net/npm/mathjax@3
@@ -1914,20 +1915,20 @@ L'URL CDN par défaut nécessite un accès Internet lors de la consultation de l
     </option>
   </group>
   <generator>
-    <message name="minmaxdefcode"><![CDATA[Valeur minimum : <code>{0}</code>, valeur maximum : <code>{1}</code>, valeur par défaut : <code>{2}</code>.]]></message>
-    <message name="possible"><![CDATA[Les valeurs possibles sont :]]></message>
-    <message name="defvalcode"><![CDATA[La valeur par défaut est : <code>{0}</code>.]]></message>
-    <message name="defdir"><![CDATA[Le répertoire par défaut est : <code>{0}</code>.]]></message>
-    <message name="deffile"><![CDATA[Le fichier par défaut est : <code>{0}</code>.]]></message>
-    <message name="deffileabs"><![CDATA[Le fichier par défaut (avec chemin absolu) est : <code>{0}</code>.]]></message>
-    <message name="deffilefull"><![CDATA[Le fichier doit être spécifié avec un chemin complet.]]></message>
-    <message name="defimg"><![CDATA[L'image par défaut est : <code>{0}</code>.]]></message>
-    <message name="defimgabs"><![CDATA[L'image par défaut (avec chemin absolu) est : <code>{0}</code>.]]></message>
-    <message name="defimgfull"><![CDATA[L'image doit être spécifiée avec un chemin complet.]]></message>
-    <message name="depstxt"><![CDATA[Cette balise nécessite que la balise {0} soit définie sur <code>YES</code>.]]></message>
-    <message name="depstxtref"><![CDATA[Cette balise nécessite que la balise \ref cfg_{0} "{1}" soit définie sur <code>YES</code>.]]></message>
-    <message name="andtxt"><![CDATA[et]]></message>
-    <message name="notetxt"><![CDATA[Note :]]></message>
-    <message name="seealsotxt"><![CDATA[Voir aussi :]]></message>
+    <message name='minmaxdefcode'><![CDATA[Valeur minimum : <code>{0}</code>, valeur maximum : <code>{1}</code>, valeur par défaut : <code>{2}</code>.]]></message>
+    <message name='possible'><![CDATA[Les valeurs possibles sont :]]></message>
+    <message name='defvalcode'><![CDATA[La valeur par défaut est : <code>{0}</code>.]]></message>
+    <message name='defdir'><![CDATA[Le répertoire par défaut est : <code>{0}</code>.]]></message>
+    <message name='deffile'><![CDATA[Le fichier par défaut est : <code>{0}</code>.]]></message>
+    <message name='deffileabs'><![CDATA[Le fichier par défaut (avec chemin absolu) est : <code>{0}</code>.]]></message>
+    <message name='deffilefull'><![CDATA[Le fichier doit être spécifié avec un chemin complet.]]></message>
+    <message name='defimg'><![CDATA[L'image par défaut est : <code>{0}</code>.]]></message>
+    <message name='defimgabs'><![CDATA[L'image par défaut (avec chemin absolu) est : <code>{0}</code>.]]></message>
+    <message name='defimgfull'><![CDATA[L'image doit être spécifiée avec un chemin complet.]]></message>
+    <message name='depstxt'><![CDATA[Cette balise nécessite que la balise {0} soit définie sur <code>YES</code>.]]></message>
+    <message name='depstxtref'><![CDATA[Cette balise nécessite que la balise \ref cfg_{0} "{1}" soit définie sur <code>YES</code>.]]></message>
+    <message name='andtxt'><![CDATA[et]]></message>
+    <message name='notetxt'><![CDATA[Note :]]></message>
+    <message name='seealsotxt'><![CDATA[Voir aussi :]]></message>
   </generator>
 </doxygenconfig>
