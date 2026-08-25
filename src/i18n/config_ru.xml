@@ -2337,7 +2337,8 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
  Если оставить пустым, предполагается, что PlantUML не используется или вызывается
  на этапе предварительной обработки.
  В этом случае Doxygen выдаст предупреждение при обнаружении команды \ref cmdstartuml "\\startuml"
- и не выполнит рендеринг диаграммы.]]>
+ и не выполнит рендеринг диаграммы.
+ <br>Обратите внимание, что этот тег не используется, если установлен \ref cfg_plantuml_tool "PLANTUML_TOOL".]]>
       </docs>
     </option>
     <option type="string" id="PLANTUML_JAVA_PATH" format="file" defval="">

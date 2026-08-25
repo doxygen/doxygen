@@ -1818,7 +1818,7 @@ Para una descripción de los posibles marcadores y nombres de bloques, vea la do
     </option>
     <option type="string" id="PLANTUML_JAR_PATH" format="filedir" defval="">
       <docs>
-<![CDATA[Cuando se usa PlantUML, la etiqueta \c PLANTUML_JAR_PATH debe usarse para especificar la ruta donde Java puede encontrar el archivo \c plantuml.jar o el nombre de archivo del archivo \c jar a usar. Si se deja vacío, se asume que PlantUML no se usa o se llama durante un paso de preprocesamiento. Doxygen generará una advertencia cuando encuentre un comando \ref cmdstartuml "\\startuml" en este caso y no generará salida para el diagrama.]]>
+<![CDATA[Cuando se usa PlantUML, la etiqueta \c PLANTUML_JAR_PATH debe usarse para especificar la ruta donde Java puede encontrar el archivo \c plantuml.jar o el nombre de archivo del archivo \c jar a usar. Si se deja vacío, se asume que PlantUML no se usa o se llama durante un paso de preprocesamiento. Doxygen generará una advertencia cuando encuentre un comando \ref cmdstartuml "\\startuml" en este caso y no generará salida para el diagrama. <br>Tenga en cuenta que esta etiqueta no se usa cuando se establece \ref cfg_plantuml_tool "PLANTUML_TOOL".]]>
       </docs>
     </option>
     <option type="string" id="PLANTUML_JAVA_PATH" format="file" defval="">

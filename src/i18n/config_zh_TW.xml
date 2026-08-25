@@ -1813,7 +1813,7 @@ Doxygen (www.doxygen.org) 所使用的設定。
     </option>
     <option type="string" id="PLANTUML_JAR_PATH" format="filedir" defval="">
       <docs>
-<![CDATA[使用 PlantUML 時，\c PLANTUML_JAR_PATH 標籤應用於指定 java 可以找到 \c plantuml.jar 檔案的路徑或要使用的 \c jar 檔案的檔案名。如果留空，則假設不使用 PlantUML 或在前置處理步骤中呼叫。在這种情况下，Doxygen 在遇到 \ref cmdstartuml "\\startuml" 命令時會產生警告，並且不會為圖資料表產生輸出。]]>
+<![CDATA[使用 PlantUML 時，\c PLANTUML_JAR_PATH 標籤應用於指定 java 可以找到 \c plantuml.jar 檔案的路徑或要使用的 \c jar 檔案的檔案名。如果留空，則假設不使用 PlantUML 或在前置處理步骤中呼叫。在這种情况下，Doxygen 在遇到 \ref cmdstartuml "\\startuml" 命令時會產生警告，並且不會為圖資料表產生輸出。<br>請注意，當設定了 \ref cfg_plantuml_tool "PLANTUML_TOOL" 時，不使用此標籤。]]>
       </docs>
     </option>
     <option type="string" id="PLANTUML_JAVA_PATH" format="file" defval="">

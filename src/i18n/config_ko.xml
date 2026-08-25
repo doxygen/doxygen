@@ -1815,7 +1815,7 @@ Doxygen을 사용하여 사용된 설정 파일을 템플릿 설정 파일과 �
     </option>
     <option type="string" id="PLANTUML_JAR_PATH" format="filedir" defval="">
       <docs>
-<![CDATA[PlantUML을 사용하는 경우 \c PLANTUML_JAR_PATH 태그를 사용하여 java가 \c plantuml.jar 파일 또는 사용할 \c jar 파일의 파일 이름을 찾을 수 있는 경로를 지정해야 합니다. 비워 두면 PlantUML이 사용되지 않거나 전처리 단계에서 호출된다고 가정합니다. 이 경우 Doxygen은 \ref cmdstartuml "\\startuml" 명령을 만나면 경고를 생성하고 다이어그램에 대한 출력을 생성하지 않습니다.]]>
+<![CDATA[PlantUML을 사용하는 경우 \c PLANTUML_JAR_PATH 태그를 사용하여 java가 \c plantuml.jar 파일 또는 사용할 \c jar 파일의 파일 이름을 찾을 수 있는 경로를 지정해야 합니다. 비워 두면 PlantUML이 사용되지 않거나 전처리 단계에서 호출된다고 가정합니다. 이 경우 Doxygen은 \ref cmdstartuml "\\startuml" 명령을 만나면 경고를 생성하고 다이어그램에 대한 출력을 생성하지 않습니다. <br>\ref cfg_plantuml_tool "PLANTUML_TOOL"이 설정된 경우 이 태그는 사용되지 않습니다.]]>
       </docs>
     </option>
     <option type="string" id="PLANTUML_JAVA_PATH" format="file" defval="">

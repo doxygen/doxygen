@@ -1819,7 +1819,7 @@ eine doppelte Maskierung (\c \\\\{ und \c \\\\}) zu verwenden.]]>
     </option>
     <option type="string" id="PLANTUML_JAR_PATH" format="filedir" defval="">
       <docs>
-<![CDATA[Bei Verwendung von PlantUML sollte das \c PLANTUML_JAR_PATH-Tag verwendet werden, um den Pfad anzugeben, in dem Java die \c plantuml.jar-Datei finden kann, oder den Dateinamen der zu verwendenden \c jar-Datei. Wenn leer gelassen, wird angenommen, dass PlantUML nicht verwendet oder während eines Vorverarbeitungsschritts aufgerufen wird. Doxygen generiert eine Warnung, wenn es in diesem Fall auf einen \ref cmdstartuml "\\startuml"-Befehl stößt, und generiert keine Ausgabe für das Diagramm.]]>
+<![CDATA[Bei Verwendung von PlantUML sollte das \c PLANTUML_JAR_PATH-Tag verwendet werden, um den Pfad anzugeben, in dem Java die \c plantuml.jar-Datei finden kann, oder den Dateinamen der zu verwendenden \c jar-Datei. Wenn leer gelassen, wird angenommen, dass PlantUML nicht verwendet oder während eines Vorverarbeitungsschritts aufgerufen wird. Doxygen generiert eine Warnung, wenn es in diesem Fall auf einen \ref cmdstartuml "\\startuml"-Befehl stößt, und generiert keine Ausgabe für das Diagramm. <br>Beachten Sie, dass dieses Tag nicht verwendet wird, wenn \ref cfg_plantuml_tool "PLANTUML_TOOL" gesetzt ist.]]>
       </docs>
     </option>
     <option type="string" id="PLANTUML_JAVA_PATH" format="file" defval="">
