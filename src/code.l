@@ -3393,7 +3393,7 @@ static void generateFunctionLink(yyscan_t yyscanner,OutputCodeList &ol,const DSt
     i=locFunc.rfind("\\");
     len=1; // for PHP
   }
-  if (i>0)
+  if (i!=DString::npos && i>0)
   {
     funcScope=locFunc.left(i);
     locFunc=locFunc.mid(i+len).stripWhiteSpace();
