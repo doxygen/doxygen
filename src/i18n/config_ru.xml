@@ -2337,7 +2337,18 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
  Если оставить пустым, предполагается, что PlantUML не используется или вызывается
  на этапе предварительной обработки.
  В этом случае Doxygen выдаст предупреждение при обнаружении команды \ref cmdstartuml "\\startuml"
- и не выполнит рендеринг диаграммы.]]>
+ и не выполнит рендеринг диаграммы.
+ <br>Обратите внимание, что этот тег не используется, если установлен \ref cfg_plantuml_tool "PLANTUML_TOOL".]]>
+      </docs>
+    </option>
+    <option type="string" id="PLANTUML_JAVA_PATH" format="file" defval="">
+      <docs>
+<![CDATA[При использовании PlantUML тег \c PLANTUML_JAVA_PATH можно использовать для указания исполняемого файла \c java, который используется для запуска jar-файла, указанного через \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH". Если оставить пустым, используется исполняемый файл \c java среды выполнения Java, на которую указывает переменная окружения \c JAVA_HOME, если эта переменная установлена, в противном случае исполняемый файл \c java ищется в стандартном пути поиска. <br>Обратите внимание, что этот тег не используется, если установлен \ref cfg_plantuml_tool "PLANTUML_TOOL".]]>
+      </docs>
+    </option>
+    <option type="string" id="PLANTUML_TOOL" format="file" defval="">
+      <docs>
+<![CDATA[Тег \c PLANTUML_TOOL можно использовать для указания исполняемого файла PlantUML, например, нативного образа PlantUML или скрипта, оборачивающего PlantUML, который запускается вместо jar-файла, указанного через \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH". Поскольку такому исполняемому файлу не требуется среда выполнения Java, теги \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH" и \ref cfg_plantuml_java_path "PLANTUML_JAVA_PATH" в этом случае не используются. <br>Обратите внимание, что пути, указанные через \ref cfg_plantuml_include_path "PLANTUML_INCLUDE_PATH", передаются исполняемому файлу посредством переменной окружения \c PLANTUML_INCLUDE_PATH.]]>
       </docs>
     </option>
     <option type="string" id="PLANTUML_CFG_FILE" format="file" defval="">
