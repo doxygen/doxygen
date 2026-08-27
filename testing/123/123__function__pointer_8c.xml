@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="123__function__pointer_8c" kind="file" language="C++">
+    <compoundname>123_function_pointer.c</compoundname>
+    <innerclass refid="struct_my_iface" prot="public">MyIface</innerclass>
+    <sectiondef kind="typedef">
+      <memberdef kind="typedef" id="123__function__pointer_8c_1af03e798d107bf0e5d3800db992ae5680" prot="public" static="no">
+        <type>int(*</type>
+        <definition>typedef int(* MyCallback) (int a, int b)</definition>
+        <argsstring>)(int a, int b)</argsstring>
+        <name>MyCallback</name>
+        <briefdescription>
+          <para>A function pointer typedef. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="123_function_pointer.c" line="8" column="9" bodyfile="123_function_pointer.c" bodystart="8" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="123__function__pointer_8c_1ac9c7aa030435b71d75fcc61bdd26e308" prot="public" static="no">
+        <type>int(*</type>
+        <definition>typedef int(* MyCallbackArray[10])(int a, int b)</definition>
+        <argsstring>[10])(int a, int b)</argsstring>
+        <name>MyCallbackArray</name>
+        <briefdescription>
+          <para>A function pointer array typedef. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="123_function_pointer.c" line="11" column="9" bodyfile="123_function_pointer.c" bodystart="11" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="123_function_pointer.c"/>
+  </compounddef>
+</doxygen>

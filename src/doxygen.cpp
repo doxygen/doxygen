@@ -3320,7 +3320,7 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
     {
       size_t ii = i;
       size_t ai = type.find('[',ii);
-      if (ai>ii) // function pointer array
+      if (ai!=DString::npos && ai>ii) // function pointer array
       {
         args.prepend(type.mid(ai));
         type=type.left(ai);
