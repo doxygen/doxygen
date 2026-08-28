@@ -53,8 +53,11 @@
 #include "sitemap.h"
 #include "conceptdef.h"
 
-#define MAX_ITEMS_BEFORE_MULTIPAGE_INDEX 200
-#define MAX_ITEMS_BEFORE_QUICK_INDEX 30
+//#define MAX_ITEMS_BEFORE_MULTIPAGE_INDEX 2000
+//#define MAX_ITEMS_BEFORE_QUICK_INDEX 30
+
+#define MAX_ITEMS_BEFORE_MULTIPAGE_INDEX Config_getInt(MAX_ITEMS_BEFORE_MULTIPAGE_INDEX)
+#define MAX_ITEMS_BEFORE_QUICK_INDEX Config_getInt(MAX_ITEMS_BEFORE_QUICK_INDEX)
 
 constexpr auto alphaSepar = "<div class=\"alphasepar\"></div>";
 
