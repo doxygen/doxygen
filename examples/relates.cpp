@@ -1,13 +1,13 @@
-/*! 
+/*!
  * A String class.
- */ 
-  
+ */
+
 class String
 {
   friend int strcmp(const String &,const String &);
 };
 
-/*! 
+/*!
  * Compares two strings.
  */
 

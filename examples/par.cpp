@@ -14,7 +14,7 @@
  * \par
  * And this is the second paragraph.
  *
- * More normal text. 
+ * More normal text.
  */
-  
+
 class Par_Test {};
