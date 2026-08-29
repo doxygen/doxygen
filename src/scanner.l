@@ -3974,6 +3974,7 @@ NONLopt [^\n]*
 <GCopyCurly>^"#"{B}+[0-9]+{B}+"\""[^\"\n]+"\""{B}+"2"{B}*\n? { // end of included file marker
                                           DString line = yytext;
                                           size_t s = line.find(' ');
+                                          if (s == DString::npos) s = line.find('\t');
                                           size_t e = line.find('"',s);
                                           yyextra->yyLineNr = line.mid(s,e-s).toInt();
                                           if (yytext[yyleng-1]=='\n')
