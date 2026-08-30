@@ -127,7 +127,7 @@ static DString replaceRef(const DString &buf,const DString &relPath,
   int len = 6;
   size_t indexS = buf.find("href=\""), indexE = 0;
   bool targetAlreadySet = buf.find("target=")!=DString::npos;
-  if (indexS>5 && buf.find("xlink:href=\"")!=DString::npos) // XLink href (for SVG)
+  if (indexS!=DString::npos && indexS>5 && buf.find("xlink:href=\"")!=DString::npos) // XLink href (for SVG)
   {
     indexS-=6;
     len+=6;

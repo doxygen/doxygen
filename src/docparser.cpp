@@ -497,10 +497,17 @@ bool DocParser::findDocsForMemberOrCompound(const DString &commandName,
       )
   {
     size_t rightBracePos = cmdArg.find("}", dstrlen("anonymous_namespace{"));
-    DString leftPart = cmdArg.left(rightBracePos + 1);
-    DString rightPart = cmdArg.mid(rightBracePos + 1);
-    rightPart = substitute(rightPart, ".", "::");
-    cmdArg = leftPart + rightPart;
+    if (rightBracePos != DString::npos)
+    {
+      DString leftPart = cmdArg.left(rightBracePos + 1);
+      DString rightPart = cmdArg.mid(rightBracePos + 1);
+      rightPart = substitute(rightPart, ".", "::");
+      cmdArg = leftPart + rightPart;
+    }
+    else
+    {
+      cmdArg = substitute(cmdArg,".","::");
+    }
   }
   else
   {

@@ -2284,10 +2284,13 @@ static bool preProcessFile(Dir &d,const DString &infName, TextStream &t, bool bI
     {
       size_t startNamePos  = prevLine.find('"',pos)+1;
       size_t endNamePos    = prevLine.find('"',startNamePos);
-      DString fileName    = prevLine.substr(startNamePos,endNamePos-startNamePos);
-      DBG_RTF(t << "{\\comment begin include " << fileName << "}\n")
-      if (!preProcessFile(d,fileName,t,false)) return false;
-      DBG_RTF(t << "{\\comment end include " << fileName << "}\n")
+      if (endNamePos != std::string::npos)
+      {
+        DString fileName    = prevLine.substr(startNamePos,endNamePos-startNamePos);
+        DBG_RTF(t << "{\\comment begin include " << fileName << "}\n")
+        if (!preProcessFile(d,fileName,t,false)) return false;
+        DBG_RTF(t << "{\\comment end include " << fileName << "}\n")
+      }
     }
     else if (!first) // no INCLUDETEXT on this line
     {
