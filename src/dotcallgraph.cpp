@@ -13,11 +13,13 @@
 *
 */
 
+// own header
 #include "dotcallgraph.h"
 
+// other includes
+#include "config.h"
 #include "dotnode.h"
 #include "memberlist.h"
-#include "config.h"
 #include "util.h"
 
 static DString getUniqueId(const MemberDef *md)

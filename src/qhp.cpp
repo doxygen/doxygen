@@ -11,6 +11,10 @@
  * input used in their production; they are not affected by this license.
  */
 
+// own header
+#include "qhp.h"
+
+// standard includes
 #include <algorithm>
 #include <memory>
 #include <string.h>
@@ -18,18 +22,18 @@
 #include <cassert>
 #include <mutex>
 
+// other includes
 #include "config.h"
 #include "debug.h"
 #include "doxygen.h"
 #include "groupdef.h"
+#include "language.h"
 #include "memberdef.h"
 #include "message.h"
-#include "qhp.h"
+#include "portable.h"
+#include "stringutil.h"
 #include "textstream.h"
 #include "util.h"
-#include "stringutil.h"
-#include "portable.h"
-#include "language.h"
 #include "version.h"
 
 static std::once_flag g_blankWritten;

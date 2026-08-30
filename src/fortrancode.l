@@ -41,30 +41,30 @@ typedef yyguts_t *yyscan_t;
 
 %{
 
-/*
- *      includes
- */
-#include <stdio.h>
-#include <assert.h>
-#include <ctype.h>
-
-#include "doxygen.h"
-#include "message.h"
-#include "outputlist.h"
-#include "util.h"
-#include "membername.h"
-#include "defargs.h"
-#include "config.h"
-#include "groupdef.h"
-#include "classlist.h"
-#include "filedef.h"
-#include "namespacedef.h"
-#include "tooltip.h"
+// own header
 #include "fortrancode.h"
-#include "fortranscanner.h"
+
+// standard includes
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
+
+// other includes
+#include "classlist.h"
+#include "config.h"
 #include "containers.h"
 #include "debug.h"
-#include "searchindex.h"
+#include "doxygen.h"
+#include "filedef.h"
+#include "fortranscanner.h"
+#include "groupdef.h"
+#include "membername.h"
+#include "message.h"
+#include "namespacedef.h"
+#include "outputlist.h"
+#include "tooltip.h"
+#include "util.h"
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x

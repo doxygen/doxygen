@@ -13,12 +13,15 @@
  *
  */
 
+// own header
 #include "eclipsehelp.h"
-#include "util.h"
+
+// standard includes
 #include "config.h"
-#include "message.h"
 #include "doxygen.h"
+#include "message.h"
 #include "portable.h"
+#include "util.h"
 
 struct EclipseHelp::Private
 {

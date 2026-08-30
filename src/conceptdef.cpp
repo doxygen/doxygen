@@ -14,17 +14,17 @@
  */
 
 #include "conceptdef.h"
-#include "definitionimpl.h"
-#include "util.h"
+
 #include "config.h"
+#include "definitionimpl.h"
 #include "doxygen.h"
 #include "language.h"
-#include "outputlist.h"
-#include "searchindex.h"
-#include "message.h"
-#include "parserintf.h"
 #include "layout.h"
+#include "message.h"
 #include "namespacedef.h"
+#include "outputlist.h"
+#include "parserintf.h"
+#include "util.h"
 
 //------------------------------------------------------------------------------------
 

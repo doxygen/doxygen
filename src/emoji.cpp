@@ -13,10 +13,13 @@
  *
  */
 
+// own header
 #include "emoji.h"
+
+// other includes
 #include "message.h"
-#include "util.h"
 #include "textstream.h"
+#include "util.h"
 
 static struct emojiEntityInfo
 {

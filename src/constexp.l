@@ -1,9 +1,6 @@
 /******************************************************************************
  *
- *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2026 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -28,11 +25,14 @@
 
 %{
 
+// own header
 #include "constexp.h"
-#include "cppvalue.h"
+
+// other includes
 #include "ce_parse.hpp" // generated header file
-#include "message.h"
+#include "cppvalue.h"
 #include "debug.h"
+#include "message.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1

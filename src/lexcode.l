@@ -28,19 +28,20 @@ typedef yyguts_t *yyscan_t;
 
 %{
 
-#include <memory>
-#include <stdio.h>
-
-#include "config.h"
-#include "doxygen.h"
-#include "outputgen.h"
-#include "outputlist.h"
-#include "code.h"
+// own header
 #include "lexcode.h"
+
+// standard includes
+#include <memory>
+
+// other includes
+#include "code.h"
+#include "config.h"
+#include "debug.h"
+#include "doxygen.h"
 #include "filedef.h"
 #include "message.h"
-#include "debug.h"
-#include "searchindex.h"
+#include "outputlist.h"
 #include "util.h"
 
 #define YY_NEVER_INTERACTIVE 1

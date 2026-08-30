@@ -18,27 +18,30 @@
  * Folder Tree View for offline help on browsers that do not support HTML Help.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <algorithm>
-
+// own header
 #include "ftvhelp.h"
-#include "config.h"
-#include "message.h"
-#include "doxygen.h"
-#include "language.h"
-#include "htmlgen.h"
-#include "layout.h"
-#include "pagedef.h"
-#include "docparser.h"
-#include "htmldocvisitor.h"
-#include "filedef.h"
+
+// standard includes
+#include <memory>
+#include <variant>
+#include <vector>
+
+// other includes
 #include "classdef.h"
-#include "util.h"
-#include "resourcemgr.h"
-#include "portable.h"
+#include "config.h"
+#include "docparser.h"
+#include "doxygen.h"
+#include "filedef.h"
+#include "htmldocvisitor.h"
+#include "language.h"
+#include "layout.h"
+#include "message.h"
 #include "outputlist.h"
+#include "pagedef.h"
+#include "portable.h"
+#include "resourcemgr.h"
 #include "threadpool.h"
+#include "util.h"
 
 static int folderId=1;
 

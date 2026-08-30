@@ -13,40 +13,40 @@
  *
  */
 
-
-#include <stdio.h>
-#include <assert.h>
-#include <mutex>
-
-#include "md5hash.h"
+// own header
 #include "memberdef.h"
-#include "membername.h"
-#include "doxygen.h"
-#include "util.h"
-#include "code.h"
-#include "message.h"
-#include "htmlhelp.h"
-#include "language.h"
-#include "outputlist.h"
-#include "example.h"
-#include "membergroup.h"
-#include "groupdef.h"
-#include "defargs.h"
-#include "docparser.h"
-#include "dot.h"
-#include "dotcallgraph.h"
-#include "searchindex.h"
-#include "parserintf.h"
-#include "vhdldocgen.h"
+
+// standard includes
+#include <memory>
+#include <mutex>
+#include <optional>
+
+// other includes
 #include "arguments.h"
-#include "memberlist.h"
-#include "namespacedef.h"
-#include "moduledef.h"
-#include "filedef.h"
+#include "code.h"
 #include "config.h"
+#include "defargs.h"
 #include "definitionimpl.h"
+#include "docparser.h"
+#include "dotcallgraph.h"
+#include "doxygen.h"
+#include "example.h"
+#include "filedef.h"
+#include "groupdef.h"
+#include "language.h"
+#include "md5hash.h"
+#include "membergroup.h"
+#include "memberlist.h"
+#include "membername.h"
+#include "message.h"
+#include "moduledef.h"
+#include "namespacedef.h"
+#include "outputlist.h"
+#include "parserintf.h"
 #include "regex.h"
 #include "trace.h"
+#include "util.h"
+#include "vhdldocgen.h"
 
 //-----------------------------------------------------------------------------
 

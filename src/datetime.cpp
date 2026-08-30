@@ -13,18 +13,20 @@
  *
  */
 
-#include <cstdlib>
-#include <chrono>
-#include <memory>
+// own header
+#include "datetime.h"
+
+// standard includes
 #include <array>
+#include <chrono>
+#include <cstdlib>
 #include <functional>
 
-#include "regex.h"
-#include "datetime.h"
-#include "config.h"
-#include "portable.h"
+// other includes
 #include "language.h"
 #include "message.h"
+#include "portable.h"
+#include "regex.h"
 
 std::tm getCurrentDateTime()
 {

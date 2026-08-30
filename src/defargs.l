@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2026 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -53,20 +51,15 @@ typedef yyguts_t *yyscan_t;
 
 %{
 
-/*
- * includes
- */
-#include <stdio.h>
-//#include <iostream.h>
-#include <assert.h>
-#include <ctype.h>
-
+// own header
 #include "defargs.h"
-#include "entry.h"
-#include "util.h"
+
+// other includes
 #include "arguments.h"
-#include "message.h"
 #include "debug.h"
+#include "entry.h"
+#include "message.h"
+#include "util.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1

@@ -1,29 +1,52 @@
+/******************************************************************************
+ *
+ * Copyright (C) 1997-2026 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+
+// own include
 #include "clangparser.h"
-#include "settings.h"
+
+// standard includes
 #include <cstdio>
 #include <cstdint>
+#include <cstdlib>
 #include <vector>
 #include <mutex>
 
+// other includes
+#include "settings.h"
+
 #if USE_LIBCLANG
-#include <clang-c/Index.h>
+// clang includes
 #include "clang/Tooling/CompilationDatabase.h"
 #include "clang/Tooling/Tooling.h"
-#include <stdlib.h>
+#include "clang-c/Index.h"
+
+// other includes
+#include "config.h"
+#include "doxygen.h"
+#include "filedef.h"
+#include "filename.h"
+#include "memberdef.h"
+#include "membername.h"
 #include "message.h"
 #include "outputgen.h"
 #include "outputlist.h"
-#include "filedef.h"
-#include "memberdef.h"
-#include "doxygen.h"
-#include "util.h"
-#include "config.h"
-#include "membername.h"
-#include "filename.h"
-#include "tooltip.h"
-#include "utf8.h"
 #include "searchindex.h"
+#include "tooltip.h"
 #include "trace.h"
+#include "utf8.h"
+#include "util.h"
 #endif
 
 //--------------------------------------------------------------------------

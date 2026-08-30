@@ -13,15 +13,16 @@
  *
  */
 
-#include <cstdio>
-
+// own includes
 #include "singlecomment.h"
-#include "docnode.h"
-#include "htmldocvisitor.h"
-#include "commentscan.h"
+
+// other includes
 #include "commentcnv.h"
-#include "markdown.h"
+#include "commentscan.h"
+#include "docnode.h"
 #include "entry.h"
+#include "htmldocvisitor.h"
+#include "markdown.h"
 #include "outputlist.h"
 
 static void generateHtmlOutput(const DString &fileName,const DString &doc)

@@ -13,28 +13,29 @@
  *
  */
 
+// own header
+#include "formula.h"
+
+// standard includes
 #include <map>
-#include <vector>
 #include <string>
 #include <utility>
+#include <vector>
 
-#include "formula.h"
-#include "message.h"
+// other includes
 #include "config.h"
-#include "util.h"
-#include "portable.h"
-#include "image.h"
-#include "fileinfo.h"
-#include "dir.h"
-#include "regex.h"
-#include "linkedmap.h"
-#include "threadpool.h"
-#include "latexgen.h"
 #include "debug.h"
-
-// TODO: remove these dependencies
-#include "doxygen.h"   // for Doxygen::indexList
-#include "indexlist.h" // for Doxygen::indexList
+#include "dir.h"
+#include "doxygen.h"
+#include "fileinfo.h"
+#include "indexlist.h"
+#include "latexgen.h"
+#include "linkedmap.h"
+#include "message.h"
+#include "portable.h"
+#include "regex.h"
+#include "threadpool.h"
+#include "util.h"
 
 static int determineInkscapeVersion(const Dir &thisDir);
 

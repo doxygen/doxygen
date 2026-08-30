@@ -13,17 +13,19 @@
 *
 */
 
+// own header
 #include "dotrunner.h"
 
+// standard includes
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <map>
-#include <set>
-#include <string>
-#include <algorithm>
 #include <numeric>
 #include <random>
+#include <set>
 #include <sstream>
+#include <string>
 
 #ifdef _MSC_VER
 #pragma warning( push )
@@ -53,6 +55,7 @@
 #pragma warning( pop )
 #endif
 
+// other includes
 #include "config.h"
 #include "dir.h"
 #include "dot.h"

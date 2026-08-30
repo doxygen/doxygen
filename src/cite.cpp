@@ -14,26 +14,29 @@
  *
  */
 
+// own include
 #include "cite.h"
+
+// standard includes
+#include <fstream>
+#include <map>
+#include <string>
+#include <unordered_map>
+
+// other includes
+#include "commentscan.h"
 #include "config.h"
-#include "language.h"
-#include "message.h"
-#include "portable.h"
-#include "resourcemgr.h"
-#include "util.h"
-#include "stringutil.h"
 #include "debug.h"
-#include "fileinfo.h"
 #include "dir.h"
 #include "entry.h"
-#include "commentscan.h"
-#include "linkedmap.h"
+#include "fileinfo.h"
+#include "language.h"
+#include "message.h"
 #include "pagedef.h"
-
-#include <map>
-#include <unordered_map>
-#include <string>
-#include <fstream>
+#include "portable.h"
+#include "resourcemgr.h"
+#include "stringutil.h"
+#include "util.h"
 
 const char *bibTmpFile = "bibTmpFile_";
 const char *bibTmpDir  = "bibTmpDir/";

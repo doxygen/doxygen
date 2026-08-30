@@ -11,9 +11,13 @@
  * input used in their production; they are not affected by this license.
  */
 
+// own include
+#include "arguments.h"
+
+// standard includes
 #include <algorithm>
 
-#include "arguments.h"
+// other includes
 #include "util.h"
 
 /*! the argument list is documented if one of its

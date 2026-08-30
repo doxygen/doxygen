@@ -13,19 +13,22 @@
  *
  */
 
+// own header
 #include "msc.h"
-#include "portable.h"
+
+// other includes
 #include "config.h"
-#include "message.h"
-#include "docparser.h"
+#include "dir.h"
 #include "docnode.h"
+#include "docparser.h"
 #include "doxygen.h"
 #include "indexlist.h"
-#include "util.h"
+#include "message.h"
 #include "mscgen_api.h"
-#include "dir.h"
-#include "textstream.h"
+#include "portable.h"
 #include "stringutil.h"
+#include "textstream.h"
+#include "util.h"
 
 static const int maxCmdLine = 40960;
 

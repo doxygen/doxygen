@@ -15,9 +15,14 @@
 
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
+
+// own header
+#include "dir.h"
+
+// standard includes
 #include <utility>
 
-#include "dir.h"
+// other includes
 #include "fileinfo.h"
 #include "filesystem.hpp"
 

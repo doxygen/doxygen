@@ -13,47 +13,39 @@
  *
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <sstream>
-
-#include "settings.h"
-#include "message.h"
-
-
+// own header
 #include "sqlite3gen.h"
-#include "doxygen.h"
-#include "xmlgen.h"
-#include "xmldocvisitor.h"
-#include "config.h"
-#include "util.h"
-#include "outputlist.h"
-#include "docparser.h"
-#include "docnode.h"
-#include "language.h"
 
-#include "version.h"
-#include "dot.h"
-#include "arguments.h"
-#include "classlist.h"
-#include "filedef.h"
-#include "namespacedef.h"
-#include "filename.h"
-#include "groupdef.h"
-#include "membername.h"
-#include "memberdef.h"
-#include "pagedef.h"
-#include "dirdef.h"
-#include "section.h"
-#include "fileinfo.h"
-#include "dir.h"
-#include "datetime.h"
-#include "moduledef.h"
-#include "conceptdef.h"
-
+// standard includes
 #include <sys/stat.h>
 #include <string.h>
 #include <sqlite3.h>
+
+// other includes
+#include "arguments.h"
+#include "classlist.h"
+#include "conceptdef.h"
+#include "config.h"
+#include "datetime.h"
+#include "dir.h"
+#include "docnode.h"
+#include "docparser.h"
+#include "doxygen.h"
+#include "filedef.h"
+#include "fileinfo.h"
+#include "filename.h"
+#include "groupdef.h"
+#include "memberdef.h"
+#include "membername.h"
+#include "message.h"
+#include "moduledef.h"
+#include "namespacedef.h"
+#include "outputlist.h"
+#include "pagedef.h"
+#include "util.h"
+#include "version.h"
+#include "xmldocvisitor.h"
+
 
 // enable to show general debug messages
 // #define SQLITE3_DEBUG

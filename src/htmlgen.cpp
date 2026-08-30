@@ -13,50 +13,44 @@
  *
  */
 
-#include <stdlib.h>
-#include <assert.h>
+// own header
+#include "htmlgen.h"
 
+// standard includes
+#include <cassert>
+#include <functional>
+#include <memory>
 #include <mutex>
 
-#include "message.h"
-#include "htmlgen.h"
+// other includes
 #include "config.h"
-#include "util.h"
-#include "doxygen.h"
+#include "datetime.h"
 #include "diagram.h"
-#include "version.h"
-#include "dot.h"
+#include "dir.h"
 #include "dotcallgraph.h"
 #include "dotclassgraph.h"
 #include "dotdirdeps.h"
 #include "dotgfxhierarchytable.h"
 #include "dotgroupcollaboration.h"
 #include "dotincldepgraph.h"
-#include "language.h"
-#include "htmlhelp.h"
-#include "docparser.h"
-#include "docnode.h"
-#include "htmldocvisitor.h"
-#include "searchindex.h"
-#include "pagedef.h"
-#include "debug.h"
-#include "dirdef.h"
-#include "vhdldocgen.h"
-#include "layout.h"
-#include "image.h"
-#include "ftvhelp.h"
-#include "resourcemgr.h"
-#include "tooltip.h"
+#include "doxygen.h"
 #include "fileinfo.h"
-#include "dir.h"
-#include "utf8.h"
-#include "textstream.h"
+#include "htmldocvisitor.h"
 #include "indexlist.h"
-#include "datetime.h"
-#include "portable.h"
-#include "outputlist.h"
-#include "stringutil.h"
+#include "language.h"
+#include "layout.h"
 #include "mermaid.h"
+#include "message.h"
+#include "outputlist.h"
+#include "pagedef.h"
+#include "portable.h"
+#include "resourcemgr.h"
+#include "stringutil.h"
+#include "textstream.h"
+#include "utf8.h"
+#include "util.h"
+#include "version.h"
+#include "vhdldocgen.h"
 
 //#define DBG_HTML(x) x;
 #define DBG_HTML(x)

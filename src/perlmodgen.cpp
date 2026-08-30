@@ -14,36 +14,38 @@
  *
  */
 
-#include <stdlib.h>
-#include <stack>
-
+// own header
 #include "perlmodgen.h"
-#include "docparser.h"
-#include "docnode.h"
-#include "message.h"
-#include "doxygen.h"
-#include "pagedef.h"
-#include "memberlist.h"
+
+// standard includes
+#include <iostream>
+#include <variant>
+
+// other includes
 #include "arguments.h"
-#include "config.h"
-#include "groupdef.h"
 #include "classdef.h"
-#include "conceptdef.h"
 #include "classlist.h"
-#include "filename.h"
-#include "membername.h"
-#include "namespacedef.h"
-#include "membergroup.h"
-#include "section.h"
-#include "docvisitor.h"
-#include "util.h"
-#include "htmlentity.h"
-#include "emoji.h"
-#include "dir.h"
-#include "portable.h"
-#include "moduledef.h"
+#include "conceptdef.h"
+#include "config.h"
 #include "construct.h"
-#include "cite.h"
+#include "dir.h"
+#include "docnode.h"
+#include "docparser.h"
+#include "docvisitor.h"
+#include "doxygen.h"
+#include "emoji.h"
+#include "filename.h"
+#include "groupdef.h"
+#include "htmlentity.h"
+#include "membergroup.h"
+#include "memberlist.h"
+#include "membername.h"
+#include "message.h"
+#include "moduledef.h"
+#include "namespacedef.h"
+#include "pagedef.h"
+#include "portable.h"
+#include "util.h"
 
 #define PERLOUTPUT_MAX_INDENTATION 40
 
@@ -172,7 +174,6 @@ private:
   int m_indentation;
   bool m_blockstart;
 
-  //std::stack<PerlModOutputStream*> m_saved;
   char m_spaces[PERLOUTPUT_MAX_INDENTATION * 2 + 2];
 };
 

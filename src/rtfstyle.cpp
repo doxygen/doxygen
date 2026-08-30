@@ -13,10 +13,15 @@
  *
  */
 
+// own header
+#include "rtfstyle.h"
+
+// standard includes
 #include <string>
 #include <fstream>
+#include <map>
 
-#include "rtfstyle.h"
+// other includes
 #include "message.h"
 #include "regex.h"
 

@@ -13,15 +13,17 @@
 *
 */
 
+// own header
 #include "dotnode.h"
+
+// other includes
 #include "classdef.h"
 #include "config.h"
-#include "memberlist.h"
-#include "membergroup.h"
 #include "language.h"
-#include "doxygen.h"
-#include "util.h"
+#include "membergroup.h"
+#include "memberlist.h"
 #include "textstream.h"
+#include "util.h"
 
 /** Helper struct holding the properties of a edge in a dot graph. */
 struct EdgeProperties

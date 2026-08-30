@@ -17,6 +17,7 @@
 #define MARKDOWN_H
 
 #include <memory>
+#include <array>
 
 #include "parserintf.h"
 

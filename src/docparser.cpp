@@ -13,36 +13,37 @@
  *
  */
 
-#include <stdio.h>
-#include <stdlib.h>
+// own header
+#include "docparser.h"
+
+// standard includes
 #include <cassert>
+#include <cstdint>
+#include <cstdio>
 
-#include <ctype.h>
-
+// other includes
 #include "classlist.h"
-#include "cmdmapper.h"
 #include "config.h"
 #include "debug.h"
 #include "dir.h"
-#include "docparser.h"
 #include "docparser_p.h"
 #include "doxygen.h"
 #include "filedef.h"
 #include "fileinfo.h"
+#include "filename.h"
 #include "groupdef.h"
-#include "namespacedef.h"
+#include "htmldocvisitor.h"
+#include "indexlist.h"
 #include "message.h"
+#include "namespacedef.h"
+#include "outputlist.h"
 #include "pagedef.h"
 #include "portable.h"
 #include "printdocvisitor.h"
-#include "util.h"
-#include "indexlist.h"
-#include "trace.h"
 #include "stringutil.h"
-#include "filename.h"
 #include "textdocvisitor.h"
-#include "outputlist.h"
-#include "htmldocvisitor.h"
+#include "trace.h"
+#include "util.h"
 
 #if !ENABLE_DOCPARSER_TRACING
 #undef  AUTO_TRACE

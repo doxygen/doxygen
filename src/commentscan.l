@@ -31,41 +31,39 @@ typedef yyguts_t *yyscan_t;
  *        includes
  */
 
-#include <map>
-#include <stack>
-#include <string>
-#include <mutex>
-#include <functional>
-#include <unordered_map>
-#include <algorithm>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <ctype.h>
-
-#include "dstring.h"
-#include "fileinfo.h"
-#include "cite.h"
+// own header
 #include "commentscan.h"
+
+// standard includes
+#include <algorithm>
+#include <cassert>
+#include <cctype>
+#include <functional>
+#include <mutex>
+#include <string>
+#include <unordered_map>
+
+// other includes
+#include "cite.h"
 #include "condparser.h"
 #include "config.h"
 #include "debug.h"
 #include "docgroup.h"
 #include "doxygen.h"
+#include "dstring.h"
 #include "entry.h"
+#include "fileinfo.h"
 #include "formula.h"
 #include "language.h"
+#include "markdown.h"
 #include "mermaid.h"
 #include "message.h"
-#include "parserintf.h"
 #include "reflist.h"
-#include "section.h"
 #include "regex.h"
-#include "util.h"
-#include "trace.h"
+#include "section.h"
 #include "stringutil.h"
-#include "markdown.h"
+#include "trace.h"
+#include "util.h"
 
 // forward declarations
 static bool handleBrief(yyscan_t yyscanner,const DString &, const StringVector &);

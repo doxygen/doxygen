@@ -13,16 +13,15 @@
  *
  */
 
-#include <stdarg.h>
+#include "debug.h"
+
 #include <algorithm>
-#include <stdio.h>
+#include <chrono>
 #include <map>
 #include <string>
-#include <chrono>
 
-#include "debug.h"
-#include "message.h"
 #include "dstring.h"
+#include "message.h"
 
 //------------------------------------------------------------------------
 

@@ -13,12 +13,14 @@
  *
  */
 
+// own include
+#include "filename.h"
+
 #include <mutex>
 
 #include "cache.h"
-#include "filename.h"
-#include "filedef.h"
 #include "dir.h"
+#include "filedef.h"
 #include "portable.h"
 
 /** Cache element for the file name to FileDef mapping cache. */

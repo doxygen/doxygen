@@ -13,18 +13,21 @@
  *
  */
 
-#include <stdio.h>
-
-#include <unordered_map>
-#include <string>
-
+// own header
 #include "htags.h"
-#include "util.h"
-#include "message.h"
+
+// standard includes
+#include <cstdio>
+#include <string>
+#include <unordered_map>
+
+// other includes
 #include "config.h"
-#include "portable.h"
-#include "fileinfo.h"
 #include "dir.h"
+#include "fileinfo.h"
+#include "message.h"
+#include "portable.h"
+#include "util.h"
 
 bool Htags::useHtags = false;
 

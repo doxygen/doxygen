@@ -13,25 +13,27 @@
  *
  */
 
-#include <array>
-
-#include <assert.h>
-
-#include "types.h"
+// own header
 #include "layout.h"
-#include "message.h"
-#include "language.h"
-#include "util.h"
-#include "doxygen.h"
-#include "version.h"
+
+// standard includes
+#include <array>
+#include <cassert>
+
+// other includes
 #include "config.h"
-#include "xml.h"
-#include "resourcemgr.h"
-#include "docparser.h"
-#include "docnode.h"
 #include "debug.h"
+#include "docnode.h"
+#include "docparser.h"
+#include "language.h"
+#include "message.h"
 #include "regex.h"
+#include "resourcemgr.h"
 #include "textstream.h"
+#include "types.h"
+#include "util.h"
+#include "version.h"
+#include "xml.h"
 
 inline DString compileOptions(const DString &def)
 {

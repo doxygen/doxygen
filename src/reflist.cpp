@@ -13,14 +13,18 @@
  *
  */
 
-#include <algorithm>
-#include <stdio.h>
-
+// own header
 #include "reflist.h"
-#include "util.h"
-#include "definition.h"
+
+// standard includes
+#include <algorithm>
+#include <memory>
+
+// other includes
 #include "config.h"
+#include "definition.h"
 #include "pagedef.h"
+#include "util.h"
 
 RefList::RefList(const DString &listName, const DString &pageTitle, const DString &secTitle) :
        m_listName(listName), m_fileName(convertNameToFile(listName,false,true)),

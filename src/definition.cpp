@@ -13,44 +13,41 @@
  *
  */
 
-#include <algorithm>
-#include <iterator>
-#include <mutex>
-#include <unordered_map>
-#include <string>
-#include <optional>
-#include <cctype>
-#include <cstdio>
-#include <cstdlib>
-#include <cassert>
+// own header
+#include "definition.h"
 
+// standard includes
+#include <algorithm>
+#include <cassert>
+#include <mutex>
+#include <optional>
+#include <string>
+#include <unordered_map>
+
+// other includes
 #include "anchor.h"
-#include "md5hash.h"
-#include "regex.h"
 #include "config.h"
-#include "definitionimpl.h"
-#include "doxygen.h"
-#include "language.h"
-#include "message.h"
-#include "portable.h"
-#include "outputlist.h"
-#include "code.h"
-#include "util.h"
-#include "groupdef.h"
-#include "pagedef.h"
-#include "section.h"
-#include "htags.h"
-#include "parserintf.h"
 #include "debug.h"
-#include "vhdldocgen.h"
-#include "memberlist.h"
-#include "namespacedef.h"
-#include "filedef.h"
+#include "definitionimpl.h"
 #include "dirdef.h"
-#include "reflist.h"
-#include "utf8.h"
-#include "indexlist.h"
+#include "doxygen.h"
+#include "filedef.h"
 #include "fileinfo.h"
+#include "groupdef.h"
+#include "htags.h"
+#include "language.h"
+#include "md5hash.h"
+#include "message.h"
+#include "namespacedef.h"
+#include "outputlist.h"
+#include "pagedef.h"
+#include "parserintf.h"
+#include "portable.h"
+#include "reflist.h"
+#include "regex.h"
+#include "section.h"
+#include "utf8.h"
+#include "util.h"
 
 //-----------------------------------------------------------------------------------------
 

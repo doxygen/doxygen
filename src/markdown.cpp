@@ -31,34 +31,35 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
-
-#include <unordered_map>
-#include <functional>
-#include <atomic>
-#include <array>
-#include <string_view>
-
+// own header
 #include "markdown.h"
-#include "debug.h"
-#include "util.h"
-#include "doxygen.h"
-#include "commentscan.h"
-#include "entry.h"
-#include "commentcnv.h"
+
+// standard includes
+#include <memory>
+#include <string>
+#include <string_view>
+#include <unordered_map>
+#include <vector>
+
+// other includes
+#include "anchor.h"
 #include "cmdmapper.h"
+#include "commentscan.h"
 #include "config.h"
-#include "message.h"
-#include "portable.h"
-#include "regex.h"
+#include "debug.h"
+#include "doxygen.h"
+#include "entry.h"
 #include "filedef.h"
 #include "fileinfo.h"
-#include "trace.h"
-#include "anchor.h"
-#include "stringutil.h"
 #include "filename.h"
-#include "section.h"
+#include "message.h"
 #include "plantuml.h"
+#include "portable.h"
+#include "regex.h"
+#include "section.h"
+#include "stringutil.h"
+#include "trace.h"
+#include "util.h"
 
 #if !ENABLE_MARKDOWN_TRACING
 #undef  AUTO_TRACE

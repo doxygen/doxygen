@@ -13,15 +13,16 @@
  *
  */
 
+// own header
 #include "dia.h"
-#include "portable.h"
-#include "config.h"
-#include "message.h"
-#include "util.h"
-#include "dir.h"
-#include "indexlist.h"
-#include "doxygen.h"
 
+// other headers
+#include "config.h"
+#include "dir.h"
+#include "doxygen.h"
+#include "indexlist.h"
+#include "message.h"
+#include "portable.h"
 
 static const int maxCmdLine = 40960;
 

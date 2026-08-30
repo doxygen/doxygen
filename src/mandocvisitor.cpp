@@ -13,22 +13,25 @@
  *
  */
 
+// own header
 #include "mandocvisitor.h"
-#include "docparser.h"
-#include "language.h"
-#include "doxygen.h"
-#include "outputgen.h"
-#include "code.h"
-#include "dot.h"
-#include "util.h"
-#include "message.h"
-#include "parserintf.h"
-#include "filedef.h"
-#include "htmlentity.h"
-#include "emoji.h"
-#include "fileinfo.h"
-#include "codefragment.h"
+
+// other includes
 #include "cite.h"
+#include "code.h"
+#include "codefragment.h"
+#include "docparser.h"
+#include "dot.h"
+#include "doxygen.h"
+#include "emoji.h"
+#include "filedef.h"
+#include "fileinfo.h"
+#include "htmlentity.h"
+#include "language.h"
+#include "message.h"
+#include "outputlist.h"
+#include "parserintf.h"
+#include "util.h"
 
 ManDocVisitor::ManDocVisitor(TextStream &t,OutputCodeList &ci,
                              const DString &langExt)

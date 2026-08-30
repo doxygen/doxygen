@@ -16,26 +16,25 @@
  *
  */
 
-#include <stdlib.h>
-
-#include "portable.h"
+// own header
 #include "defgen.h"
-#include "doxygen.h"
-#include "message.h"
-#include "config.h"
-#include "classlist.h"
-#include "util.h"
-#include "defargs.h"
-#include "outputgen.h"
-#include "dot.h"
-#include "dotclassgraph.h"
+
+// other includes
 #include "arguments.h"
-#include "memberlist.h"
-#include "namespacedef.h"
+#include "classlist.h"
+#include "config.h"
+#include "defargs.h"
+#include "dir.h"
+#include "dotclassgraph.h"
+#include "doxygen.h"
 #include "filedef.h"
 #include "filename.h"
-#include "dir.h"
+#include "memberlist.h"
+#include "message.h"
+#include "namespacedef.h"
+#include "portable.h"
 #include "textstream.h"
+#include "util.h"
 
 #define DEF_DB(x)
 

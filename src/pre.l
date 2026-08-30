@@ -30,40 +30,40 @@ typedef yyguts_t *yyscan_t;
  *      includes
  */
 
-#include "doxygen.h"
-
-#include <stack>
-#include <deque>
-#include <algorithm>
-#include <utility>
-#include <mutex>
-#include <thread>
-#include <cstdio>
-#include <cassert>
-#include <cctype>
-#include <cerrno>
-
-#include "dstring.h"
-#include "containers.h"
+// own header
 #include "pre.h"
-#include "constexp.h"
-#include "define.h"
-#include "message.h"
-#include "util.h"
-#include "defargs.h"
-#include "debug.h"
-#include "portable.h"
+
+// standard includes
+#include <algorithm>
+#include <deque>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <stack>
+#include <utility>
+
+// other includes
 #include "arguments.h"
-#include "entry.h"
 #include "condparser.h"
 #include "config.h"
+#include "constexp.h"
+#include "containers.h"
+#include "debug.h"
+#include "defargs.h"
+#include "define.h"
+#include "doxygen.h"
+#include "dstring.h"
+#include "entry.h"
 #include "filedef.h"
-#include "regex.h"
 #include "fileinfo.h"
-#include "trace.h"
-#include "stringutil.h"
 #include "filename.h"
 #include "fortranscanner.h"
+#include "message.h"
+#include "portable.h"
+#include "regex.h"
+#include "stringutil.h"
+#include "trace.h"
+#include "util.h"
 
 #define YY_NO_UNISTD_H 1
 
@@ -2989,7 +2989,7 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const DString &expr,DString 
           if (!hash)
           {
             // search for ## forward
-            l=k;
+            l=static_cast<int>(k);
             if (l<(int)d.length() && d.at(l)=='"') l++;
             while (l<(int)d.length() && d.at(l)==' ') l++;
             if (l<(int)d.length()-1 && d.at(l)=='#' && d.at(l+1)=='#') hash=true;

@@ -13,34 +13,37 @@
  *
  */
 
+// own header
+#include "latexdocvisitor.h"
+
+// standard includes
 #include <algorithm>
 #include <array>
 
-#include "htmlattrib.h"
-#include "latexdocvisitor.h"
-#include "latexgen.h"
-#include "docparser.h"
-#include "language.h"
-#include "doxygen.h"
-#include "outputgen.h"
-#include "outputlist.h"
-#include "dot.h"
-#include "util.h"
-#include "message.h"
-#include "parserintf.h"
-#include "msc.h"
-#include "dia.h"
+// other includes
 #include "cite.h"
-#include "filedef.h"
-#include "config.h"
-#include "htmlentity.h"
-#include "emoji.h"
-#include "plantuml.h"
-#include "mermaid.h"
-#include "fileinfo.h"
-#include "regex.h"
-#include "portable.h"
 #include "codefragment.h"
+#include "config.h"
+#include "dia.h"
+#include "docparser.h"
+#include "dot.h"
+#include "doxygen.h"
+#include "emoji.h"
+#include "filedef.h"
+#include "fileinfo.h"
+#include "htmlattrib.h"
+#include "htmlentity.h"
+#include "language.h"
+#include "latexgen.h"
+#include "mermaid.h"
+#include "message.h"
+#include "msc.h"
+#include "outputlist.h"
+#include "parserintf.h"
+#include "plantuml.h"
+#include "portable.h"
+#include "regex.h"
+#include "util.h"
 
 static const int g_maxLevels = 7;
 static const std::array<const char *,g_maxLevels> g_secLabels =

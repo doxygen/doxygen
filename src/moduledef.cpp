@@ -13,27 +13,30 @@
  *
  */
 
+// own headers
 #include "moduledef.h"
-#include "definitionimpl.h"
-#include "entry.h"
-#include "memberdef.h"
+
+// other includes
+#include "classdef.h"
 #include "classlist.h"
-#include "namespacedef.h"
 #include "conceptdef.h"
 #include "config.h"
-#include "outputlist.h"
+#include "definitionimpl.h"
+#include "doxygen.h"
+#include "entry.h"
+#include "filedef.h"
+#include "filename.h"
+#include "groupdef.h"
 #include "language.h"
 #include "layout.h"
-#include "util.h"
-#include "groupdef.h"
-#include "message.h"
+#include "memberdef.h"
 #include "membergroup.h"
-#include "classdef.h"
+#include "message.h"
+#include "namespacedef.h"
+#include "outputlist.h"
 #include "textstream.h"
 #include "trace.h"
-#include "filename.h"
-#include "filedef.h"
-#include "doxygen.h"
+#include "util.h"
 
 class ModuleDefImpl;
 

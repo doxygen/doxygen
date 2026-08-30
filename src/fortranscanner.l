@@ -52,30 +52,28 @@ typedef yyguts_t *yyscan_t;
 
 %{
 
-#include <map>
-#include <vector>
-#include <stack>
-#include <algorithm>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <ctype.h>
-
+// own header
 #include "fortranscanner.h"
-#include "entry.h"
-#include "message.h"
-#include "config.h"
-#include "doxygen.h"
-#include "util.h"
-#include "defargs.h"
-#include "language.h"
-#include "commentscan.h"
-#include "pre.h"
-#include "arguments.h"
-#include "debug.h"
-#include "markdown.h"
 
+// standard includes
+#include <algorithm>
+#include <map>
+#include <memory>
+#include <stack>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
+
+// other includes
+#include "arguments.h"
+#include "commentscan.h"
+#include "config.h"
+#include "debug.h"
+#include "doxygen.h"
+#include "entry.h"
+#include "markdown.h"
+#include "message.h"
+#include "util.h"
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x

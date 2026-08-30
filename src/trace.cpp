@@ -13,7 +13,10 @@
  *
  */
 
+// own header
 #include "trace.h"
+
+// other includes
 #include "spdlog/sinks/basic_file_sink.h" // support for basic file logging
 #include "spdlog/sinks/stdout_sinks.h"
 

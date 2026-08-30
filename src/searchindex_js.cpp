@@ -13,32 +13,35 @@
  *
  */
 
-#include <utility>
+// own header
+#include "searchindex_js.h"
+
+// standard includes
 #include <algorithm>
 #include <cassert>
+#include <utility>
 
-#include "searchindex_js.h"
-#include "doxygen.h"
-#include "groupdef.h"
-#include "pagedef.h"
-#include "namespacedef.h"
+// other includes
 #include "classdef.h"
 #include "classlist.h"
-#include "membername.h"
-#include "filename.h"
-#include "language.h"
-#include "textstream.h"
-#include "util.h"
-#include "version.h"
-#include "message.h"
-#include "resourcemgr.h"
-#include "indexlist.h"
-#include "portable.h"
-#include "threadpool.h"
-#include "moduledef.h"
-#include "section.h"
-#include "docparser.h"
 #include "conceptdef.h"
+#include "docparser.h"
+#include "doxygen.h"
+#include "filename.h"
+#include "groupdef.h"
+#include "indexlist.h"
+#include "language.h"
+#include "membername.h"
+#include "message.h"
+#include "moduledef.h"
+#include "namespacedef.h"
+#include "pagedef.h"
+#include "portable.h"
+#include "resourcemgr.h"
+#include "section.h"
+#include "textstream.h"
+#include "threadpool.h"
+#include "util.h"
 
 void SearchTerm::makeTitle()
 {

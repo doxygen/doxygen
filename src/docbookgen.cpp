@@ -15,44 +15,36 @@
 *
 */
 
-#include <stdlib.h>
-
+// own header
 #include "docbookgen.h"
-#include "doxygen.h"
-#include "message.h"
-#include "config.h"
-#include "classlist.h"
+
+// other headers
 #include "classdef.h"
+#include "classlist.h"
 #include "conceptdef.h"
+#include "config.h"
 #include "diagram.h"
-#include "util.h"
-#include "defargs.h"
-#include "outputgen.h"
-#include "dot.h"
+#include "dir.h"
+#include "docbookvisitor.h"
+#include "docparser.h"
 #include "dotcallgraph.h"
 #include "dotclassgraph.h"
 #include "dotdirdeps.h"
 #include "dotgroupcollaboration.h"
 #include "dotincldepgraph.h"
-#include "pagedef.h"
+#include "doxygen.h"
 #include "filename.h"
-#include "version.h"
-#include "docbookvisitor.h"
-#include "docparser.h"
-#include "language.h"
-#include "parserintf.h"
-#include "arguments.h"
-#include "memberlist.h"
 #include "groupdef.h"
-#include "memberdef.h"
-#include "namespacedef.h"
-#include "membername.h"
-#include "membergroup.h"
-#include "dirdef.h"
-#include "section.h"
-#include "dir.h"
-#include "outputlist.h"
+#include "language.h"
+#include "message.h"
 #include "moduledef.h"
+#include "namespacedef.h"
+#include "outputgen.h"
+#include "outputlist.h"
+#include "pagedef.h"
+#include "parserintf.h"
+#include "section.h"
+#include "util.h"
 
 // no debug info
 #define Docbook_DB(x) do {} while(0)

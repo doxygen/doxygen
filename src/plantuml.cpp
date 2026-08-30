@@ -13,18 +13,24 @@
  *
  */
 
-#include <mutex>
+// own header
 #include "plantuml.h"
-#include "util.h"
-#include "portable.h"
+
+// standard includes
+#include <mutex>
+#include <iostream>
+
+// other includes
 #include "config.h"
-#include "doxygen.h"
-#include "message.h"
 #include "debug.h"
-#include "fileinfo.h"
 #include "dir.h"
+#include "doxygen.h"
+#include "fileinfo.h"
 #include "indexlist.h"
+#include "message.h"
+#include "portable.h"
 #include "stringutil.h"
+#include "util.h"
 
 static std::mutex g_PlantUmlMutex;
 

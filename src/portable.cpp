@@ -1,12 +1,31 @@
-#include "portable.h"
-#include "dstring.h"
+/******************************************************************************
+ *
+ * Copyright (C) 1997-2026 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
 
-#include <stdlib.h>
-#include <stdio.h>
+// own header
+#include "portable.h"
+
+// standard includes
+#include <cassert>
+#include <cctype>
 #include <chrono>
-#include <thread>
-#include <mutex>
+#include <cstdio>
+#include <cstdlib>
 #include <map>
+#include <mutex>
+#include <string>
+#include <thread>
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
 #undef UNICODE
@@ -20,15 +39,13 @@
 extern char **environ;
 #endif
 
-#include <assert.h>
-#include <ctype.h>
-#include <string>
-
+// other includes
+#include "dir.h"
+#include "dstring.h"
 #include "fileinfo.h"
 #include "message.h"
-
 #include "util.h"
-#include "dir.h"
+
 #ifndef NODEBUG
 #include "debug.h"
 #endif

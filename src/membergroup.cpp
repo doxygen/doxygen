@@ -15,18 +15,19 @@
  *
  */
 
+// own header
 #include "membergroup.h"
+
+// other includes
+#include "classdef.h"
+#include "docparser.h"
+#include "doxygen.h"
+#include "filedef.h"
+#include "groupdef.h"
 #include "memberlist.h"
+#include "namespacedef.h"
 #include "outputlist.h"
 #include "util.h"
-#include "classdef.h"
-#include "namespacedef.h"
-#include "filedef.h"
-#include "language.h"
-#include "groupdef.h"
-#include "doxygen.h"
-#include "docparser.h"
-#include "entry.h"
 
 MemberGroup::MemberGroup(const Definition *container,int id,const DString &hdr,
                          const DString &d,const DString &docFile,int docLine,

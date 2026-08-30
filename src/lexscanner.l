@@ -28,21 +28,15 @@ typedef yyguts_t *yyscan_t;
 
 %{
 
-/*
- *      includes
- */
-
-#include <algorithm>
-#include <vector>
-#include <utility>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <ctype.h>
-
-#include "config.h"
+// own header
 #include "lexscanner.h"
+
+// standard includes
+#include <memory>
+#include <string>
+
+// other includes
+#include "config.h"
 #include "entry.h"
 #include "message.h"
 #include "util.h"

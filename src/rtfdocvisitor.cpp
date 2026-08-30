@@ -13,31 +13,35 @@
  *
  */
 
+// own header
+#include "rtfdocvisitor.h"
+
+// standard includes
 #include <algorithm>
 
-#include "rtfdocvisitor.h"
-#include "docparser.h"
-#include "language.h"
-#include "doxygen.h"
-#include "outputgen.h"
-#include "dot.h"
-#include "msc.h"
-#include "util.h"
-#include "rtfstyle.h"
-#include "rtfgen.h"
-#include "message.h"
-#include "parserintf.h"
-#include "dia.h"
-#include "filedef.h"
-#include "config.h"
-#include "htmlentity.h"
-#include "emoji.h"
-#include "plantuml.h"
-#include "mermaid.h"
-#include "fileinfo.h"
-#include "portable.h"
-#include "codefragment.h"
+// other includes
 #include "cite.h"
+#include "codefragment.h"
+#include "config.h"
+#include "dia.h"
+#include "docparser.h"
+#include "dot.h"
+#include "doxygen.h"
+#include "emoji.h"
+#include "filedef.h"
+#include "fileinfo.h"
+#include "htmlentity.h"
+#include "language.h"
+#include "mermaid.h"
+#include "message.h"
+#include "msc.h"
+#include "outputgen.h"
+#include "parserintf.h"
+#include "plantuml.h"
+#include "portable.h"
+#include "rtfgen.h"
+#include "rtfstyle.h"
+#include "util.h"
 
 //#define DBG_RTF(x) m_t << x
 #define DBG_RTF(x) do {} while(0)

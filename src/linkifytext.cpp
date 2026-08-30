@@ -13,13 +13,16 @@
  *
  */
 
+// own header
 #include "linkifytext.h"
-#include "trace.h"
+
+// other includes
+#include "conceptdef.h"
+#include "filedef.h"
+#include "memberdef.h"
 #include "regex.h"
 #include "symbolresolver.h"
-#include "filedef.h"
-#include "conceptdef.h"
-#include "memberdef.h"
+#include "trace.h"
 #include "util.h"
 
 void linkifyText(const TextGeneratorIntf &out, const DString &text,

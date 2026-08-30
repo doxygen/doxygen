@@ -13,34 +13,35 @@
  *
  */
 
+// own header
 #include "tagreader.h"
 
-#include <map>
-#include <functional>
-#include <utility>
+// standard includes
 #include <algorithm>
+#include <cassert>
+#include <cstdarg>
+#include <functional>
+#include <map>
+#include <utility>
 #include <variant>
 
-#include <assert.h>
-#include <stdio.h>
-#include <stdarg.h>
-
-#include "xml.h"
-#include "entry.h"
-#include "doxygen.h"
-#include "util.h"
-#include "stringutil.h"
-#include "message.h"
-#include "defargs.h"
+// other includes
+#include "anchor.h"
 #include "arguments.h"
-#include "filedef.h"
-#include "filename.h"
-#include "section.h"
+#include "construct.h"
 #include "containers.h"
 #include "debug.h"
-#include "anchor.h"
+#include "defargs.h"
+#include "doxygen.h"
+#include "entry.h"
+#include "filedef.h"
+#include "filename.h"
+#include "message.h"
 #include "moduledef.h"
-#include "construct.h"
+#include "section.h"
+#include "stringutil.h"
+#include "util.h"
+#include "xml.h"
 
 // ----------------- private part -----------------------------------------------
 

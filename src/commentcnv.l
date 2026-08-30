@@ -33,28 +33,31 @@ typedef yyguts_t *yyscan_t;
 
 %{
 
+// own header
+#include "commentcnv.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stack>
+// standard includes
 #include <algorithm>
 #include <deque>
+#include <stack>
+#include <string>
 #include <string_view>
+#include <vector>
 
-#include "debug.h"
-#include "message.h"
-#include "config.h"
-#include "doxygen.h"
-#include "util.h"
+// other includes
 #include "aliases.h"
 #include "condparser.h"
+#include "config.h"
+#include "debug.h"
+#include "doxygen.h"
 #include "filedef.h"
 #include "fileinfo.h"
-#include "stringutil.h"
-#include "regex.h"
-#include "section.h"
 #include "filename.h"
 #include "fortranscanner.h"
+#include "message.h"
+#include "section.h"
+#include "stringutil.h"
+#include "util.h"
 
 #include <assert.h>
 

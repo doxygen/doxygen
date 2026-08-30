@@ -26,48 +26,44 @@ typedef yyguts_t *yyscan_t;
 
 %{
 
-/*
- *      includes
- */
+// own header
+#include "code.h"
 
-#include <utility>
-#include <memory>
+// standard includes
 #include <algorithm>
+#include <cctype>
+#include <cstdint>
+#include <memory>
+#include <mutex>
+#include <stack>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
-#include <stack>
+#include <utility>
 #include <vector>
-#include <string>
-#include <mutex>
-#include <sstream>
-#include <cstdint>
 
-#include <stdio.h>
-#include <assert.h>
-#include <ctype.h>
-
-#include "code.h"
-#include "entry.h"
-#include "doxygen.h"
-#include "message.h"
-#include "outputlist.h"
-#include "util.h"
-#include "membername.h"
-#include "searchindex.h"
+// other includes
 #include "arguments.h"
-#include "config.h"
-#include "groupdef.h"
 #include "classlist.h"
 #include "conceptdef.h"
+#include "config.h"
+#include "debug.h"
+#include "dir.h"
+#include "doxygen.h"
+#include "entry.h"
 #include "filedef.h"
 #include "filename.h"
-#include "namespacedef.h"
-#include "tooltip.h"
-#include "scopedtypevariant.h"
-#include "symbolresolver.h"
-#include "dir.h"
-#include "debug.h"
+#include "groupdef.h"
+#include "membername.h"
+#include "message.h"
 #include "moduledef.h"
+#include "namespacedef.h"
+#include "outputlist.h"
+#include "scopedtypevariant.h"
+#include "searchindex.h"
+#include "symbolresolver.h"
+#include "tooltip.h"
+#include "util.h"
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x

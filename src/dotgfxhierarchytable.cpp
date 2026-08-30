@@ -13,15 +13,19 @@
 *
 */
 
-#include <sstream>
-
+// own header
 #include "dotgfxhierarchytable.h"
-#include "language.h"
-#include "util.h"
-#include "message.h"
-#include "doxygen.h"
+
+// standard includes
+#include <algorithm>
+
+// other includes
 #include "classlist.h"
 #include "dir.h"
+#include "doxygen.h"
+#include "language.h"
+#include "message.h"
+#include "util.h"
 #include "vhdldocgen.h"
 
 DString DotGfxHierarchyTable::getBaseName() const

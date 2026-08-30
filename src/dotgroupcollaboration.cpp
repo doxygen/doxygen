@@ -13,17 +13,19 @@
 *
 */
 
+// own header
 #include "dotgroupcollaboration.h"
 
+// other includes
 #include "classlist.h"
 #include "config.h"
 #include "doxygen.h"
+#include "filedef.h"
 #include "groupdef.h"
 #include "namespacedef.h"
 #include "pagedef.h"
 #include "textstream.h"
 #include "util.h"
-#include "filedef.h"
 
 DotGroupCollaboration::DotGroupCollaboration(const GroupDef* gd)
 {

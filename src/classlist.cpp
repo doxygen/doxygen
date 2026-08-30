@@ -15,16 +15,14 @@
  *
  */
 
+// own include
 #include "classlist.h"
+
+// other includes
 #include "config.h"
-#include "util.h"
-#include "outputlist.h"
-#include "language.h"
-#include "doxygen.h"
-#include "vhdldocgen.h"
-#include "defargs.h"
-#include "arguments.h"
 #include "groupdef.h"
+#include "language.h"
+#include "outputlist.h"
 
 bool ClassLinkedRefMap::declVisible(const ClassDef::CompoundType *filter) const
 {

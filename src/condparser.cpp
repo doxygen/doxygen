@@ -19,9 +19,13 @@
  *         !     NOT operator
  */
 
+// own header
+#include "condparser.h"
+
+// standard includes
 #include <algorithm>
 
-#include "condparser.h"
+// other includes
 #include "config.h"
 #include "configimpl.h"
 #include "configoptions.h"

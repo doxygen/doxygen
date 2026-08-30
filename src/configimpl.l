@@ -17,33 +17,29 @@
 
 %{
 
-/*
- *      includes
- */
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <ctype.h>
-#include <stdarg.h>
-#include <errno.h>
-#include <thread>
-#include <algorithm>
-#include <iostream>
-#include <iomanip>
-#include <cstdint>
-
-#include "config.h"
-#include "regex.h"
+// own header
 #include "configimpl.h"
-#include "version.h"
-#include "portable.h"
-#include "language.h"
+
+// standard includes
+#include <algorithm>
+#include <cctype>
+#include <cerrno>
+#include <cstdarg>
+#include <cstdint>
+#include <thread>
+
+// other includes
+#include "config.h"
 #include "configoptions.h"
-#include "fileinfo.h"
-#include "dir.h"
-#include "textstream.h"
-#include "dotattributes.h"
 #include "debug.h"
+#include "dir.h"
+#include "dotattributes.h"
+#include "fileinfo.h"
+#include "language.h"
+#include "portable.h"
+#include "regex.h"
+#include "textstream.h"
+#include "version.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -681,7 +677,6 @@ static int yyread(char *buf,int max_size)
   }
   else
   {
-    //assert(g_includeStack.current()->newState==YY_CURRENT_BUFFER);
     return static_cast<int>(fread(buf,1,max_size,g_includeStack.back()->filePtr));
   }
 }

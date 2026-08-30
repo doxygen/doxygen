@@ -13,7 +13,10 @@
  *
  */
 
+// own header
 #include "stlsupport.h"
+
+// other includes
 #include "entry.h"
 #include "config.h"
 

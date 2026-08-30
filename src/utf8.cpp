@@ -13,13 +13,16 @@
  *
  */
 
-#include <cstdint>
-#include <sstream>
-
+// own header
 #include "utf8.h"
+
+// standard includes
+#include <cstdint>
+
+// other includes
 #include "caseconvert.h"
-#include "textstream.h"
 #include "portable.h"
+#include "textstream.h"
 
 uint8_t getUTF8CharNumBytes(char c)
 {

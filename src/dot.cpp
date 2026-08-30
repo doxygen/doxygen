@@ -13,24 +13,24 @@
  *
  */
 
-#include <cstdlib>
-#include <cassert>
-#include <sstream>
-#include <algorithm>
-#include <mutex>
-
-#include "config.h"
+// own header
 #include "dot.h"
-#include "dotrunner.h"
-#include "dotfilepatcher.h"
-#include "util.h"
-#include "portable.h"
-#include "message.h"
-#include "doxygen.h"
-#include "language.h"
-#include "indexlist.h"
+
+// standard includes
+#include <algorithm>
+#include <cassert>
+#include <mutex>
+#include <sstream>
+
+// other includes
+#include "config.h"
 #include "dir.h"
+#include "doxygen.h"
+#include "indexlist.h"
+#include "message.h"
+#include "portable.h"
 #include "textstream.h"
+#include "util.h"
 
 #define MAP_CMD "cmapx"
 

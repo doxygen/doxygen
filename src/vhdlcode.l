@@ -32,33 +32,30 @@ typedef yyguts_t *yyscan_t;
 
 %{
 
-#include <unordered_set>
-#include <string>
-
-/*
- *        includes
- */
-#include <stdio.h>
-#include <assert.h>
-#include <ctype.h>
-
+// own header
 #include "vhdlcode.h"
-#include "entry.h"
+
+// standard includes
+#include <memory>
+#include <string>
+#include <unordered_set>
+#include <vector>
+
+// other includes
+#include "classdef.h"
+#include "config.h"
+#include "debug.h"
 #include "doxygen.h"
+#include "filedef.h"
+#include "membername.h"
 #include "message.h"
 #include "outputlist.h"
-#include "util.h"
-#include "stringutil.h"
-#include "membername.h"
-#include "searchindex.h"
-#include "vhdldocgen.h"
-#include "arguments.h"
-#include "config.h"
-#include "classdef.h"
-#include "filedef.h"
-#include "tooltip.h"
 #include "regex.h"
-#include "debug.h"
+#include "searchindex.h"
+#include "stringutil.h"
+#include "tooltip.h"
+#include "util.h"
+#include "vhdldocgen.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1

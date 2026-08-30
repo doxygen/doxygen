@@ -30,24 +30,25 @@ typedef yyguts_t *yyscan_t;
 
 %{
 
-#include <ctype.h>
+// own header
+#include "doctokenizer.h"
+
+// standard includes
+#include <cassert>
+#include <cctype>
 #include <stack>
 #include <string>
-#include <cassert>
 
-#include "doctokenizer.h"
+// other includes
 #include "cmdmapper.h"
 #include "config.h"
-#include "message.h"
-#include "section.h"
-#include "membergroup.h"
-#include "definition.h"
-#include "doxygen.h"
-#include "portable.h"
-#include "cite.h"
-#include "regex.h"
 #include "debug.h"
+#include "definition.h"
 #include "docnode.h"
+#include "message.h"
+#include "portable.h"
+#include "regex.h"
+#include "section.h"
 #include "stringutil.h"
 
 #define YY_NO_INPUT 1

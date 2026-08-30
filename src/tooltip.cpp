@@ -13,20 +13,24 @@
  *
  */
 
+// own header
+#include "tooltip.h"
+
+// standard includes
 #include <map>
 #include <memory>
+#include <mutex>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
-#include <string>
-#include <mutex>
 
-#include "tooltip.h"
+// other includes
+#include "config.h"
 #include "definition.h"
+#include "doxygen.h"
+#include "filedef.h"
 #include "outputlist.h"
 #include "util.h"
-#include "filedef.h"
-#include "doxygen.h"
-#include "config.h"
 
 static std::mutex                                                g_tooltipsFileMutex;
 static std::mutex                                                g_tooltipsTipMutex;

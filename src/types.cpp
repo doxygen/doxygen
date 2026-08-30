@@ -13,7 +13,10 @@
  *
  */
 
+// own header
 #include "types.h"
+
+// other includes
 #include "util.h"
 
 EntryType EntryType::guessSection(const DString &name)

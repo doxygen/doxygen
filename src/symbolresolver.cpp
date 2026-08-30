@@ -13,21 +13,26 @@
  *
  */
 
-#include <unordered_map>
-#include <string>
-#include <vector>
+// own header
+#include "symbolresolver.h"
+
+// standard includes
 #include <algorithm>
 #include <cassert>
+#include <mutex>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
-#include "symbolresolver.h"
-#include "util.h"
-#include "doxygen.h"
-#include "namespacedef.h"
+// other includes
+#include "cache.h"
 #include "config.h"
 #include "defargs.h"
-#include "trace.h"
-#include "cache.h"
+#include "doxygen.h"
 #include "filedef.h"
+#include "namespacedef.h"
+#include "trace.h"
+#include "util.h"
 
 #if !ENABLE_SYMBOLRESOLVER_TRACING
 #undef  AUTO_TRACE

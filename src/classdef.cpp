@@ -13,43 +13,47 @@
  *
  */
 
+// own include
+#include "classdef.h"
+
+// standard includes
 #include <cstdio>
 #include <algorithm>
 
-#include "types.h"
-#include "classdef.h"
+// other includes
+#include "arguments.h"
 #include "classlist.h"
-#include "entry.h"
-#include "doxygen.h"
-#include "membername.h"
-#include "message.h"
 #include "config.h"
-#include "util.h"
+#include "debug.h"
+#include "defargs.h"
+#include "definitionimpl.h"
 #include "diagram.h"
-#include "language.h"
-#include "htmlhelp.h"
-#include "example.h"
-#include "outputlist.h"
+#include "docparser.h"
 #include "dot.h"
 #include "dotclassgraph.h"
 #include "dotrunner.h"
-#include "defargs.h"
-#include "debug.h"
-#include "docparser.h"
-#include "searchindex.h"
-#include "vhdldocgen.h"
-#include "layout.h"
-#include "arguments.h"
-#include "memberlist.h"
-#include "groupdef.h"
+#include "doxygen.h"
+#include "entry.h"
+#include "example.h"
 #include "filedef.h"
-#include "namespacedef.h"
-#include "membergroup.h"
-#include "definitionimpl.h"
-#include "symbolresolver.h"
 #include "fileinfo.h"
-#include "trace.h"
+#include "groupdef.h"
+#include "htmlhelp.h"
+#include "language.h"
+#include "layout.h"
+#include "membergroup.h"
+#include "memberlist.h"
+#include "membername.h"
+#include "message.h"
 #include "moduledef.h"
+#include "namespacedef.h"
+#include "outputlist.h"
+#include "searchindex.h"
+#include "symbolresolver.h"
+#include "trace.h"
+#include "types.h"
+#include "util.h"
+#include "vhdldocgen.h"
 
 //-----------------------------------------------------------------------------
 

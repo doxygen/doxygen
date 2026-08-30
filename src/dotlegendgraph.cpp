@@ -13,17 +13,17 @@
 *
 */
 
-#include <sstream>
-
+// own header
 #include "dotlegendgraph.h"
-#include "util.h"
+
+// other includes
 #include "config.h"
-#include "doxygen.h"
 #include "dot.h"
-#include "language.h"
 #include "dotfilepatcher.h"
 #include "dotnode.h"
+#include "language.h"
 #include "textstream.h"
+#include "util.h"
 
 void DotLegendGraph::writeGraph(const DString &path)
 {

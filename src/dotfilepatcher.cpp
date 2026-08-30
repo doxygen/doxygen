@@ -13,19 +13,21 @@
 *
 */
 
+// own header
 #include "dotfilepatcher.h"
-#include "dotrunner.h"
+
+// other includes
 #include "config.h"
-#include "message.h"
-#include "docparser.h"
-#include "docnode.h"
-#include "doxygen.h"
-#include "util.h"
-#include "dot.h"
 #include "dir.h"
+#include "docnode.h"
+#include "docparser.h"
+#include "dot.h"
+#include "dotrunner.h"
+#include "message.h"
 #include "portable.h"
 #include "stringutil.h"
 #include "textstream.h"
+#include "util.h"
 
 // top part of the interactive SVG header
 static const char svgZoomHeader0[] = R"svg(

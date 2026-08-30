@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2026 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -15,21 +13,24 @@
  *
  */
 
+// own header
 #include "memberlist.h"
+
+// other includes
 #include "classdef.h"
-#include "message.h"
-#include "util.h"
-#include "language.h"
-#include "doxygen.h"
-#include "outputlist.h"
-#include "groupdef.h"
-#include "vhdldocgen.h"
-#include "namespacedef.h"
-#include "filedef.h"
-#include "membergroup.h"
 #include "config.h"
 #include "docparser.h"
+#include "doxygen.h"
+#include "filedef.h"
+#include "groupdef.h"
+#include "language.h"
+#include "membergroup.h"
+#include "message.h"
 #include "moduledef.h"
+#include "namespacedef.h"
+#include "outputlist.h"
+#include "util.h"
+#include "vhdldocgen.h"
 
 MemberList::MemberList(MemberListType lt,MemberListContainer con) : m_container(con), m_listType(lt)
 {

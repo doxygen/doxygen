@@ -13,29 +13,31 @@
  *
  */
 
+// own header
 #include "docbookvisitor.h"
-#include "docparser.h"
-#include "language.h"
-#include "doxygen.h"
-#include "outputgen.h"
+
+// other headers
+#include "cite.h"
+#include "codefragment.h"
+#include "config.h"
+#include "dia.h"
 #include "docbookgen.h"
 #include "dot.h"
-#include "message.h"
-#include "util.h"
-#include "parserintf.h"
-#include "filename.h"
-#include "config.h"
-#include "filedef.h"
-#include "msc.h"
-#include "dia.h"
-#include "htmlentity.h"
+#include "doxygen.h"
 #include "emoji.h"
-#include "plantuml.h"
-#include "mermaid.h"
+#include "filedef.h"
 #include "fileinfo.h"
+#include "filename.h"
+#include "htmlentity.h"
+#include "language.h"
+#include "mermaid.h"
+#include "message.h"
+#include "msc.h"
+#include "outputgen.h"
+#include "parserintf.h"
+#include "plantuml.h"
 #include "portable.h"
-#include "codefragment.h"
-#include "cite.h"
+#include "util.h"
 
 #if 0
 #define DB_VIS_C DB_VIS_C1(m_t)

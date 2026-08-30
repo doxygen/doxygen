@@ -26,39 +26,35 @@ typedef yyguts_t *yyscan_t;
 
 %{
 
-/*
- *      includes
- */
-
-#include <algorithm>
-#include <vector>
-#include <utility>
-#include <cstdint>
-#include <cstdio>
-#include <cstdlib>
-#include <cassert>
-#include <cctype>
-
+// own header
 #include "scanner.h"
-#include "entry.h"
-#include "message.h"
-#include "config.h"
-#include "doxygen.h"
-#include "util.h"
-#include "defargs.h"
-#include "language.h"
-#include "commentscan.h"
+
+// standard includes
+#include <algorithm>
+#include <cstdint>
+#include <memory>
+#include <utility>
+#include <vector>
+
+// other includes
 #include "arguments.h"
-#include "moduledef.h"
-#include "stringutil.h"
-#include "filename.h"
-#include "md5hash.h"
 #include "clangparser.h"
-#include "markdown.h"
-#include "regex.h"
-#include "trace.h"
+#include "commentscan.h"
+#include "config.h"
 #include "debug.h"
+#include "defargs.h"
+#include "doxygen.h"
+#include "entry.h"
 #include "filedef.h"
+#include "filename.h"
+#include "markdown.h"
+#include "md5hash.h"
+#include "message.h"
+#include "moduledef.h"
+#include "regex.h"
+#include "stringutil.h"
+#include "trace.h"
+#include "util.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1

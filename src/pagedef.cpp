@@ -13,20 +13,23 @@
  *
  */
 
+// own header
 #include "pagedef.h"
-#include "groupdef.h"
-#include "docparser.h"
+
+// other includes
 #include "config.h"
-#include "util.h"
-#include "outputlist.h"
-#include "doxygen.h"
-#include "language.h"
-#include "namespacedef.h"
-#include "reflist.h"
 #include "definitionimpl.h"
-#include "indexlist.h"
-#include "message.h"
+#include "docparser.h"
+#include "doxygen.h"
 #include "entry.h"
+#include "groupdef.h"
+#include "indexlist.h"
+#include "language.h"
+#include "message.h"
+#include "namespacedef.h"
+#include "outputlist.h"
+#include "reflist.h"
+#include "util.h"
 
 //------------------------------------------------------------------------------------------
 

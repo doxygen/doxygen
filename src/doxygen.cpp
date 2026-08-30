@@ -13,19 +13,23 @@
  *
  */
 
+// own header
+#include "doxygen.h"
+
+// standard includes
+#include <algorithm>
+#include <cerrno>
+#include <chrono>
+#include <cinttypes>
+#include <clocale>
 #include <cstdio>
 #include <cstdlib>
-#include <cerrno>
-#include <sys/stat.h>
-
-#include <algorithm>
-#include <unordered_map>
-#include <memory>
-#include <cinttypes>
-#include <chrono>
-#include <clocale>
 #include <locale>
+#include <memory>
+#include <sys/stat.h>
+#include <unordered_map>
 
+// other includes
 #include "aliases.h"
 #include "arguments.h"
 #include "cite.h"
@@ -46,7 +50,6 @@
 #include "docparser.h"
 #include "docsets.h"
 #include "dot.h"
-#include "doxygen.h"
 #include "eclipsehelp.h"
 #include "emoji.h"
 #include "entry.h"

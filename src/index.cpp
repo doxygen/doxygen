@@ -17,41 +17,43 @@
  *  @brief This file contains functions for the various index pages.
  */
 
-#include <cstdlib>
-#include <array>
-
-#include <assert.h>
-
-#include "message.h"
+// own header
 #include "index.h"
-#include "indexlist.h"
-#include "doxygen.h"
+
+// standard includes
+#include <array>
+#include <cassert>
+#include <cstdlib>
+#include <map>
+#include <set>
+
+// other includes
+#include "classlist.h"
+#include "conceptdef.h"
 #include "config.h"
-#include "filedef.h"
-#include "outputlist.h"
-#include "util.h"
-#include "groupdef.h"
-#include "language.h"
-#include "htmlgen.h"
-#include "htmlhelp.h"
-#include "ftvhelp.h"
-#include "dot.h"
+#include "dirdef.h"
 #include "dotgfxhierarchytable.h"
 #include "dotlegendgraph.h"
-#include "pagedef.h"
-#include "dirdef.h"
-#include "vhdldocgen.h"
+#include "doxygen.h"
+#include "filedef.h"
+#include "filename.h"
+#include "ftvhelp.h"
+#include "groupdef.h"
+#include "htmlgen.h"
+#include "indexlist.h"
+#include "language.h"
 #include "layout.h"
 #include "memberlist.h"
-#include "classlist.h"
-#include "namespacedef.h"
-#include "filename.h"
-#include "tooltip.h"
-#include "utf8.h"
-#include "portable.h"
+#include "message.h"
 #include "moduledef.h"
+#include "namespacedef.h"
+#include "outputlist.h"
+#include "pagedef.h"
+#include "portable.h"
 #include "sitemap.h"
-#include "conceptdef.h"
+#include "utf8.h"
+#include "util.h"
+#include "vhdldocgen.h"
 
 #define MAX_ITEMS_BEFORE_MULTIPAGE_INDEX 200
 #define MAX_ITEMS_BEFORE_QUICK_INDEX 30

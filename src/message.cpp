@@ -13,20 +13,22 @@
  *
  */
 
-#include <cstdio>
-#include <cstdlib>
-#include <mutex>
+// own header
+#include "message.h"
+
+// standard includes
 #include <atomic>
+#include <mutex>
 #include <unordered_set>
 
+// other includes
 #include "config.h"
 #include "debug.h"
-#include "portable.h"
-#include "message.h"
+#include "dir.h"
 #include "doxygen.h"
 #include "fileinfo.h"
-#include "dir.h"
 #include "md5hash.h"
+#include "portable.h"
 
 // globals
 static DString          g_warnFormat;

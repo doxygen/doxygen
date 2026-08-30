@@ -10,28 +10,33 @@
  *
  */
 
-#include <string>
-
-#include "dstring.h"
-#include "containers.h"
+// own header
 #include "vhdljjparser.h"
-#include "vhdldocgen.h"
-#include "message.h"
-#include "config.h"
-#include "doxygen.h"
-#include "util.h"
-#include "stringutil.h"
-#include "language.h"
-#include "commentscan.h"
-#include "definition.h"
-#include "searchindex.h"
-#include "outputlist.h"
-#include "arguments.h"
-#include "types.h"
-#include "markdown.h"
-#include "VhdlParserTokenManager.h"
+
+// standard includes
+#include <string>
+#include <memory>
+#include <exception>
+
+// other includes
 #include "VhdlParserErrorHandler.hpp"
+#include "VhdlParserTokenManager.h"
+#include "arguments.h"
+#include "commentscan.h"
+#include "config.h"
+#include "containers.h"
+#include "definition.h"
+#include "doxygen.h"
+#include "dstring.h"
+#include "language.h"
+#include "markdown.h"
+#include "message.h"
+#include "outputlist.h"
 #include "regex.h"
+#include "stringutil.h"
+#include "types.h"
+#include "util.h"
+#include "vhdldocgen.h"
 
 using namespace vhdl::parser;
 

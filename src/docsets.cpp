@@ -13,21 +13,25 @@
  *
  */
 
-#include <unordered_set>
-#include <stack>
-
+// own header
 #include "docsets.h"
-#include "config.h"
-#include "message.h"
-#include "doxygen.h"
-#include "groupdef.h"
+
+// standard includes
+#include <stack>
+#include <unordered_set>
+
+// other includes
 #include "classdef.h"
+#include "config.h"
+#include "doxygen.h"
 #include "filedef.h"
+#include "groupdef.h"
 #include "memberdef.h"
+#include "message.h"
 #include "namespacedef.h"
-#include "util.h"
-#include "textstream.h"
 #include "portable.h"
+#include "textstream.h"
+#include "util.h"
 
 struct DocSets::Private
 {

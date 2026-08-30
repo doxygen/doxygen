@@ -29,21 +29,21 @@ typedef yyguts_t *yyscan_t;
 
 %{
 
-#include <stdio.h>
-
+// own header
 #include "sqlcode.h"
 
-#include "entry.h"
-#include "doxygen.h"
-#include "outputlist.h"
-#include "util.h"
-#include "membername.h"
-#include "searchindex.h"
+// stanrd includes
+#include <memory>
+
+// other includes
 #include "config.h"
-#include "filedef.h"
-#include "tooltip.h"
-#include "message.h"
 #include "debug.h"
+#include "doxygen.h"
+#include "filedef.h"
+#include "message.h"
+#include "outputlist.h"
+#include "searchindex.h"
+#include "util.h"
 
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1

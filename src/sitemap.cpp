@@ -11,25 +11,28 @@
  * input used in their production; they are not affected by this license.
  */
 
-#include <algorithm>
-#include <memory>
-#include <string.h>
-#include <vector>
-#include <cassert>
+// own header
+#include "sitemap.h"
 
+// standard includes
+#include <algorithm>
+#include <fstream>
+#include <memory>
+#include <vector>
+
+// other includes
 #include "config.h"
+#include "containers.h"
 #include "debug.h"
 #include "doxygen.h"
 #include "groupdef.h"
+#include "language.h"
 #include "memberdef.h"
 #include "message.h"
-#include "sitemap.h"
+#include "portable.h"
 #include "textstream.h"
 #include "util.h"
-#include "portable.h"
-#include "language.h"
 #include "version.h"
-#include "containers.h"
 
 //-------------------------------------------------------------------------------------------
 

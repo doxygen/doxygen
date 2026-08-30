@@ -13,8 +13,10 @@
  *
  */
 
+// own header
 #include "fileparser.h"
-#include "outputgen.h"
+
+// other includes
 #include "outputlist.h"
 
 void FileCodeParser::parseCode(OutputCodeList &codeOutIntf,

@@ -13,16 +13,19 @@
  *
  */
 
-#include <map>
-#include <string.h>
-#include <cstdint>
-
+// own header
 #include "resourcemgr.h"
-#include "util.h"
-#include "version.h"
+
+// standard includes
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <string>
+
+// other includes
 #include "message.h"
-#include "config.h"
 #include "portable.h"
+#include "util.h"
 
 class ResourceMgr::Private
 {

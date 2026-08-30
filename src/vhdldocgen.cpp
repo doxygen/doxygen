@@ -19,49 +19,43 @@
  * does not support VHDL-AMS
  ******************************************************************************/
 
-// global includes
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <string.h>
-#include <map>
-#include <algorithm>
-#include <unordered_set>
-#include <mutex>
-
-/* --------------------------------------------------------------- */
-
-// local includes
-#include "dstring.h"
+// own header
 #include "vhdldocgen.h"
-#include "message.h"
-#include "config.h"
-#include "doxygen.h"
-#include "util.h"
-#include "stringutil.h"
-#include "language.h"
+
+// standard includes
+#include <algorithm>
+#include <cassert>
+#include <map>
+#include <mutex>
+#include <unordered_set>
+
+// other includes
+#include "arguments.h"
+#include "classlist.h"
 #include "commentscan.h"
+#include "config.h"
 #include "definition.h"
-#include "searchindex.h"
+#include "doxygen.h"
+#include "dstring.h"
+#include "filename.h"
+#include "groupdef.h"
+#include "language.h"
+#include "memberdef.h"
+#include "membergroup.h"
+#include "memberlist.h"
+#include "membername.h"
+#include "message.h"
+#include "moduledef.h"
+#include "namespacedef.h"
 #include "outputlist.h"
 #include "parserintf.h"
-#include "layout.h"
-#include "arguments.h"
-#include "portable.h"
-#include "memberlist.h"
-#include "memberdef.h"
-#include "groupdef.h"
-#include "classlist.h"
-#include "namespacedef.h"
-#include "filename.h"
-#include "membergroup.h"
-#include "membername.h"
 #include "plantuml.h"
-#include "vhdljjparser.h"
-#include "VhdlParser.h"
+#include "portable.h"
 #include "regex.h"
+#include "stringutil.h"
 #include "textstream.h"
-#include "moduledef.h"
+#include "util.h"
+#include "vhdljjparser.h"
 
 //#define DEBUGFLOW
 #define theTranslator_vhdlType theTranslator->trVhdlType

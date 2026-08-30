@@ -34,31 +34,30 @@ typedef yyguts_t *yyscan_t;
 
 %{
 
-#include <vector>
-#include <unordered_map>
-#include <string>
-#include <stack>
-
-#include <stdio.h>
-
+// own header
 #include "pycode.h"
-#include "message.h"
-#include "scanner.h"
-#include "entry.h"
-#include "doxygen.h"
-#include "outputlist.h"
-#include "util.h"
-#include "membername.h"
-#include "searchindex.h"
+
+// standard includes
+#include <stack>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+// other includes
 #include "config.h"
-#include "groupdef.h"
-#include "classlist.h"
-#include "filedef.h"
-#include "namespacedef.h"
-#include "tooltip.h"
-#include "scopedtypevariant.h"
-#include "symbolresolver.h"
 #include "debug.h"
+#include "doxygen.h"
+#include "filedef.h"
+#include "groupdef.h"
+#include "message.h"
+#include "namespacedef.h"
+#include "outputlist.h"
+#include "scanner.h"
+#include "scopedtypevariant.h"
+#include "searchindex.h"
+#include "symbolresolver.h"
+#include "tooltip.h"
+#include "util.h"
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x

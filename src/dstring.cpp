@@ -13,13 +13,17 @@
  *
  */
 
-#include <limits.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <ctype.h>
-
+// own header
 #include "dstring.h"
+
+// standard includes
+#include <cctype>
+#include <climits>
+#include <cstdarg>
+#include <cstdio>
+#include <cstdlib>
+
+// other includes
 #include "regex.h"
 
 inline char toLowerChar(char c)

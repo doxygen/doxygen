@@ -15,16 +15,16 @@
  *
  */
 
+// own header
+#include "entry.h"
+
+// standard includes
 #include <algorithm>
 #include <atomic>
-#include <stdlib.h>
 
-#include "entry.h"
-#include "util.h"
-#include "section.h"
+// other includes
 #include "doxygen.h"
-#include "arguments.h"
-#include "config.h"
+#include "util.h"
 
 //------------------------------------------------------------------
 

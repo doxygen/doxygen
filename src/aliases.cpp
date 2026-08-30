@@ -13,18 +13,20 @@
  *
  */
 
-#include <unordered_map>
-#include <cassert>
-
-#include "message.h"
+// own include
 #include "aliases.h"
-#include "containers.h"
+
+// standard includes
+#include <cassert>
+#include <unordered_map>
+
+// other includes
 #include "config.h"
-#include "regex.h"
-#include "textstream.h"
-#include "util.h"
 #include "debug.h"
+#include "message.h"
+#include "regex.h"
 #include "stringutil.h"
+#include "util.h"
 
 //-----------------------------------------------------------
 

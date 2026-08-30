@@ -13,8 +13,10 @@
 *
 */
 
+// own header
 #include "dotincldepgraph.h"
 
+// other includes
 #include "config.h"
 #include "dotnode.h"
 #include "filedef.h"

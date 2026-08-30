@@ -13,24 +13,25 @@
 *
 */
 
-#include <mutex>
-#include <regex>
+// own header
+#include "dotgraph.h"
 
+// standard includes
+#include <mutex>
+
+// other includes
 #include "config.h"
+#include "dot.h"
+#include "dotfilepatcher.h"
+#include "dotnode.h"
 #include "doxygen.h"
+#include "fileinfo.h"
 #include "indexlist.h"
 #include "md5hash.h"
 #include "message.h"
-#include "util.h"
-
-#include "dot.h"
-#include "dotrunner.h"
-#include "dotgraph.h"
-#include "dotnode.h"
-#include "dotfilepatcher.h"
-#include "fileinfo.h"
 #include "portable.h"
 #include "textstream.h"
+#include "util.h"
 
 //DString DotGraph::DOT_FONTNAME; // will be initialized in initDot
 //int DotGraph::DOT_FONTSIZE;      // will be initialized in initDot

@@ -13,24 +13,24 @@
  *
  */
 
-
-#include <ctype.h>
-#include <assert.h>
-#include <mutex>
-#include <map>
-#include <unordered_map>
-
+// own header
 #include "searchindex.h"
 
+// standard includes
+#include <cassert>
+#include <cctype>
+#include <mutex>
+
+// other includes
 #include "config.h"
-#include "util.h"
 #include "doxygen.h"
-#include "language.h"
-#include "pagedef.h"
-#include "message.h"
-#include "groupdef.h"
 #include "filedef.h"
+#include "groupdef.h"
+#include "language.h"
+#include "message.h"
+#include "pagedef.h"
 #include "portable.h"
+#include "util.h"
 
 
 // file format: (all multi-byte values are stored in big endian format)

@@ -13,11 +13,14 @@
  *
  */
 
+// own header
 #include "mermaid.h"
 
-#include <mutex>
+// standard includes
 #include <fstream>
+#include <mutex>
 
+// other includes
 #include "config.h"
 #include "debug.h"
 #include "dir.h"

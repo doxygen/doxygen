@@ -15,13 +15,16 @@
  *
  */
 
+// own header
 #include "rtfgen.h"
 
+// standard includes
 #include <algorithm>
 #include <mutex>
 #include <stdlib.h>
 #include <unordered_map>
 
+// other includes
 #include "classlist.h"
 #include "conceptdef.h"
 #include "config.h"
@@ -29,9 +32,7 @@
 #include "debug.h"
 #include "diagram.h"
 #include "dir.h"
-#include "dirdef.h"
 #include "docparser.h"
-#include "dot.h"
 #include "dotcallgraph.h"
 #include "dotclassgraph.h"
 #include "dotdirdeps.h"
@@ -52,7 +53,6 @@
 #include "utf8.h"
 #include "util.h"
 #include "version.h"
-#include "vhdldocgen.h"
 
 //#define DBG_RTF(x) x;
 #define DBG_RTF(x)

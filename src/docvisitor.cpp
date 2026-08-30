@@ -12,15 +12,18 @@
  * input used in their production; they are not affected by this license.
  */
 
-
-#include <unordered_map>
-#include <stack>
-
-#include "parserintf.h"
+// own header
 #include "docvisitor.h"
-#include "util.h"
-#include "types.h"
+
+// standard includes
+#include <stack>
+#include <unordered_map>
+
+// other includes
 #include "doxygen.h"
+#include "parserintf.h"
+#include "types.h"
+#include "util.h"
 
 struct DocVisitor::Private
 {

@@ -22,16 +22,16 @@
  *  the call to all output generators.
  */
 
+// own header
+#include "outputlist.h"
+
+// standard includes
 #include <atomic>
 
-#include "outputlist.h"
-#include "outputgen.h"
-#include "config.h"
-#include "message.h"
-#include "definition.h"
+// other includes
 #include "docparser.h"
-#include "vhdldocgen.h"
 #include "doxygen.h"
+#include "message.h"
 
 static AtomicInt g_outId;
 

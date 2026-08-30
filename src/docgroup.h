@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "dstring.h"
+#include "types.h"
 
 class Entry;
 class MemberGroupInfo;

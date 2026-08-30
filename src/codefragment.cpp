@@ -13,22 +13,25 @@
  *
  */
 
+// own include
+#include "codefragment.h"
+
+// standard includes
+#include <map>
 #include <mutex>
 #include <unordered_map>
-#include <map>
 
-#include "codefragment.h"
-#include "util.h"
+// other includes
 #include "doxygen.h"
-#include "parserintf.h"
-#include "outputlist.h"
-#include "clangparser.h"
-#include "trace.h"
-#include "fileinfo.h"
 #include "filedef.h"
-#include "portable.h"
-#include "message.h"
+#include "fileinfo.h"
 #include "filename.h"
+#include "message.h"
+#include "outputlist.h"
+#include "parserintf.h"
+#include "portable.h"
+#include "trace.h"
+#include "util.h"
 
 struct CodeFragmentManager::Private
 {

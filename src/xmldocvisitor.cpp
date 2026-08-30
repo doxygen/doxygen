@@ -13,24 +13,23 @@
  *
  */
 
+// own header
 #include "xmldocvisitor.h"
-#include "docparser.h"
-#include "language.h"
-#include "doxygen.h"
-#include "outputgen.h"
-#include "xmlgen.h"
-#include "dot.h"
-#include "message.h"
-#include "util.h"
-#include "parserintf.h"
-#include "filename.h"
+
+// other includes
+#include "codefragment.h"
 #include "config.h"
-#include "htmlentity.h"
+#include "docparser.h"
+#include "doxygen.h"
 #include "emoji.h"
 #include "filedef.h"
 #include "fileinfo.h"
-#include "codefragment.h"
-#include "cite.h"
+#include "filename.h"
+#include "htmlentity.h"
+#include "message.h"
+#include "outputgen.h"
+#include "parserintf.h"
+#include "util.h"
 
 static void startSimpleSect(TextStream &t,const DocSimpleSect &s)
 {

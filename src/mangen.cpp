@@ -16,18 +16,20 @@
 /* http://www.cubic.org/source/archive/fileform/txt/man/ has some
    nice introductions to groff and man pages. */
 
-#include <stdlib.h>
-#include <string.h>
+// own header
+#include "mangen.h"
 
+// standard includes
+#include <memory>
+#include <string>
+
+// other includes
 #include "config.h"
 #include "datetime.h"
 #include "dir.h"
-#include "docparser.h"
-#include "doxygen.h"
 #include "fileinfo.h"
 #include "language.h"
 #include "mandocvisitor.h"
-#include "mangen.h"
 #include "message.h"
 #include "outputlist.h"
 #include "portable.h"

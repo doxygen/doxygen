@@ -13,10 +13,15 @@
  *
  */
 
-#include <vector>
-#include <cmath>
-
+// own header
 #include "image.h"
+
+// standard includes
+#include <cmath>
+#include <memory>
+#include <vector>
+
+// other includes
 #include "lodepng.h"
 #include "config.h"
 

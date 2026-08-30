@@ -13,24 +13,25 @@
  *
  */
 
+// own header
 #include "namespacedef.h"
-#include "outputlist.h"
-#include "util.h"
-#include "language.h"
+
+// other includes
 #include "classdef.h"
 #include "classlist.h"
-#include "memberlist.h"
-#include "doxygen.h"
-#include "message.h"
-#include "docparser.h"
-#include "searchindex.h"
-#include "vhdldocgen.h"
-#include "layout.h"
-#include "membergroup.h"
+#include "conceptdef.h"
 #include "config.h"
 #include "definitionimpl.h"
+#include "docparser.h"
+#include "doxygen.h"
+#include "language.h"
+#include "layout.h"
+#include "membergroup.h"
+#include "memberlist.h"
 #include "membername.h"
-#include "conceptdef.h"
+#include "message.h"
+#include "outputlist.h"
+#include "util.h"
 
 //------------------------------------------------------------------
 static DString makeDisplayName(const NamespaceDef *nd,bool includeScope)

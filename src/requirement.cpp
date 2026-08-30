@@ -16,20 +16,24 @@
  * Rob Mellor (https://github.com/dropbearrob)
  */
 
+// own header
+#include "requirement.h"
+
+// standard includes
 #include <algorithm>
 
-#include "requirement.h"
+// other includes
+#include "config.h"
+#include "doxygen.h"
 #include "entry.h"
-#include "util.h"
+#include "language.h"
 #include "linkedmap.h"
 #include "message.h"
 #include "outputlist.h"
-#include "language.h"
-#include "section.h"
 #include "pagedef.h"
-#include "config.h"
+#include "section.h"
 #include "trace.h"
-#include "doxygen.h"
+#include "util.h"
 
 struct Requirement : RequirementIntf
 {
@@ -38,7 +42,7 @@ struct Requirement : RequirementIntf
       m_id(id_), m_file(file_), m_line(line_), m_title(title_), m_doc(doc_), m_tagFile(tagFile_), m_extPage(extPage_) {}
     DString id()                const override { return m_id;       }
     DString file()              const override { return m_file;     }
-    int      line()              const override { return m_line;     }
+    int     line()              const override { return m_line;     }
     DString title()             const override { return m_title;    }
     DString doc()               const override { return m_doc;      }
     DString getTagFile()        const override { return m_tagFile;  }

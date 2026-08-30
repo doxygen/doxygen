@@ -13,24 +13,25 @@
 *
 */
 
-#include <algorithm>
-#include <iterator>
-#include <utility>
-#include <cstdint>
-#include <math.h>
+// own header
+#include "dotdirdeps.h"
+
+// standard includes
 #include <cassert>
+#include <cmath>
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
-#include "dotdirdeps.h"
-#include "util.h"
-#include "doxygen.h"
+// other includes
 #include "config.h"
-#include "image.h"
 #include "dotnode.h"
+#include "doxygen.h"
+#include "image.h"
 #include "textstream.h"
+#include "util.h"
 
 
 using DirDefMap = std::map<std::string,const DirDef *>;

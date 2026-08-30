@@ -13,12 +13,15 @@
  *
  */
 
+// own header
 #include "regex.h"
+
+// standard headers
+#include <algorithm>
+#include <cassert>
+#include <cctype>
 #include <cstdint>
 #include <vector>
-#include <cctype>
-#include <cassert>
-#include <algorithm>
 
 #define ENABLE_DEBUG 0
 #if ENABLE_DEBUG

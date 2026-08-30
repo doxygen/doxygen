@@ -13,22 +13,24 @@
  *
  */
 
-#include <stdio.h>
-#include <stdlib.h>
+// own header
+#include "diagram.h"
+
+// standard includes
+#include <cstdio>
 #include <algorithm>
 
-#include "diagram.h"
-#include "image.h"
+// other includes
 #include "classdef.h"
 #include "config.h"
-#include "message.h"
-#include "util.h"
-#include "doxygen.h"
-#include "portable.h"
-#include "indexlist.h"
-#include "classlist.h"
-#include "textstream.h"
 #include "dir.h"
+#include "doxygen.h"
+#include "image.h"
+#include "indexlist.h"
+#include "message.h"
+#include "portable.h"
+#include "textstream.h"
+#include "util.h"
 
 //-----------------------------------------------------------------------------
 

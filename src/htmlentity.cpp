@@ -13,12 +13,16 @@
  *
  */
 
+// own header
+#include "htmlentity.h"
+
+// standard includes
 #include <vector>
 
-#include "htmlentity.h"
+// other includes
 #include "message.h"
-#include "textstream.h"
 #include "regex.h"
+#include "textstream.h"
 
 //! @brief Structure defining all HTML4 entities, doxygen extensions and doxygen commands representing special symbols.
 //! @details In case an entity does not exist a nullptr is given for the entity. The first column contains the symbolic code

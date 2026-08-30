@@ -13,15 +13,18 @@
  *
  */
 
-#include <mutex>
+// own include
+#include "anchor.h"
+
+// standard includes
 #include <algorithm>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 
-#include "anchor.h"
-#include "containers.h"
-#include "utf8.h"
+// other includes
 #include "config.h"
+#include "utf8.h"
 
 struct AnchorGenerator::Private
 {

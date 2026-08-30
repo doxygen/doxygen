@@ -13,12 +13,10 @@
  *
  */
 
-#include <stdexcept>
-
-#include <stdlib.h>
-
-#include "doxygen.h"
+// own header
 #include "outputgen.h"
+
+// other includes
 #include "message.h"
 #include "portable.h"
 

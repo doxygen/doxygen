@@ -33,32 +33,27 @@ typedef yyguts_t *yyscan_t;
 
 %{
 
-/*
- *      includes
- */
-
-#include <algorithm>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <ctype.h>
-#include <string.h>
-
+// own header
 #include "pyscanner.h"
-#include "entry.h"
-#include "message.h"
-#include "config.h"
-#include "doxygen.h"
-#include "util.h"
-#include "defargs.h"
-#include "language.h"
-#include "commentscan.h"
+
+// standard includes
+#include <algorithm>
+#include <memory>
+#include <string>
+#include <vector>
+
+// other includes
 #include "arguments.h"
-#include "markdown.h"
-#include "fileinfo.h"
+#include "commentscan.h"
+#include "config.h"
 #include "debug.h"
+#include "defargs.h"
+#include "entry.h"
+#include "fileinfo.h"
+#include "markdown.h"
+#include "message.h"
 #include "stringutil.h"
+#include "util.h"
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x

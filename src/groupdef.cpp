@@ -15,39 +15,40 @@
  *
  */
 
+// own header
+#include "groupdef.h"
+
+// standard includes
 #include <algorithm>
+#include <cctype>
+#include <memory>
 #include <vector>
 
-#include <ctype.h>
-
-#include "groupdef.h"
-#include "classdef.h"
-#include "conceptdef.h"
-#include "filedef.h"
-#include "classlist.h"
-#include "outputlist.h"
-#include "namespacedef.h"
-#include "language.h"
-#include "util.h"
-#include "memberlist.h"
-#include "message.h"
-#include "membergroup.h"
-#include "doxygen.h"
-#include "pagedef.h"
-#include "docparser.h"
-#include "searchindex.h"
-#include "dot.h"
-#include "dotgroupcollaboration.h"
-#include "vhdldocgen.h"
-#include "layout.h"
+// other includes
 #include "arguments.h"
-#include "entry.h"
-#include "membername.h"
-#include "dirdef.h"
+#include "classdef.h"
+#include "classlist.h"
+#include "conceptdef.h"
 #include "config.h"
 #include "definitionimpl.h"
-#include "regex.h"
+#include "dirdef.h"
+#include "docparser.h"
+#include "dot.h"
+#include "dotgroupcollaboration.h"
+#include "doxygen.h"
+#include "filedef.h"
+#include "language.h"
+#include "layout.h"
+#include "membergroup.h"
+#include "memberlist.h"
+#include "membername.h"
+#include "message.h"
 #include "moduledef.h"
+#include "namespacedef.h"
+#include "outputlist.h"
+#include "pagedef.h"
+#include "util.h"
+#include "vhdldocgen.h"
 
 //---------------------------------------------------------------------------
 

@@ -13,25 +13,28 @@
  *
  */
 
+// own header
+#include "dirdef.h"
+
+// standard includes
 #include <algorithm>
 
-#include "dirdef.h"
-#include "md5hash.h"
-#include "filename.h"
-#include "doxygen.h"
-#include "util.h"
-#include "outputlist.h"
-#include "language.h"
-#include "message.h"
-#include "dot.h"
-#include "dotdirdeps.h"
-#include "layout.h"
+// other includes
 #include "config.h"
-#include "docparser.h"
 #include "definitionimpl.h"
+#include "docparser.h"
+#include "dotdirdeps.h"
+#include "doxygen.h"
 #include "filedef.h"
-#include "trace.h"
+#include "filename.h"
+#include "language.h"
+#include "layout.h"
+#include "md5hash.h"
+#include "message.h"
+#include "outputlist.h"
 #include "portable.h"
+#include "trace.h"
+#include "util.h"
 
 //----------------------------------------------------------------------
 

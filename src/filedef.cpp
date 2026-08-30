@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2026 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -15,40 +13,39 @@
  *
  */
 
+// own header
+#include "filedef.h"
+
+// standard includes
 #include <unordered_set>
 
-#include "memberlist.h"
-#include "classlist.h"
-#include "filedef.h"
-#include "doxygen.h"
-#include "memberdef.h"
+// other includes
+#include "clangparser.h"
 #include "classdef.h"
-#include "namespacedef.h"
-#include "util.h"
-#include "language.h"
-#include "outputlist.h"
+#include "classlist.h"
+#include "conceptdef.h"
+#include "config.h"
+#include "debug.h"
+#include "definitionimpl.h"
+#include "docparser.h"
 #include "dot.h"
 #include "dotincldepgraph.h"
-#include "message.h"
-#include "docparser.h"
-#include "searchindex.h"
+#include "doxygen.h"
+#include "entry.h"
 #include "htags.h"
+#include "language.h"
+#include "layout.h"
+#include "memberdef.h"
+#include "membergroup.h"
+#include "memberlist.h"
+#include "message.h"
+#include "moduledef.h"
+#include "namespacedef.h"
+#include "outputlist.h"
 #include "parserintf.h"
 #include "portable.h"
+#include "util.h"
 #include "vhdldocgen.h"
-#include "debug.h"
-#include "layout.h"
-#include "entry.h"
-#include "groupdef.h"
-#include "filename.h"
-#include "membergroup.h"
-#include "dirdef.h"
-#include "config.h"
-#include "clangparser.h"
-#include "settings.h"
-#include "definitionimpl.h"
-#include "conceptdef.h"
-#include "moduledef.h"
 
 //---------------------------------------------------------------------------
 

@@ -13,10 +13,14 @@
  *
  */
 
-#include <cstdlib>
-#include <cassert>
-
+// own header
 #include "cppvalue.h"
+
+// standard includes
+#include <cassert>
+#include <string>
+
+// other includes
 #include "constexp.h"
 
 CPPValue CPPValue::parseOctal(const std::string &token)

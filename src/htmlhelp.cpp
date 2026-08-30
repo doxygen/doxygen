@@ -15,24 +15,26 @@
  * Harm van der Heijden.
  */
 
-#include <algorithm>
-
-#include <stdio.h>
-#include <stdlib.h>
-
+// own header
 #include "htmlhelp.h"
+
+// standard includes
+#include <algorithm>
+#include <cstdio>
+#include <cstdlib>
+
+// other includes
 #include "config.h"
-#include "message.h"
 #include "doxygen.h"
-#include "language.h"
-#include "portable.h"
-#include "groupdef.h"
-#include "memberdef.h"
 #include "filedef.h"
-#include "util.h"
-#include "linkedmap.h"
-#include "regex.h"
 #include "fileinfo.h"
+#include "language.h"
+#include "linkedmap.h"
+#include "memberdef.h"
+#include "message.h"
+#include "portable.h"
+#include "regex.h"
+#include "util.h"
 
 //----------------------------------------------------------------------------
 

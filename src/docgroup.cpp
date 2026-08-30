@@ -13,12 +13,18 @@
  *
  */
 
+// own header
+#include "docgroup.h"
+
+// standard includes
 #include <atomic>
+#include <mutex>
+
+// other includes
 #include "doxygen.h"
-#include "util.h"
 #include "entry.h"
 #include "message.h"
-#include "docgroup.h"
+#include "util.h"
 
 static std::atomic_int g_groupId;
 static std::mutex g_memberGroupInfoMapMutex;
