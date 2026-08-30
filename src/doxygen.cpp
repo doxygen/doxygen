@@ -3049,7 +3049,7 @@ static int findFunctionPtr(const std::string &type,SrcLangExt lang, int *pLength
       type.find("operator")==std::string::npos &&   // not an operator
       (type.find(")(")==std::string::npos || type.find("typedef ")!=std::string::npos) &&
                                                     // not a function pointer return type
-      (!(bb<i && i<be) || templFp) // bug665855: avoid treating "typedef A<void (T*)> type" as a function pointer
+      (!((bb!=std::string::npos && bb<i) && (be!=std::string::npos && i<be)) || templFp) // bug665855: avoid treating "typedef A<void (T*)> type" as a function pointer
      )
   {
     if (pLength) *pLength=static_cast<int>(l);
