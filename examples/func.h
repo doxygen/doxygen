@@ -12,7 +12,7 @@ const char *Fn_Test::member(char c,int n) throw(std::out_of_range) {}
  * Details about Fn_Test.
  */
 
-/*! \fn const char *Fn_Test::member(char c,int n) 
+/*! \fn const char *Fn_Test::member(char c,int n)
  *  \brief A member function.
  *  \param c a character.
  *  \param n an integer.

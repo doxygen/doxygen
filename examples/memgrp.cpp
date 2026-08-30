@@ -19,7 +19,7 @@ void Memgrp_Test::func1InGroup1() {}
 void Memgrp_Test::func2InGroup1() {}
 
 /** @name Group2
- *  Description of group 2. 
+ *  Description of group 2.
  */
 ///@{
 /** Function 2 in group 2. Details. */
@@ -28,12 +28,12 @@ void Memgrp_Test::func2InGroup2() {}
 void Memgrp_Test::func1InGroup2() {}
 ///@}
 
-/*! \file 
+/*! \file
  *  docs for this file
  */
 
 //!@{
-//! one description for all members of this group 
+//! one description for all members of this group
 //! (because DISTRIBUTE_GROUP_DOC is YES in the config file)
 #define A 1
 #define B 2

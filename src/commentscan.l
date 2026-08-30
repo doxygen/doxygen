@@ -992,8 +992,9 @@ STopt  [^\n@\\]*
                                           DString fullMatch = yytext;
                                           size_t idx = fullMatch.find('{');
                                           /* handle `f{` command as special case */
-                                          if ((idx > 1) && (yytext[idx-1] == 'f') && (yytext[idx-2] == '\\' || yytext[idx-2] =='@')) REJECT;
-                                          size_t idxEnd = fullMatch.find('}',idx+1);
+                                          if ((idx != DString::npos) && (idx > 1) && (yytext[idx-1] == 'f') && (yytext[idx-2] == '\\' || yytext[idx-2] =='@')) REJECT;
+                                          size_t idxEnd = DString::npos;
+                                          if (idx != DString::npos) idxEnd = fullMatch.find('}',idx+1);
                                           DString cmdName;
                                           StringVector optList;
                                           if (idx == DString::npos) // no options
@@ -2084,8 +2085,9 @@ STopt  [^\n@\\]*
                                           DString fullMatch = yytext;
                                           size_t idx = fullMatch.find('{');
                                           /* handle `f{` command as special case */
-                                          if ((idx > 1) && (yytext[idx-1] == 'f') && (yytext[idx-2] == '\\' || yytext[idx-2] =='@')) REJECT;
-                                          size_t idxEnd = fullMatch.find("}",idx+1);
+                                          if ((idx != DString::npos) && (idx > 1) && (yytext[idx-1] == 'f') && (yytext[idx-2] == '\\' || yytext[idx-2] =='@')) REJECT;
+                                          size_t idxEnd = DString::npos;
+                                          if (idx != DString::npos) idxEnd = fullMatch.find("}",idx+1);
                                           DString cmdName;
                                           StringVector optList;
                                           if (idx == DString::npos) // no options

@@ -1,4 +1,4 @@
-/*! 
+/*!
  *  \brief     Pretty nice class.
  *  \details   This class is used to demonstrate a number of section commands.
  *  \author    John Doe

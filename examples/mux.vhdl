@@ -10,7 +10,7 @@ library ieee;
 
 --! Mux entity brief description
 
---! Detailed description of this 
+--! Detailed description of this
 --! mux design element.
 entity mux_using_with is
     port (

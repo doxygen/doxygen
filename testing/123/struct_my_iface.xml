@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="struct_my_iface" kind="struct" language="C++" prot="public">
+    <compoundname>MyIface</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="struct_my_iface_1a078379ec89963a0ac5ce07e74b414749" prot="public" static="no" mutable="no">
+        <type>int(*</type>
+        <definition>int(* MyIface::do_it) (struct MyIface *self, int x)</definition>
+        <argsstring>)(struct MyIface *self, int x)</argsstring>
+        <name>do_it</name>
+        <qualifiedname>MyIface::do_it</qualifiedname>
+        <briefdescription>
+          <para>a member function pointer </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="123_function_pointer.c" line="17" column="3" bodyfile="123_function_pointer.c" bodystart="17" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>A struct with a function pointer member. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="123_function_pointer.c" line="14" column="1" bodyfile="123_function_pointer.c" bodystart="15" bodyend="18"/>
+    <listofallmembers>
+      <member refid="struct_my_iface_1a078379ec89963a0ac5ce07e74b414749" prot="public" virt="non-virtual">
+        <scope>MyIface</scope>
+        <name>do_it</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
