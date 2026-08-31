@@ -19,7 +19,6 @@
 #include <memory>
 #include <string.h>
 #include <vector>
-#include <cassert>
 #include <mutex>
 
 // other includes
@@ -137,7 +136,7 @@ class QhpSectionTree
     }
     void decLevel()
     {
-      assert(m_current->parent!=nullptr);
+      ASSERT(m_current->parent!=nullptr);
       if (m_current->parent)
       {
         m_current = m_current->parent;

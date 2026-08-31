@@ -18,7 +18,6 @@
 
 // standard includes
 #include <algorithm>
-#include <cassert>
 #include <mutex>
 #include <sstream>
 
@@ -113,7 +112,7 @@ DotFilePatcher *DotManager::createFilePatcher(const DString &fileName)
   if (patcher != m_filePatchers.end()) return &(patcher->second);
 
   auto rv = m_filePatchers.emplace(fileName.str(), fileName);
-  assert(rv.second);
+  ASSERT(rv.second);
   return &(rv.first->second);
 }
 

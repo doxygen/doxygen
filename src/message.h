@@ -139,6 +139,8 @@ constexpr bool has_newline_at_end(const char (&str)[N])
     term_fmt(FMT_STRING(fmt),##__VA_ARGS__); \
   } while (0)
 
+#define ASSERT(x)  if ( !(x) )\
+  warn_uncond("ASSERT: Internal inconsistency: \"{}\" in {} ({})\n",#x,__FILE__,__LINE__)
 
 #ifdef DOXYGEN_ONLY
 namespace fmt { template<typename T> struct formatter {}; }

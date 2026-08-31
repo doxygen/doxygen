@@ -18,7 +18,6 @@
 
 // standard includes
 #include <algorithm>
-#include <cassert>
 #include <utility>
 
 // other includes
@@ -60,7 +59,7 @@ void SearchTerm::makeTitle()
   }
   else
   {
-    assert(false);
+    ASSERT(false);
   }
 }
 
@@ -639,7 +638,7 @@ static void writeJavasScriptSearchDataPage(const DString &baseName,const DString
     const SearchTerm::LinkInfo info = term.info;
     const Definition *d             = getDef(info);
     const SectionInfo *si           = getSection(info);
-    assert(d || si); // either d or si should be valid
+    ASSERT(d || si); // either d or si should be valid
     DString word                   = term.word;
     DString id                     = term.termEncoded();
     ++it;

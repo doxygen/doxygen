@@ -18,7 +18,6 @@
 
 // standard includes
 #include <array>
-#include <cassert>
 
 // other includes
 #include "config.h"
@@ -1766,7 +1765,7 @@ DString extractLanguageSpecificTitle(const DString &input,SrcLangExt lang)
     s=e+1;
     e=input.find('|',s);
     size_t i=input.find('=',s);
-    assert(i!=DString::npos && i>s);
+    ASSERT(i!=DString::npos && i>s);
     SrcLangExt key= static_cast<SrcLangExt>(input.mid(s,i-s).toUInt());
     if (key==lang) // found matching key
     {

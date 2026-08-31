@@ -143,9 +143,9 @@ void ClangTUParser::parse()
   StringVector clangOptions = Config_getList(CLANG_OPTIONS);
   if (!clangAssistedParsing) return;
   //printf("ClangParser::start(%s)\n",fileName);
-  assert(p->index==nullptr);
-  assert(p->tokens==nullptr);
-  assert(p->numTokens==0);
+  ASSERT(p->index==nullptr);
+  ASSERT(p->tokens==nullptr);
+  ASSERT(p->numTokens==0);
   p->index    = clang_createIndex(0, 0);
   p->curToken = 0;
   p->cursors.clear();

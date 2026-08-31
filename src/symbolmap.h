@@ -17,7 +17,6 @@
 #define SYMBOLMAP_H
 
 #include <algorithm>
-#include <cassert>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -74,7 +73,7 @@ class SymbolMap
     //! Returns a pair of iterators pointing to the start and end of the range of matching symbols
     const VectorPtr &find(const DString &name)
     {
-      assert(m_noMatch.empty());
+      ASSERT(m_noMatch.empty());
       auto it = m_map.find(name.str());
       return it==m_map.end() ? m_noMatch : it->second;
     }

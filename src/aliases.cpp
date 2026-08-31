@@ -17,7 +17,6 @@
 #include "aliases.h"
 
 // standard includes
-#include <cassert>
 #include <unordered_map>
 
 // other includes
@@ -71,8 +70,8 @@ static void addValidAliasToMap(std::string_view alias)
   if (reg::search(alias,m,re)) // valid name= or name{...}= part
   {
     size_t i=m.length();
-    assert(i!=std::string::npos); // based on re is always a =
-    assert(m.size()==3); // m[0]=full match including '=', m[1]=name, m[2]=optional params
+    ASSERT(i!=std::string::npos); // based on re is always a =
+    ASSERT(m.size()==3); // m[0]=full match including '=', m[1]=name, m[2]=optional params
     aliasName  = m[1].str();
     aliasValue = alias.substr(i);
     //printf("Alias: found name='%s' value='%s'\n",qPrint(name),qPrint(aliasValue));

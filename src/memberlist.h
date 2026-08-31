@@ -24,6 +24,7 @@
 #include "linkedmap.h"
 #include "memberdef.h"
 #include "membergroup.h"
+#include "message.h"
 #include "types.h"
 
 class GroupDef;

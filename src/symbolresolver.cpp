@@ -18,7 +18,6 @@
 
 // standard includes
 #include <algorithm>
-#include <cassert>
 #include <mutex>
 #include <string>
 #include <unordered_map>
@@ -1630,7 +1629,7 @@ DString SymbolResolver::Private::substTypedef(
   const int maxAddrSize = 20;
   char ptr_str[maxAddrSize];
   int num = snprintf(ptr_str,maxAddrSize,"%p:",(void *)scope);
-  assert(num>0);
+  ASSERT(num>0);
   key.reserve(num+name.length()+1);
   key+=ptr_str;
   key+=name.str();

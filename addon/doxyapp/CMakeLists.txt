@@ -7,6 +7,12 @@ include_directories(
         ${Iconv_INCLUDE_DIRS}
         ${CLANG_INCLUDEDIR}
 )
+if (NOT use_sys_spdlog)
+    include_directories(${PROJECT_SOURCE_DIR}/deps/spdlog/include)
+endif()
+if (NOT use_sys_fmt)
+    include_directories(${PROJECT_SOURCE_DIR}/deps/fmt/include)
+endif()
 
 add_executable(doxyapp
 doxyapp.cpp

@@ -25,10 +25,6 @@
 
 #include "utf8.h"
 
-#define ASSERT(x)  if ( !(x) )\
-        fprintf(stderr,"ASSERT: \"%s\" in %s (%d)\n",#x,__FILE__,__LINE__)
-
-
 /*****************************************************************************
   Safe and portable C string functions; extensions to standard string.h
  *****************************************************************************/

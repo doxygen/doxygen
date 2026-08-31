@@ -3740,7 +3740,7 @@ static void buildInterfaceAndServiceList(const Entry *root)
     {
       DString scope = root->parent()->name;
       ClassDefMutable *cd = getClassMutable(scope);
-      assert(cd);
+      ASSERT(cd);
       if (cd && ((ClassDef::Interface == cd->compoundType()) ||
                  (ClassDef::Service   == cd->compoundType()) ||
                  (ClassDef::Singleton == cd->compoundType())))
@@ -3749,7 +3749,7 @@ static void buildInterfaceAndServiceList(const Entry *root)
       }
       else
       {
-        assert(false); // was checked by scanner.l
+        ASSERT(false); // was checked by scanner.l
       }
     }
     else if (rname.empty())

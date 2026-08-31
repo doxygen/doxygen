@@ -4588,7 +4588,7 @@ Token DocPara::handleCommand(char cmdChar, const DString &cmdName)
         {
           parser()->tokenizer.setStatePlantUMLOpt();
           retval = parser()->tokenizer.lex();
-          assert(retval.is(TokenRetval::RetVal_OK));
+          ASSERT(retval.is(TokenRetval::RetVal_OK));
 
           sectionId = parser()->context.token->sectionId;
           sectionId = sectionId.stripWhiteSpace();
@@ -4656,7 +4656,7 @@ Token DocPara::handleCommand(char cmdChar, const DString &cmdName)
         {
           parser()->tokenizer.setStateMermaidOpt();
           retval = parser()->tokenizer.lex();
-          assert(retval.is(TokenRetval::RetVal_OK));
+          ASSERT(retval.is(TokenRetval::RetVal_OK));
 
           sectionId = parser()->context.token->sectionId;
           sectionId = sectionId.stripWhiteSpace();

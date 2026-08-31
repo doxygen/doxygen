@@ -18,7 +18,6 @@
 
 // standard includes
 #include <algorithm>
-#include <cassert>
 #include <cstdarg>
 #include <functional>
 #include <map>
@@ -1570,7 +1569,7 @@ void TagFileParser::buildClassEntry(const std::shared_ptr<Entry> &root, const Ta
     case TagClassInfo::Kind::Service:   ce->spec = TypeSpecifier().setService(true);   break;
     case TagClassInfo::Kind::Singleton: ce->spec = TypeSpecifier().setSingleton(true); break;
     case TagClassInfo::Kind::None:      // should never happen, means not properly initialized
-                                        assert(tci->kind != TagClassInfo::Kind::None);
+                                        ASSERT(tci->kind != TagClassInfo::Kind::None);
                                         break;
   }
   ce->name     = tci->name;

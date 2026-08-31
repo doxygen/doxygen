@@ -17,7 +17,6 @@
 #include "dotdirdeps.h"
 
 // standard includes
-#include <cassert>
 #include <cmath>
 #include <map>
 #include <memory>
@@ -69,7 +68,7 @@ static DString getDirectoryBackgroundColor(int depthIndex)
   int hue   = Config_getInt(HTML_COLORSTYLE_HUE);
   int sat   = Config_getInt(HTML_COLORSTYLE_SAT);
   int gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
-  assert(depthIndex>=0 && depthIndex<=Config_getInt(DIR_GRAPH_MAX_DEPTH));
+  ASSERT(depthIndex>=0 && depthIndex<=Config_getInt(DIR_GRAPH_MAX_DEPTH));
   float fraction = static_cast<float>(depthIndex)/static_cast<float>(Config_getInt(DIR_GRAPH_MAX_DEPTH));
   const char hex[] = "0123456789abcdef";
   int range = 0x40; // range from darkest color to lightest color
@@ -80,9 +79,9 @@ static DString getDirectoryBackgroundColor(int depthIndex)
   int red   = static_cast<int>(r*255.0);
   int green = static_cast<int>(g*255.0);
   int blue  = static_cast<int>(b*255.0);
-  assert(red>=0   && red<=255);
-  assert(green>=0 && green<=255);
-  assert(blue>=0  && blue<=255);
+  ASSERT(red>=0   && red<=255);
+  ASSERT(green>=0 && green<=255);
+  ASSERT(blue>=0  && blue<=255);
   char colStr[8];
   colStr[0]='#';
   colStr[1]=hex[red>>4];

@@ -18,13 +18,13 @@
 
 // standard headers
 #include <algorithm>
-#include <cassert>
 #include <cctype>
 #include <cstdint>
 #include <vector>
 
 #define ENABLE_DEBUG 0
 #if ENABLE_DEBUG
+#include <cassert>
 #define DBG(fmt,...) do { fprintf(stderr,fmt,__VA_ARGS__); } while(0)
 #else
 #define DBG(fmt,...) do {} while(0)

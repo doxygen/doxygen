@@ -24,7 +24,6 @@
 
 // standard includes
 #include <algorithm>
-#include <cassert>
 #include <map>
 #include <mutex>
 #include <unordered_set>
@@ -2956,7 +2955,7 @@ DString FlowChart::printPlantUmlNode(const FlowChart &flo,bool ca,bool endL)
     case EMPTY_NO:   break;
     case COMMENT_NO: t="\n note left \n "+flo.label+"\nend note \n"; break;
     case BEGIN_NO:   t="\n:begin;"; break;
-    default:         assert(false); break;
+    default:         ASSERT(false); break;
   }
   return t;
 }
@@ -3076,7 +3075,7 @@ void FlowChart::endDot(TextStream &t)
 
 void FlowChart::writeFlowChart()
 {
-  //  assert(VhdlDocGen::flowMember);
+  //  ASSERT(VhdlDocGen::flowMember);
 
   DString ov = Config_getString(HTML_OUTPUT);
   DString fileName = ov+"/flow_design.dot";
@@ -3232,8 +3231,8 @@ void FlowChart::writeEdge(TextStream &t,const FlowChart &fl_from,const FlowChart
   auto it = g_keyMap.find(s1.str());
   auto it1 = g_keyMap.find(s2.str());
   // checks if the link is connected to a valid node
-  assert(it!=g_keyMap.end());
-  assert(it1!=g_keyMap.end());
+  ASSERT(it!=g_keyMap.end());
+  ASSERT(it1!=g_keyMap.end());
 #endif
 
   writeEdge(t,fl_from.id,fl_to.id,i,b,c);
@@ -3453,7 +3452,7 @@ void FlowChart::writeFlowLinks(TextStream &t)
     {
       writeEdge(t,fll,flowList[j+1],0);
       size_t z=getNextIfLink(fll,j);
-      // assert(z>-1);
+      // ASSERT(z>-1);
       writeEdge(t,fll,flowList[z],1);
     }
     else if (kind & LOOP_NO)
@@ -3477,7 +3476,7 @@ void FlowChart::writeFlowLinks(TextStream &t)
       size_t z=findNode(j+1,fll.stamp,kind);
       z=getNextNode(z,flowList[z].stamp);
 
-      // assert(z>-1);
+      // ASSERT(z>-1);
       writeEdge(t,fll,flowList[z],1);
       continue;
     }

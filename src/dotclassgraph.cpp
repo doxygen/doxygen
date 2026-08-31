@@ -24,6 +24,7 @@
 #include "config.h"
 #include "containers.h"
 #include "dotnode.h"
+#include "message.h"
 #include "textstream.h"
 #include "util.h"
 
