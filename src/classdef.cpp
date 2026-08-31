@@ -5190,7 +5190,7 @@ void ClassDefImpl::setCompoundType(CompoundType t)
 
 void ClassDefImpl::setTemplateMaster(const ClassDef *tm)
 {
-  assert(tm!=this);
+  ASSERT(tm!=this);
   m_templateMaster=tm;
 }
 

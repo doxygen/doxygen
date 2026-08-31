@@ -660,7 +660,7 @@ void VHDLOutlineParser::addProto(const DString &s1,const DString &s2,const DStri
 
     if (s->parse_sec==VhdlSection::PARAM_SEC)
     {
-    //  assert(false);
+    //  ASSERT(false);
     }
 
     arg.defval+=s1;
@@ -738,7 +738,7 @@ int VHDLOutlineParser::getLine(int tok)
 {
   int val=p->lineParse[tok];
   if (val<0) val=0;
-  //assert(val>=0 && val<=yyLineNr);
+  //ASSERT(val>=0 && val<=yyLineNr);
   return val;
 }
 

@@ -17,7 +17,6 @@
 #include "portable.h"
 
 // standard includes
-#include <cassert>
 #include <cctype>
 #include <chrono>
 #include <cstdio>

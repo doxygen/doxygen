@@ -15,13 +15,13 @@
 #ifndef HTMLENTITY_H
 #define HTMLENTITY_H
 
-#include <cassert>
 #include <functional>
 #include <string>
 #include <unordered_map>
 
 #include "dstring.h"
 #include "construct.h"
+#include "message.h"
 
 class TextStream;
 
@@ -126,8 +126,8 @@ class HtmlEntityMapper
     template<class T>
     const char *writeHtmlEntity(T &result, const char *s, HtmlEntityMapperFunc &&mapper, const char *fallback)
     {
-      assert(s!=nullptr);
-      assert(s[0]=='&');
+      ASSERT(s!=nullptr);
+      ASSERT(s[0]=='&');
       const char *q = s+1;
       size_t cnt = 2; // we have to count & and ; as well
       while ((*q >= 'a' && *q <= 'z') || (*q >= 'A' && *q <= 'Z') || (*q >= '0' && *q <= '9'))

@@ -18,7 +18,6 @@
 
 // standard includes
 #include <algorithm>
-#include <cassert>
 #include <mutex>
 #include <optional>
 #include <string>
@@ -580,7 +579,7 @@ class FilterCache
                fileName,Doxygen::filterDBFileName,item.filePos,item.fileSize);
 
         auto it_off = m_lineOffsets.find(fileName.str());
-        assert(it_off!=m_lineOffsets.end());
+        ASSERT(it_off!=m_lineOffsets.end());
         auto [ startLineOffset, fragmentSize] = getFragmentLocation(it_off->second,startLine,endLine);
         //printf("%s: existing file [%zu-%zu]->[%zu-%zu] size=%zu\n",
         //    qPrint(fileName),startLine,endLine,startLineOffset,endLineOffset,fragmentSize);
@@ -694,11 +693,11 @@ class FilterCache
     auto getFragmentLocation(const LineOffsets &lineOffsets,
                              size_t startLine,size_t endLine) -> std::tuple<size_t,size_t>
     {
-      assert(startLine > 0);
-      assert(startLine <= endLine);
+      ASSERT(startLine > 0);
+      ASSERT(startLine <= endLine);
       const size_t startLineOffset = lineOffsets[std::min(startLine-1,lineOffsets.size()-1)];
       const size_t endLineOffset   = lineOffsets[std::min(endLine,    lineOffsets.size()-1)];
-      assert(startLineOffset <= endLineOffset);
+      ASSERT(startLineOffset <= endLineOffset);
       const size_t fragmentSize = endLineOffset-startLineOffset;
       return std::tie(startLineOffset,fragmentSize);
     }
@@ -710,7 +709,7 @@ class FilterCache
       // compute offsets from start for each line
       compileLineOffsets(fileName,str);
       auto it = m_lineOffsets.find(fileName.str());
-      assert(it!=m_lineOffsets.end());
+      ASSERT(it!=m_lineOffsets.end());
       const LineOffsets &lineOffsets = it->second;
       auto [ startLineOffset, fragmentSize] = getFragmentLocation(lineOffsets,startLine,endLine);
       //printf("%s: new file [%zu-%zu]->[%zu-%zu] size=%zu\n",
@@ -1312,7 +1311,7 @@ void DefinitionImpl::setOuterScope(Definition *d)
     p->outerScope = d;
   }
   p->hidden = p->hidden || d->isHidden();
-  assert(p->def!=p->outerScope);
+  ASSERT(p->def!=p->outerScope);
 }
 
 const DString &DefinitionImpl::localName() const

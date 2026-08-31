@@ -36,7 +36,6 @@ typedef yyguts_t *yyscan_t;
 
 // standard includes
 #include <algorithm>
-#include <cassert>
 #include <cctype>
 #include <functional>
 #include <mutex>
@@ -4371,7 +4370,7 @@ static bool checkStructuralIndicator(yyscan_t yyscanner)
 static bool makeStructuralIndicator(yyscan_t yyscanner,MakeEntryType maker)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  assert(maker!=nullptr); // detect programming error
+  ASSERT(maker!=nullptr); // detect programming error
   //printf("yyextra->current->section=%x\n",yyextra->current->section);
   if (yyextra->current->section.isDoc())
   {

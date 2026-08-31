@@ -17,7 +17,6 @@
 #include "searchindex.h"
 
 // standard includes
-#include <cassert>
 #include <cctype>
 #include <mutex>
 
@@ -74,7 +73,7 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const DString &anchor,bool
 {
   if (ctx==nullptr) return;
   std::lock_guard<std::mutex> lock(g_searchIndexMutex);
-  assert(!isSourceFile || ctx->definitionType()==Definition::TypeFile);
+  ASSERT(!isSourceFile || ctx->definitionType()==Definition::TypeFile);
   //printf("SearchIndex::setCurrentDoc(%s,%s,%s)\n",name,baseName,anchor);
   DString url=isSourceFile ? (toFileDef(ctx))->getSourceFileBase() : ctx->getOutputFileBase();
   url+=Config_getString(HTML_FILE_EXTENSION);

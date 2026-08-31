@@ -18,7 +18,6 @@
 
 // std includes (sorted)
 #include <algorithm>
-#include <cassert>
 #include <cctype>
 #include <cinttypes>
 #include <cstdlib>
@@ -4971,7 +4970,7 @@ DString getDotImageExtension()
 
 bool openOutputFile(const DString &outFile,std::ofstream &f)
 {
-  assert(!f.is_open());
+  ASSERT(!f.is_open());
   bool fileOpened=false;
   bool writeToStdout=outFile=="-";
   if (writeToStdout) // write to stdout
@@ -5341,7 +5340,7 @@ DString extractBeginRawStringDelimiter(const char *rawStart)
 {
   DString text=rawStart;
   size_t i = text.find('"');
-  assert(i!=DString::npos);
+  ASSERT(i!=DString::npos);
   return text.mid(i+1,text.length()-i-2); // text=...R"xyz( -> delimiter=xyz
 }
 

@@ -22,7 +22,6 @@
 
 // standard includes
 #include <array>
-#include <cassert>
 #include <cstdlib>
 #include <map>
 #include <set>
@@ -5607,7 +5606,7 @@ static void writeIndexHierarchyEntries(OutputList &ol,const LayoutNavEntryList &
           writeUserGroupStubPage(ol,lne.get());
           break;
         case LayoutNavEntry::None:
-          assert(kind != LayoutNavEntry::None); // should never happen, means not properly initialized
+          ASSERT(kind != LayoutNavEntry::None); // should never happen, means not properly initialized
           break;
       }
       if (kind!=LayoutNavEntry::User && kind!=LayoutNavEntry::UserGroup) // User entry may appear multiple times
@@ -5679,7 +5678,7 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
     case LayoutNavEntry::FileGlobals:        return index.numDocumentedFileMembers(FileMemberHighlight::All)>0;
     case LayoutNavEntry::Examples:           return !Doxygen::exampleLinkedMap->empty();
     case LayoutNavEntry::None:             // should never happen, means not properly initialized
-      assert(kind != LayoutNavEntry::None);
+      ASSERT(kind != LayoutNavEntry::None);
       return false;
   }
   return false;

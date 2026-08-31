@@ -17,7 +17,6 @@
 #include "htmlgen.h"
 
 // standard includes
-#include <cassert>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -750,10 +749,10 @@ static void fillColorStyleMap(const DString &definitions,StringUnorderedMap &map
     if (line.startsWith("--"))
     {
       size_t separator = line.find(':');
-      assert(separator!=DString::npos);
+      ASSERT(separator!=DString::npos);
       std::string key = line.left(separator).str();
       size_t semi = line.rfind(';');
-      assert(semi!=DString::npos);
+      ASSERT(semi!=DString::npos);
       std::string value = line.mid(separator+1,semi-separator-1).stripWhiteSpace().str();
       map.emplace(key,value);
       //printf("var(%s)=%s\n",qPrint(key),qPrint(value));
@@ -787,7 +786,7 @@ static DString replaceVariables(const DString &input)
     {
       result+=input.mid(p,i-p);
       size_t j=input.find(")",i+4);
-      assert(j!=DString::npos);
+      ASSERT(j!=DString::npos);
       auto it = mapping.find(input.mid(i+4,j-i-4).str()); // find variable
       if (it==mapping.end())
       {                            // should be found
@@ -2926,7 +2925,7 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
     case LayoutNavEntry::ExceptionIndex:     return index.numAnnotatedExceptions()>0;
     case LayoutNavEntry::ExceptionHierarchy: return index.numHierarchyExceptions()>0;
     case LayoutNavEntry::None:             // should never happen, means not properly initialized
-      assert(kind != LayoutNavEntry::None);
+      ASSERT(kind != LayoutNavEntry::None);
       return false;
   }
   return false;

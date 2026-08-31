@@ -34,7 +34,6 @@ typedef yyguts_t *yyscan_t;
 #include "doctokenizer.h"
 
 // standard includes
-#include <cassert>
 #include <cctype>
 #include <stack>
 #include <string>
@@ -345,7 +344,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          lineCount(yytext,yyleng);
                          DString text(yytext);
                          size_t dashPos = text.rfind('-');
-                         assert(dashPos!=DString::npos);
+                         ASSERT(dashPos!=DString::npos);
                          yyextra->token.isEnumList = text.at(dashPos+1)=='#';
                          yyextra->token.isCheckedList = false;
                          yyextra->token.id         = -1;
@@ -376,7 +375,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                            reg::Match match;
                            reg::search(text,match,re);
                            size_t listPos = match.position();
-                           assert(listPos!=std::string::npos);
+                           ASSERT(listPos!=std::string::npos);
                            yyextra->token.isEnumList = false;
                            yyextra->token.isCheckedList = false;
                            yyextra->token.id         = -1;
@@ -396,7 +395,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                            reg::Match match;
                            reg::search(text,match,re);
                            size_t markPos = match.position();
-                           assert(markPos!=std::string::npos);
+                           ASSERT(markPos!=std::string::npos);
                            yyextra->token.isEnumList = true;
                            yyextra->token.isCheckedList = false;
                            bool ok = false;
@@ -415,7 +414,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          lineCount(yytext,yyleng);
                          DString text=extractPartAfterNewLine(yytext);
                          size_t dashPos = text.rfind('-');
-                         assert(dashPos!=DString::npos);
+                         ASSERT(dashPos!=DString::npos);
                          yyextra->token.isEnumList = text.at(dashPos+1)=='#';
                          yyextra->token.isCheckedList = false;
                          yyextra->token.id         = -1;
@@ -447,7 +446,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                            reg::Match match;
                            reg::search(text,match,re);
                            size_t markPos = match.position();
-                           assert(markPos!=std::string::npos);
+                           ASSERT(markPos!=std::string::npos);
                            yyextra->token.isEnumList = false;
                            yyextra->token.isCheckedList = false;
                            yyextra->token.id         = -1;
@@ -468,7 +467,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                            reg::Match match;
                            reg::search(text,match,re);
                            size_t markPos = match.position();
-                           assert(markPos!=std::string::npos);
+                           ASSERT(markPos!=std::string::npos);
                            yyextra->token.isEnumList = true;
                            yyextra->token.isCheckedList = false;
                            bool ok = false;
@@ -2308,7 +2307,7 @@ void DocTokenizer::popState()
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  assert(!yyextra->stateStack.empty());
+  ASSERT(!yyextra->stateStack.empty());
   BEGIN(yyextra->stateStack.top());
   yyextra->stateStack.pop();
 }

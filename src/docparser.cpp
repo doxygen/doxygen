@@ -17,7 +17,6 @@
 #include "docparser.h"
 
 // standard includes
-#include <cassert>
 #include <cstdint>
 #include <cstdio>
 
@@ -2205,7 +2204,7 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
                                   const DocOptions &options)
 {
   DocParser *parser = dynamic_cast<DocParser*>(&parserIntf);
-  assert(parser!=nullptr);
+  ASSERT(parser!=nullptr);
   if (parser==nullptr) return nullptr;
   //printf("validatingParseDoc(%s,%s)=[%s]\n",ctx?qPrint(ctx->name()):"<none>",
   //                                     md?qPrint(md->name()):"<none>",
@@ -2341,7 +2340,7 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
 IDocNodeASTPtr validatingParseTitle(IDocParser &parserIntf,const DString &fileName,int lineNr,const DString &input)
 {
   DocParser *parser = dynamic_cast<DocParser*>(&parserIntf);
-  assert(parser!=nullptr);
+  ASSERT(parser!=nullptr);
   if (parser==nullptr) return nullptr;
 
   // set initial token
@@ -2394,7 +2393,7 @@ IDocNodeASTPtr validatingParseTitle(IDocParser &parserIntf,const DString &fileNa
 IDocNodeASTPtr validatingParseText(IDocParser &parserIntf,const DString &input)
 {
   DocParser *parser = dynamic_cast<DocParser*>(&parserIntf);
-  assert(parser!=nullptr);
+  ASSERT(parser!=nullptr);
   if (parser==nullptr) return nullptr;
 
   // set initial token
@@ -2453,7 +2452,7 @@ IDocNodeASTPtr validatingParseText(IDocParser &parserIntf,const DString &input)
 IDocNodeASTPtr createRef(IDocParser &parserIntf,const DString &target,const DString &context, const DString &srcFile, int srcLine )
 {
   DocParser *parser = dynamic_cast<DocParser*>(&parserIntf);
-  assert(parser!=nullptr);
+  ASSERT(parser!=nullptr);
   if (parser==nullptr) return nullptr;
   if (!srcFile.empty())
   {

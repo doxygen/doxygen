@@ -59,8 +59,6 @@ typedef yyguts_t *yyscan_t;
 #include "stringutil.h"
 #include "util.h"
 
-#include <assert.h>
-
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
@@ -2044,7 +2042,7 @@ static void replaceAliases(yyscan_t yyscanner,std::string_view s,bool replaceCpp
                            // their expansion contains the matching end block marker.
   {
     std::string blk = yyextra->blockName.str();
-    assert(!blk.empty());
+    ASSERT(!blk.empty());
     bool isNamedCommand=isId(blk[0]); // true for e.g. @endcode, false for e.g. ~~~
     size_t i=0,p=0;
     bool found=false;
