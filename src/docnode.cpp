@@ -1833,6 +1833,85 @@ Token DocHtmlCaption::parse()
             }
           }
           break;
+        case TokenRetval::TK_COMMAND_AT:
+        // fall through
+        case TokenRetval::TK_COMMAND_BS:
+          {
+            DString cmdName=parser()->context.token->name;
+            bool isJavaLink=false;
+            switch (Mappers::cmdMapper->map(cmdName))
+            {
+              case CommandType::CMD_REF:
+                {
+                  tok=parser()->tokenizer.lex();
+                  if (!tok.is(TokenRetval::TK_WHITESPACE))
+                  {
+                    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after '{:c}{}' command",
+                        tok.command_to_char(),cmdName);
+                  }
+                  else
+                  {
+                    parser()->tokenizer.setStateRef();
+                    tok=parser()->tokenizer.lex(); // get the reference id
+                    if (!tok.is(TokenRetval::TK_WORD))
+                    {
+                      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token {} as the argument of '{:c}{}' command",
+                          tok.to_string(),tok.command_to_char(),cmdName);
+                    }
+                    else
+                    {
+                      children().append<DocRef>(parser(),thisVariant(),parser()->context.token->name,parser()->context.context);
+                      children().get_last<DocRef>()->parse(tok.command_to_char(),cmdName);
+                    }
+                    parser()->tokenizer.setStatePara();
+                  }
+                }
+                break;
+              case CommandType::CMD_JAVALINK:
+                isJavaLink=true;
+                // fall through
+              case CommandType::CMD_LINK:
+                {
+                  tok=parser()->tokenizer.lex();
+                  if (!tok.is(TokenRetval::TK_WHITESPACE))
+                  {
+                    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after \\{} command",
+                        cmdName);
+                  }
+                  else
+                  {
+                    parser()->tokenizer.setStateLink();
+                    tok=parser()->tokenizer.lex();
+                    if (!tok.is(TokenRetval::TK_WORD))
+                    {
+                      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token {} as the argument of \\{} command",
+                          tok.to_string(),cmdName);
+                    }
+                    else
+                    {
+                      parser()->tokenizer.setStatePara();
+                      children().append<DocLink>(parser(),thisVariant(),parser()->context.token->name);
+                      DocLink *lnk  = children().get_last<DocLink>();
+                      DString leftOver = lnk->parse(isJavaLink);
+                      if (!leftOver.empty())
+                      {
+                        children().append<DocWord>(parser(),thisVariant(),leftOver);
+                      }
+                    }
+                  }
+                }
+                break;
+              case CommandType::CMD_LINEBREAK:
+                {
+                  children().append<DocLineBreak>(parser(),thisVariant(),parser()->context.token->attribs);
+                }
+                break;
+              default:
+                warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Illegal command '{:c}{}' found as part of a <caption> tag",
+                  tok.command_to_char(),cmdName);
+            }
+          }
+          break;
         default:
           parser()->errorHandleDefaultToken(thisVariant(),tok,children(),"<caption> tag");
           break;
