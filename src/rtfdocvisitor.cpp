@@ -1018,7 +1018,7 @@ void RTFDocVisitor::operator()(const DocHtmlTable &t)
       m_t << "{\\bkmkstart " << rtfFormatBmkStr(stripPath(c.file())+"_"+c.anchor()) << "}\n";
       m_t << "{\\bkmkend " << rtfFormatBmkStr(stripPath(c.file())+"_"+c.anchor()) << "}\n";
     }
-    m_t << "{Table \\field\\flddirty{\\*\\fldinst { SEQ Table \\\\*Arabic }}{\\fldrslt {\\noproof 1}} ";
+    m_t << "{Table {\\field\\flddirty{\\*\\fldinst { SEQ Table \\\\*Arabic }}}{\\fldrslt {\\noproof 1}} ";
     std::visit(*this,*t.caption());
   }
   visitChildren(t);
