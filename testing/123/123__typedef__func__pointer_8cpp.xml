@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="123__typedef__func__pointer_8cpp" kind="file" language="C++">
+    <compoundname>123_typedef_func_pointer.cpp</compoundname>
+    <sectiondef kind="typedef">
+      <memberdef kind="typedef" id="123__typedef__func__pointer_8cpp_1a00117f01793f6df7d5c9188a938c86a8" prot="public" static="no">
+        <type>void(*</type>
+        <definition>typedef void(* foo) (int bar)</definition>
+        <argsstring>)(int bar)</argsstring>
+        <name>foo</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>foo function pointer </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="123_typedef_func_pointer.cpp" line="5" column="9" bodyfile="123_typedef_func_pointer.cpp" bodystart="5" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="123_typedef_func_pointer.cpp"/>
+  </compounddef>
+</doxygen>
