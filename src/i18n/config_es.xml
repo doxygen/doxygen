@@ -565,6 +565,11 @@ Cuando necesites usar literalmente `{`, `}` o `,` en el valor de un alias, debes
 <![CDATA[La etiqueta \c MAX_INITIALIZER_LINES determina el número máximo de líneas que puede tener el valor inicial de una variable o macro / define para aparecer en la documentación. Si el inicializador consiste en más líneas de las especificadas aquí, se ocultará. Use el valor 0 para ocultar los inicializadores por completo. La aparición del valor de variables individuales y macros / defines se puede controlar con el comando \ref cmdshowinitializer "\\showinitializer" o \ref cmdhideinitializer "\\hideinitializer" en la documentación, independientemente de esta configuración.]]>
       </docs>
     </option>
+    <option type="bool" id="INLINE_FUNCTION_MACROS" defval="0">
+      <docs>
+<![CDATA[Si la etiqueta \c INLINE_FUNCTION_MACROS se establece en \c YES, el cuerpo de una macro de tipo función se mostrará en la misma línea que su declaración cuando el cuerpo consista en una sola línea. El cuerpo solo se muestra si además cumple con la configuración \ref cfg_max_initializer_lines "MAX_INITIALIZER_LINES". Los cuerpos de macro de varias líneas no se ven afectados por esta opción.]]>
+      </docs>
+    </option>
     <option type="bool" id="SHOW_USED_FILES" defval="1">
       <docs>
 <![CDATA[Configure la etiqueta \c SHOW_USED_FILES en \c NO para deshabilitar la lista de archivos generados al final de la documentación de clases y estructuras. Si se configura en \c YES, la lista mencionará los archivos que se usaron para generar la documentación.]]>

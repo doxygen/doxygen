@@ -568,6 +568,11 @@ d'utiliser une double échappement (\c \\\\{ et \c \\\\}).
 <![CDATA[La balise \c MAX_INITIALIZER_LINES détermine le nombre maximal de lignes que la valeur initiale d'une variable ou macro / define peut avoir pour apparaître dans la documentation. Si l'initialiseur consiste en plus de lignes que spécifie ici, il sera cache. Utilisez une valeur de 0 pour cacher complètement les initialiseurs. L'apparence de la valeur des variables individuelles et macros / defines peut être contrôlée en utilisant la commande \ref cmdshowinitializer "\\showinitializer" ou \ref cmdhideinitializer "\\hideinitializer" dans la documentation indépendamment de ce paramètre.]]>
       </docs>
     </option>
+    <option type="bool" id="INLINE_FUNCTION_MACROS" defval="0">
+      <docs>
+<![CDATA[Si la balise \c INLINE_FUNCTION_MACROS est définie à \c YES, le corps d'une macro de type fonction sera affiché sur la même ligne que sa déclaration lorsque le corps tient sur une seule ligne. Le corps n'est affiché que s'il respecte également le paramètre \ref cfg_max_initializer_lines "MAX_INITIALIZER_LINES". Les corps de macro sur plusieurs lignes ne sont pas concernés par cette option.]]>
+      </docs>
+    </option>
     <option type="bool" id="SHOW_USED_FILES" defval="1">
       <docs>
 <![CDATA[Définissez la balise \c SHOW_USED_FILES à \c NO pour désactiver la liste des fichiers générés au bas de la documentation des classes et structs. Si défini à \c YES, la liste mentionnera les fichiers qui ont été utilisés pour générer la documentation.]]>
