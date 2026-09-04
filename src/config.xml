@@ -1289,6 +1289,17 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+     <option type='bool' id='INLINE_FUNCTION_MACROS' defval='0'>
+      <docs>
+<![CDATA[
+   Setting the \c INLINE_FUNCTION_MACROS tag to \c YES will show the body
+ of a function-like macro on the same line as its declaration when the body
+ consists of a single line. The body is only shown when it also satisfies the
+ \c MAX_INITIALIZER_LINES setting. Multi-line macro bodies are not affected by
+ this option.
+]]>
+      </docs>
+    </option>
     <option type='bool' id='SHOW_USED_FILES' defval='1'>
       <docs>
 <![CDATA[
