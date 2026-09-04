@@ -2681,7 +2681,8 @@ bool MemberDefImpl::hasDetailedDescription() const
 
     // a module does not contain details for members, so either the namespace or file should be linkable
     bool moduleFilter = getModuleDef()==nullptr || (getFileDef() && getFileDef()->isLinkable()) ||
-                                                   (getNamespaceDef() && getNamespaceDef()->isLinkable());
+                                                   (getNamespaceDef() && getNamespaceDef()->isLinkable()) ||
+                                                   (getGroupDef() && getGroupDef()->isLinkable());
 
     // only include members that are non-private unless EXTRACT_PRIVATE is
     // set to YES or the member is part of a   group
