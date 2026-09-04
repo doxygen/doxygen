@@ -69,7 +69,7 @@ doxygen -w html header.html footer.html stylesheet.css <config_file>
 \endverbatim
   The `config_file` is optional. When omitted Doxygen will search for
   a file named `Doxyfile` and process that. When this is also not found it
-  will used the default settings.
+  will use the default settings.
 
 <li>For \LaTeX output, you can generate the first and last part of \c refman.tex
     (see \ref cfg_latex_header "LATEX_HEADER" and

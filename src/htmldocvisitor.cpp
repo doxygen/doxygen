@@ -328,7 +328,7 @@ void HtmlDocVisitor::writeObfuscatedMailAddress(const DString &url)
   }
   else
   {
-    m_t << "<a href=\"mai'+'lto:";
+    m_t << "<a href=\"mailto:";
     if (!url.empty())
     {
       const char *p = url.data();
