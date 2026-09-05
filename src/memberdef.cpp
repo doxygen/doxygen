@@ -1686,7 +1686,7 @@ DString MemberDefImpl::getOutputFileBase() const
   {
     return m_explicitOutputFileBase;
   }
-  else if (templateMaster())
+  else if (templateMaster() && (classDef==nullptr || classDef->isImplicitTemplateInstance()))
   {
     return templateMaster()->getOutputFileBase();
   }
