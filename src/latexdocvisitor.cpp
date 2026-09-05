@@ -220,7 +220,7 @@ void LatexDocVisitor::visitCaption(const DocNodeList &children)
 LatexDocVisitor::LatexDocVisitor(TextStream &t,OutputCodeList &ci,LatexCodeGenerator &lcg,
                                  const DString &langExt, int hierarchyLevel)
   : m_t(t), m_ci(ci), m_lcg(lcg), m_insidePre(false),
-    m_insideItem(false), m_hide(false),
+    m_insideItem(false), m_hide(false), m_captionTable(false),
     m_langExt(langExt), m_hierarchyLevel(hierarchyLevel)
 {
 }
@@ -332,11 +332,15 @@ void LatexDocVisitor::operator()(const DocLineBreak &)
   if (m_hide) return;
   if (m_insideItem)
   {
-  m_t << "\\\\\n";
+    m_t << "\\\\\n";
+  }
+  else if (m_captionTable)
+  {
+    m_t << "\\hspace{\\textwidth minus \\textwidth}\\mbox{}\\\\ ";
   }
   else
   {
-  m_t << "~\\newline\n";
+    m_t << "~\\newline\n";
   }
 }
 
@@ -1245,7 +1249,9 @@ void LatexDocVisitor::operator()(const DocHtmlTable &t)
     m_t << "{";
     if (c)
     {
+      m_captionTable = true;
       std::visit(*this, *t.caption());
+      m_captionTable = false;
     }
     m_t << "}";
     // write label
@@ -1875,12 +1881,12 @@ void LatexDocVisitor::startLink(const DString &ref,const DString &file,const DSt
     }
     else if (refToSection)
     {
-      if (m_texOrPdf == TexOrPdf::TEX) m_t << "\\protect";
+      if (m_texOrPdf == TexOrPdf::TEX || m_captionTable) m_t << "\\protect";
       if (m_texOrPdf != TexOrPdf::PDF) m_t << "\\doxysectlink{";
     }
     else
     {
-      if (m_texOrPdf == TexOrPdf::TEX) m_t << "\\protect";
+      if (m_texOrPdf == TexOrPdf::TEX || m_captionTable) m_t << "\\protect";
       if (m_texOrPdf != TexOrPdf::PDF) m_t << "\\doxylink{";
     }
     if (refToTable || m_texOrPdf != TexOrPdf::PDF)

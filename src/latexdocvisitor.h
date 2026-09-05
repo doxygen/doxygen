@@ -183,6 +183,7 @@ class LatexDocVisitor final : public DocVisitor
     bool m_insidePre;
     bool m_insideItem;
     bool m_hide;
+    bool m_captionTable;
     DString m_langExt;
     int m_hierarchyLevel;
     TexOrPdf m_texOrPdf = TexOrPdf::NO;
