@@ -915,5 +915,13 @@ class EntryType
     unsigned int m_type = Empty;
 };
 
+//----------------------------------------------------------------------------
+
+inline bool isTypeAClassFriend(const DString &type)
+{
+  return type=="friend" || type=="friend class" || type=="friend struct" || type=="friend union";
+}
+
+//---------------------------------------------------------------------------------------
 
 #endif

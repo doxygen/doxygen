@@ -3401,8 +3401,7 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
 
   if (p!=-1) // found it
   {
-    if (type=="friend class" || type=="friend struct" ||
-        type=="friend union")
+    if (isTypeAClassFriend(type))
     {
       cd=getClassMutable(scope);
       if (cd)
@@ -3438,7 +3437,7 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
     mtype=MemberType::EnumValue;
   else if (type_s.startsWith("typedef "))
     mtype=MemberType::Typedef;
-  else if (type_s.startsWith("friend "))
+  else if (type_s.startsWith("friend ") || type_s=="friend")
     mtype=MemberType::Friend;
   else if (root->mtype==MethodTypes::Property)
     mtype=MemberType::Property;
@@ -7512,8 +7511,7 @@ static void filterMemberDocumentation(const Entry *root,const DString &relates)
       //    qPrint(root->name),qPrint(args),qPrint(root->exception));
       //if (relates.length()) printf("  Relates %s\n",qPrint(relates));
       //printf("Inside=%s\n Relates=%s\n",qPrint(root->inside),qPrint(relates));
-      if (type=="friend class" || type=="friend struct" ||
-          type=="friend union")
+      if (isTypeAClassFriend(type))
       {
         findMember(root,
             relates,

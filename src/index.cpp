@@ -2883,10 +2883,7 @@ void Index::addClassMemberNameToIndex(const MemberDef *md)
     if (!letter.empty())
     {
       letter = convertUTF8ToLower(letter);
-      bool isFriendToHide = hideFriendCompounds &&
-        (md->typeString()=="friend class" ||
-         md->typeString()=="friend struct" ||
-         md->typeString()=="friend union");
+      bool isFriendToHide = hideFriendCompounds && isTypeAClassFriend(md->typeString());
       if (!(md->isFriend() && isFriendToHide) &&
           (!md->isEnumValue() || (md->getEnumScope() && !md->getEnumScope()->isStrong()))
          )

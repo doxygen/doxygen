@@ -2052,11 +2052,7 @@ bool MemberDefImpl::isBriefSectionVisible() const
 
   // Hide friend (class|struct|union) declarations if HIDE_FRIEND_COMPOUNDS is true
   bool visibleIfFriendCompound = !(hideFriendCompounds &&
-                                   isFriend() /*&&
-                                   (m_type=="friend class" ||
-                                    m_type=="friend struct" ||
-                                    m_type=="friend union"
-                                   )*/
+                                   isFriend()
                                   );
 
   // only include members that are non-private unless EXTRACT_PRIVATE is
@@ -6342,18 +6338,13 @@ const ArgumentList &MemberDefImpl::typeConstraints() const
 bool MemberDefImpl::isFriendToHide() const
 {
   bool hideFriendCompounds = Config_getBool(HIDE_FRIEND_COMPOUNDS);
-  bool isFriendToHide = hideFriendCompounds &&
-     (m_type=="friend class"  ||
-      m_type=="friend struct" ||
-      m_type=="friend union");
+  bool isFriendToHide = hideFriendCompounds && isTypeAClassFriend(m_type);
   return isFriendToHide;
 }
 
 bool MemberDefImpl::isFriendClass() const
 {
-  return (isFriend() &&
-         (m_type=="friend class" || m_type=="friend struct" ||
-          m_type=="friend union"));
+  return isFriend() && isTypeAClassFriend(m_type);
 }
 
 

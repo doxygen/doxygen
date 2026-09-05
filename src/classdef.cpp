@@ -1330,12 +1330,7 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
     m_arrowOperator=md;
   }
 
-  if (addToAllList &&
-      !(Config_getBool(HIDE_FRIEND_COMPOUNDS) &&
-        md->isFriend() &&
-        (md->typeString()=="friend class" ||
-         md->typeString()=="friend struct" ||
-         md->typeString()=="friend union")))
+  if (addToAllList && !(Config_getBool(HIDE_FRIEND_COMPOUNDS) && md->isFriend() && isTypeAClassFriend(md->typeString())))
   {
     //printf("=======> adding member %s to class %s\n",qPrint(md->name()),qPrint(name()));
 
@@ -3268,6 +3263,10 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
               ol.docify(" typedef");
             else if (md->isFriend() && md->typeString()=="friend class")
               ol.docify(" class");
+            else if (md->isFriend() && md->typeString()=="friend struct")
+              ol.docify(" struct");
+            else if (md->isFriend() && md->typeString()=="friend union")
+              ol.docify(" union");
             //ol.writeString("\n");
           }
           ol.writeString("</td>");

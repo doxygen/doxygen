@@ -233,10 +233,7 @@ static void addMemberToSearchIndex(const MemberDef *md)
     const DString &n = md->name();
     if (!n.empty())
     {
-      bool isFriendToHide = hideFriendCompounds &&
-        (md->typeString()=="friend class" ||
-         md->typeString()=="friend struct" ||
-         md->typeString()=="friend union");
+      bool isFriendToHide = hideFriendCompounds && isTypeAClassFriend(md->typeString());
       if (!(md->isFriend() && isFriendToHide))
       {
         g_searchIndexInfo[SEARCH_INDEX_ALL].add(SearchTerm(n,md));
