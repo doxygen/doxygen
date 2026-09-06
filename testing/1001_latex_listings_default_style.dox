@@ -7,6 +7,9 @@
 // latexcheck: doxygen.sty:\def\DoxyUseListingsEnabled{}
 // latexcheck: doxygen.sty:\RequirePackage{listings}
 // latexcheck: doxygen.sty:\lstdefinestyle{DoxyCode}{
+// latexcheck: doxygen.sty:\RequirePackage{accsupp}
+// latexcheck: doxygen.sty:DoxyListingNumber}[1]{
+// latexcheck: doxygen.sty:numberstyle=\tiny\DoxyListingNumber,
 /** \mainpage LaTeX listings default style
 
 ```c

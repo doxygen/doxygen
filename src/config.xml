@@ -3107,6 +3107,8 @@ EXTRA_SEARCH_MAPPINGS = tagname1=loc1 tagname2=loc2 ...
  This option is disabled by default. When enabled, Doxygen's generated
  \c doxygen.sty file loads the \c listings package and provides the default
  \c DoxyCode style. No custom LaTeX setup is required.
+ The bundled \c DoxyCode style marks visible line numbers as empty PDF text, so
+ copying a code block from the PDF does not include them.
 
  Use \ref cfg_latex_listings_style "LATEX_LISTINGS_STYLE" to select a different
  style. A global \c listings configuration can customize options such as line

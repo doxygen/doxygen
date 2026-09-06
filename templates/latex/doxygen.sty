@@ -20,6 +20,10 @@
 
 \ifDoxyUseListings
   \RequirePackage{listings}
+  \RequirePackage{accsupp}
+  \newcommand{\DoxyListingNumber}[1]{%
+    \BeginAccSupp{method=escape,ActualText={}}#1\EndAccSupp{}%
+  }
   \lstdefinestyle{DoxyCode}{%
     basicstyle=\ttfamily\footnotesize,
     keywordstyle=\color{blue!70!black}\bfseries,
@@ -30,6 +34,7 @@
     rulecolor=\color{black!20},
     breaklines=true,
     columns=fullflexible,
+    numberstyle=\tiny\DoxyListingNumber,
     keepspaces=true,
     showstringspaces=false,
     tabsize=2
