@@ -173,6 +173,9 @@
 }
 
 % Used by @code ... @endcode
+% Shared caption type for ordinary code blocks, independent of their renderer.
+\newfloat{DoxyListing}{tbp}{lol}[chapter]
+\floatname{DoxyListing}{Listing}
 \newenvironment{DoxyCode}[1]{%
   \par%
   \vspace{2pt}%

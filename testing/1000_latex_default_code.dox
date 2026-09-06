@@ -2,9 +2,12 @@
 // config: GENERATE_LATEX = YES
 // config: LATEX_OUTPUT = $TESTOUTDIR/latex
 // latexcheck: index.tex:\begin{DoxyCode}{0}\n\DoxyCodeLine{\textcolor{keywordtype}{int}\ foo;}\n\n\end{DoxyCode}
+// latexcheck: index.tex:\Hypertarget{index_default-code-example}%
+// latexcheck: index.tex:\captionof*{DoxyListing}{Default code example}
+// config: LATEX_LISTINGS_NUMBERED = NO
 /** \mainpage Default LaTeX code backend
 
-```c
+```{.c #default-code-example caption="Default code example"}
 int foo;
 ```
 */

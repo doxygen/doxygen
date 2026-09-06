@@ -3106,8 +3106,15 @@ EXTRA_SEARCH_MAPPINGS = tagname1=loc1 tagname2=loc2 ...
 
  This option is disabled by default. When enabled, the user must load and configure
  the \c listings package, for example by using a custom LaTeX header or an extra
- stylesheet. Code blocks in tables continue to use the standard \c DoxyCode
- backend because \c lstlisting environments cannot be used reliably in table cells.
+ stylesheet. A global style can control line numbers:
+\verbatim
+\usepackage{listings}
+\lstset{numbers=left,numberstyle=\tiny}
+\endverbatim
+A Markdown fence can override its line-number position with c numbers=left,
+c numbers=right, or c numbers=none. Code blocks in tables continue to use the
+standard \c DoxyCode backend because \c lstlisting environments cannot be used
+reliably in table cells.
 
  The language from a Markdown fence is passed to \c listings when it is a safe
  identifier. The special language \c none, and an empty language, do not set a
@@ -3128,6 +3135,16 @@ EXTRA_SEARCH_MAPPINGS = tagname1=loc1 tagname2=loc2 ...
  setting this tag to \c MyStyle emits \c style=MyStyle in each \c lstlisting
  environment. The style must be defined by the user's LaTeX configuration. If
  this tag is left empty, no \c style option is emitted.
+]]>
+      </docs>
+    </option>
+    <option type='bool' id='LATEX_LISTINGS_NUMBERED' defval='1' depends='GENERATE_LATEX'>
+      <docs>
+<![CDATA[
+ When the \c LATEX_LISTINGS_NUMBERED tag is set to \c YES, captions on ordinary
+ code blocks are numbered. When set to \c NO, code-block captions are
+ unnumbered. Captions use Doxygen's shared \c DoxyListing caption type, so this
+ setting applies to both the standard \c DoxyCode and \c listings backends.
 ]]>
       </docs>
     </option>

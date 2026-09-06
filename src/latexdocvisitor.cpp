@@ -69,6 +69,11 @@ static bool isListingsIdentifier(const DString &value)
   });
 }
 
+static bool isListingsNumberPosition(const DString &value)
+{
+  return value=="left" || value=="right" || value=="none";
+}
+
 const char *LatexDocVisitor::getSectionName(int level) const
 {
   bool compactLatex = Config_getBool(COMPACT_LATEX);
@@ -423,6 +428,17 @@ void LatexDocVisitor::operator()(const DocStyleChange &s)
 void LatexDocVisitor::operator()(const DocVerbatim &s)
 {
   if (m_hide) return;
+  auto writeCodeCaption = [&]()
+  {
+    if (s.hasCaption())
+    {
+      m_t << "\\captionof";
+      if (!Config_getBool(LATEX_LISTINGS_NUMBERED)) m_t << "*";
+      m_t << "{DoxyListing}{";
+      visitCaption(s.children());
+      m_t << "}\n";
+    }
+  };
   DString lang = m_langExt;
   if (!s.language().empty()) // explicit language setting
   {
@@ -438,28 +454,39 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
           DString style = Config_getString(LATEX_LISTINGS_STYLE);
           DString language = s.language();
           if (!language.empty() && language.at(0)=='.') language=language.mid(1);
+          bool hasStyle = isListingsIdentifier(style);
+          bool hasLanguage = !language.empty() && language != "none" &&
+                             isListingsIdentifier(language);
+          DString numbers = s.listingsNumbers();
+          bool hasNumbers = isListingsNumberPosition(numbers);
           m_t << "\n\\begin{lstlisting}";
-          if (isListingsIdentifier(style) ||
-              (!language.empty() && language != "none" && isListingsIdentifier(language)))
+          if (hasStyle || hasLanguage || hasNumbers)
           {
             m_t << "[";
             bool hasOption = false;
-            if (isListingsIdentifier(style))
+            if (hasStyle)
             {
               m_t << "style=" << style;
               hasOption = true;
             }
-            if (!language.empty() && language != "none" && isListingsIdentifier(language))
+            if (hasLanguage)
             {
               if (hasOption) m_t << ",";
               m_t << "language=" << language;
+              hasOption = true;
+            }
+            if (hasNumbers)
+            {
+              if (hasOption) m_t << ",";
+              m_t << "numbers=" << numbers;
+              hasOption = true;
             }
             m_t << "]";
           }
           m_t << "\n" << s.text();
           if (!s.text().empty() && s.text().back() != '\n') m_t << "\n";
           m_t << "\\end{lstlisting}\n";
-          if (s.hasCaption()) visitCaption(s.children());
+          writeCodeCaption();
         }
         else
         {
@@ -468,7 +495,7 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
                                         Config_getBool(STRIP_CODE_COMMENTS),
                                         CodeParserOptions().setExample(s.isExample(),s.exampleFile()));
           m_ci.endCodeFragment("DoxyCode");
-          if (s.hasCaption()) visitCaption(s.children());
+          writeCodeCaption();
         }
       }
       break;

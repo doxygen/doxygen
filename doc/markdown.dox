@@ -463,7 +463,9 @@ alphabetical character and further characters are alphanumerical characters or a
 
 Following the Pandoc fenced-code attribute syntax, an attribute block can also contain
 an identifier and a caption. The identifier is converted to the corresponding Doxygen
-\ref cmdanchor "\\anchor" command and the caption is shown after the code block:
+\ref cmdanchor "\\anchor" command and the caption is shown after the code block.
+In LaTeX, the caption uses Doxygen's common code-listing caption type with either
+the standard c DoxyCode or optional c listings renderer:
 
     ~~~~~~~~~~~~~~~{.c #multiply-example caption="Multiplication function"}
     int multiply(int a,int b) { return a*b; }
@@ -471,9 +473,11 @@ an identifier and a caption. The identifier is converted to the corresponding Do
 
 The language, identifier, and caption are independent. Use a class beginning with a
 dot for the language, an identifier beginning with c # for the anchor, and a quoted
-c caption value. This syntax is currently supported for ordinary fenced code blocks;
-fences for diagrams such as c dot, c msc, c plantuml, and c mermaid retain their
-existing specialized handling.
+c caption value. For LaTeX listings, c numbers=left, c numbers=right, or
+c numbers=none overrides the global c listings line-number setting for that block.
+This syntax is currently supported for ordinary fenced code blocks; fences for diagrams
+such as c dot, c msc, c plantuml, and c mermaid retain their existing specialized
+handling.
 
 Another way to denote fenced code blocks is to use 3 or more backticks (```):
 

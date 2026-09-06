@@ -451,7 +451,8 @@ class Tester:
                     msg += (xmllint_out,)
                     failed_xmlxsd=True
 
-            if not failed_xml and not failed_xmlxsd and not self.args.keep:
+            if (not failed_xml and not failed_xmlxsd and not self.args.keep and
+                'latexcheck' not in self.config):
                 xml_output='%s/out' % self.test_out
                 shutil.rmtree(xml_output,ignore_errors=True)
 

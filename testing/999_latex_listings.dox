@@ -3,8 +3,11 @@
 // config: LATEX_OUTPUT = $TESTOUTDIR/latex
 // config: LATEX_USE_LISTINGS = YES
 // config: LATEX_LISTINGS_STYLE = MyStyle
-// latexcheck: index.tex:\begin{lstlisting}[style=MyStyle,language=c]\nint foo = 1;\n\end{lstlisting}\nC example
+// config: LATEX_LISTINGS_NUMBERED = YES
+// latexcheck: index.tex:\begin{lstlisting}[style=MyStyle,language=c]\nint foo = 1;\n\end{lstlisting}\n\captionof{DoxyListing}{C example}
 // latexcheck: index.tex:\begin{lstlisting}[style=MyStyle,language=yaml]\nname: example\n\end{lstlisting}
+// latexcheck: index.tex:\begin{lstlisting}[style=MyStyle]\nenabled = true\n\end{lstlisting}\n\captionof{DoxyListing}{Caption only example}
+// latexcheck: index.tex:\begin{lstlisting}[style=MyStyle,language=c,numbers=none]\nint unnumbered;\n\end{lstlisting}
 // latexcheck: index.tex:\begin{lstlisting}[style=MyStyle]\n-option1 -option2-foo\nraw _ % # $ & { } ~ ^ \\\n\end{lstlisting}
 /** \mainpage LaTeX listings
 
@@ -14,6 +17,14 @@ int foo = 1;
 
 ```yaml
 name: example
+```
+
+```{caption="Caption only example"}
+enabled = true
+```
+
+```{.c numbers=none}
+int unnumbered;
 ```
 
 ```none
