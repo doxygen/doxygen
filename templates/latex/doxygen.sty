@@ -10,6 +10,31 @@
 \RequirePackage{verbatim}
 \RequirePackage{varwidth}
 \RequirePackage[table]{xcolor}
+
+% Optional listings backend, enabled by the generated LaTeX header.
+\newif\ifDoxyUseListings
+\DoxyUseListingsfalse
+\ifdefined\DoxyUseListingsEnabled
+  \DoxyUseListingstrue
+\fi
+
+\ifDoxyUseListings
+  \RequirePackage{listings}
+  \lstdefinestyle{DoxyCode}{%
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{blue!70!black}\bfseries,
+    commentstyle=\color{green!40!black}\itshape,
+    stringstyle=\color{red!60!black},
+    backgroundcolor=\color{black!3},
+    frame=single,
+    rulecolor=\color{black!20},
+    breaklines=true,
+    columns=fullflexible,
+    keepspaces=true,
+    showstringspaces=false,
+    tabsize=2
+  }
+\fi
 \RequirePackage{longtable}
 \RequirePackage{xltabular}
 \RequirePackage{tabularray}
