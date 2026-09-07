@@ -892,9 +892,9 @@ inline void swap(DString &s1, DString &s2)
 /** Returns true if \a c is a valid character for an identifier.
  *  Valid characters are: letters, digits, underscore, dollar sign and any character with a value >= 128.
  */
-inline bool isId(int c)
+inline bool isId(char c)
 {
-  return c=='_' || c>=128 || c<0 || isalnum(c) || c=='$';
+  return c=='_' || c>=128 || static_cast<signed char>(c)<0 || isalnum(c) || c=='$';
 }
 
 /*! Returns a place holder for a position in a list. Used for
