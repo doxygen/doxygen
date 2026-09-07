@@ -4442,15 +4442,17 @@ static void addRequirementId(yyscan_t yyscanner)
 //-----------------------------------------------------------------
 
 static void addXRefItemToEntry(Entry *current, const DString &docs,
-                        const DString &listName,const DString &itemTitle,
+                        const DString &_listName,const DString &itemTitle,
                         const DString &listTitle,bool append,bool inBody,int lineNr)
 {
-  if (listName.empty()) return;
+  if (_listName.empty()) return;
   //printf("addXRefItem(listName=%s,itemTitle=%s,listTitle=%s,append=%d,inbody=%d)\n",
-  //    qPrint(listName),qPrint(itemTitle),qPrint(listTitle),append,inBody);
+  //    qPrint(_listName),qPrint(itemTitle),qPrint(listTitle),append,inBody);
 
   std::unique_lock<std::mutex> lock(g_sectionMutex);
 
+  DString listName=_listName;
+  if (Config_getEnum(MARKDOWN_ID_STYLE) == MARKDOWN_ID_STYLE_t::GITHUB) listName = "Doxygen_List_" + listName;
   RefList *refList = RefListManager::instance().add(listName,listTitle,itemTitle);
   RefItem *item = nullptr;
   for (auto it = current->sli.rbegin(); it != current->sli.rend(); ++it)
