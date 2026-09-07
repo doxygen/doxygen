@@ -559,6 +559,7 @@ static void generateJSLink(TextStream &t,const FTVNodePtr &n)
 {
   bool nameAsHtml = !n->nameAsHtml.empty();
   DString link = nameAsHtml ? convertToJSString(n->nameAsHtml,true) : convertToJSString(n->name);
+  if (Config_getBool(HIDE_SCOPE_NAMES)) link=stripScope(link);
   link = substitute(link,"\n","");
   if (n->file.empty()) // no link
   {
