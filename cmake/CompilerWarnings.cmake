@@ -118,7 +118,7 @@ function(set_project_warnings project_name)
       )
     endif()
     if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "8.0.0")
-      set(GCC_EXTRA_WARNINGS ${GCC_EXTRA_WARNINGS}
+      set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}
         -Wextra-semi
       )
     endif()
