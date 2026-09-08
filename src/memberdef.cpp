@@ -4453,7 +4453,7 @@ bool MemberDefImpl::hasOneLineInitializer() const
   //    m_maxInitLines,m_userInitLines);
   bool isFuncLikeMacro = m_mtype==MemberType::Define && m_defArgList.hasParameters();
   return !m_initializer.empty() && m_initLines==0 && // one line initializer
-         !isFuncLikeMacro &&
+         (!isFuncLikeMacro || Config_getBool(INLINE_FUNCTION_MACROS)) &&
          ((m_maxInitLines>0 && m_userInitLines==-1) || m_userInitLines>0); // enabled by default or explicitly
 }
 
@@ -4462,7 +4462,8 @@ bool MemberDefImpl::hasMultiLineInitializer() const
   //printf("initLines=%d userInitLines=%d maxInitLines=%d\n",
   //    initLines,userInitLines,maxInitLines);
   bool isFuncLikeMacro = m_mtype==MemberType::Define && m_defArgList.hasParameters();
-  return (m_initLines>0 || (!m_initializer.empty() && isFuncLikeMacro)) &&
+  return (m_initLines>0 || (!m_initializer.empty() && isFuncLikeMacro &&
+                            !Config_getBool(INLINE_FUNCTION_MACROS))) &&
          ((m_initLines<m_maxInitLines && m_userInitLines==-1) // implicitly enabled
           || m_initLines<m_userInitLines // explicitly enabled
          );

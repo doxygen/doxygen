@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="124__inline__function__like__macros_8c" kind="file" language="C++">
+    <compoundname>124_inline_function_like_macros.c</compoundname>
+    <sectiondef kind="user-defined">
+      <header>Named group for macros with arguments.</header>
+      <memberdef kind="define" id="124__inline__function__like__macros_8c_1a81130110dc3ee971a48c5a01f8e20bca" prot="public" static="no">
+        <name>MACRO_GROUP_ARG_0</name>
+        <param>
+          <defname>arg</defname>
+        </param>
+        <initializer>(arg) + 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>First grouped function-like macro. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="124_inline_function_like_macros.c" line="15" column="9" bodyfile="124_inline_function_like_macros.c" bodystart="15" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="124__inline__function__like__macros_8c_1a8e60a615d0dc6a4be11f2962e9fe678a" prot="public" static="no">
+        <name>MACRO_GROUP_ARG_1</name>
+        <param>
+          <defname>arg</defname>
+        </param>
+        <initializer>(arg) + 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>Second grouped function-like macro. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="124_inline_function_like_macros.c" line="17" column="9" bodyfile="124_inline_function_like_macros.c" bodystart="17" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="define">
+      <memberdef kind="define" id="124__inline__function__like__macros_8c_1ab175e1d43b23236e98095941ea0f726e" prot="public" static="no">
+        <name>ADD_ZERO</name>
+        <param>
+          <defname>value</defname>
+        </param>
+        <initializer>(value) + 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A function-like macro with a one-line body. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="124_inline_function_like_macros.c" line="8" column="9" bodyfile="124_inline_function_like_macros.c" bodystart="8" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="124_inline_function_like_macros.c"/>
+  </compounddef>
+</doxygen>
