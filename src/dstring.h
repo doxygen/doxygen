@@ -894,7 +894,7 @@ inline void swap(DString &s1, DString &s2)
  */
 inline bool isId(char c)
 {
-  return c=='_' || c>=128 || static_cast<signed char>(c)<0 || isalnum(c) || c=='$';
+  return c=='_' || static_cast<signed char>(c)<0 || isalnum(c) || c=='$';
 }
 
 /*! Returns a place holder for a position in a list. Used for
