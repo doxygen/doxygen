@@ -4442,16 +4442,16 @@ static void addRequirementId(yyscan_t yyscanner)
 //-----------------------------------------------------------------
 
 static void addXRefItemToEntry(Entry *current, const DString &docs,
-                        const DString &_listName,const DString &itemTitle,
+                        const DString &baseName,const DString &itemTitle,
                         const DString &listTitle,bool append,bool inBody,int lineNr)
 {
-  if (_listName.empty()) return;
+  if (baseName.empty()) return;
   //printf("addXRefItem(listName=%s,itemTitle=%s,listTitle=%s,append=%d,inbody=%d)\n",
-  //    qPrint(_listName),qPrint(itemTitle),qPrint(listTitle),append,inBody);
+  //    qPrint(baseName),qPrint(itemTitle),qPrint(listTitle),append,inBody);
 
   std::unique_lock<std::mutex> lock(g_sectionMutex);
 
-  DString listName=_listName;
+  DString listName=baseName;
   if (Config_getEnum(MARKDOWN_ID_STYLE) == MARKDOWN_ID_STYLE_t::GITHUB) listName = "Doxygen_List_" + listName;
   RefList *refList = RefListManager::instance().add(listName,listTitle,itemTitle);
   RefItem *item = nullptr;
