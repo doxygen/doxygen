@@ -152,6 +152,7 @@ static void searchFoundClass(yyscan_t yyscanner);
 static void searchFoundTypeAlias(yyscan_t yyscanner);
 static DString findPackageScope(yyscan_t yyscanner,const DString &fileName);
 static void setProtection(yyscan_t yyscanner);
+static void handleParamComment(yyscan_t yyscanner,const DString &doc);
 
 static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 
@@ -991,12 +992,7 @@ ID        [a-z_A-Z%]+{IDSYM}*
                           BEGIN(FunctionAnnotation);
                         }
     {STARTDOCSYMS}"<"/.* {  // start of a special comment
-                          yyextra->curIndent=computeIndent(yytext);
-                          initSpecialBlock(yyscanner);
-                          yyextra->docBlock += "@param ";
-                          yyextra->docBlock += yyextra->current->argList.back().name;
-                          yyextra->docBlock += " ";
-                          yyextra->docBlockContext = FunctionParams;
+                          handleParamComment(yyscanner,yytext);
                           BEGIN(SpecialComment);
                         }
     {POUNDCOMMENT}      { // a comment
@@ -1097,12 +1093,7 @@ ID        [a-z_A-Z%]+{IDSYM}*
                           incLineNr(yyscanner);
                         }
     {STARTDOCSYMS}"<"/.* {  // start of a special comment
-                          yyextra->curIndent=computeIndent(yytext);
-                          initSpecialBlock(yyscanner);
-                          yyextra->docBlock += "@param ";
-                          yyextra->docBlock += yyextra->current->argList.back().name;
-                          yyextra->docBlock += " ";
-                          yyextra->docBlockContext = FunctionAnnotation;
+                          handleParamComment(yyscanner,yytext);
                           BEGIN(SpecialComment);
                         }
     {POUNDCOMMENT}      { // a comment
@@ -1155,12 +1146,7 @@ ID        [a-z_A-Z%]+{IDSYM}*
                           BEGIN( DoubleQuoteString );
                         }
     {STARTDOCSYMS}"<"/.* {  // start of a special comment
-                          yyextra->curIndent=computeIndent(yytext);
-                          initSpecialBlock(yyscanner);
-                          yyextra->docBlock += "@param ";
-                          yyextra->docBlock += yyextra->current->argList.back().name;
-                          yyextra->docBlock += " ";
-                          yyextra->docBlockContext = FunctionParamDefVal;
+                          handleParamComment(yyscanner,yytext);
                           BEGIN(SpecialComment);
                         }
     {POUNDCOMMENT}      { // a comment
@@ -2284,6 +2270,20 @@ static void searchFoundTypeAlias(yyscan_t yyscanner)
   yyextra->current->startLine  = yyextra->yyLineNr;
   yyextra->current->bodyLine  = yyextra->yyLineNr;
   yyextra->packageCommentAllowed = false;
+}
+
+static void handleParamComment(yyscan_t yyscanner,const DString &doc)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->curIndent=computeIndent(yytext);
+  initSpecialBlock(yyscanner);
+  if (!yyextra->current->argList.empty())
+  {
+    yyextra->docBlock += "@param ";
+    yyextra->docBlock += yyextra->current->argList.back().name;
+    yyextra->docBlock += " ";
+  }
+  yyextra->docBlockContext = YY_START;
 }
 
 //----------------------------------------------------------------------------
