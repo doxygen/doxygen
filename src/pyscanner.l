@@ -990,6 +990,15 @@ ID        [a-z_A-Z%]+{IDSYM}*
                           yyextra->braceCount = 0;
                           BEGIN(FunctionAnnotation);
                         }
+    {STARTDOCSYMS}"<"/.* {  // start of a special comment
+                          yyextra->curIndent=computeIndent(yytext);
+                          initSpecialBlock(yyscanner);
+                          yyextra->docBlock += "@param ";
+                          yyextra->docBlock += yyextra->current->argList.back().name;
+                          yyextra->docBlock += " ";
+                          yyextra->docBlockContext = FunctionParams;
+                          BEGIN(SpecialComment);
+                        }
     {POUNDCOMMENT}      { // a comment
                         }
     {PARAMNONEMPTY}     { // Default rule inside arguments.
@@ -1087,6 +1096,17 @@ ID        [a-z_A-Z%]+{IDSYM}*
                           yyextra->defVal << *yytext;
                           incLineNr(yyscanner);
                         }
+    {STARTDOCSYMS}"<"/.* {  // start of a special comment
+                          yyextra->curIndent=computeIndent(yytext);
+                          initSpecialBlock(yyscanner);
+                          yyextra->docBlock += "@param ";
+                          yyextra->docBlock += yyextra->current->argList.back().name;
+                          yyextra->docBlock += " ";
+                          yyextra->docBlockContext = FunctionAnnotation;
+                          BEGIN(SpecialComment);
+                        }
+    {POUNDCOMMENT}      { // a comment
+                        }
      .                  {
                           yyextra->defVal << *yytext;
                         }
@@ -1133,6 +1153,17 @@ ID        [a-z_A-Z%]+{IDSYM}*
                           yyextra->copyString=&yyextra->defVal;
                           yyextra->stringContext=FunctionParamDefVal;
                           BEGIN( DoubleQuoteString );
+                        }
+    {STARTDOCSYMS}"<"/.* {  // start of a special comment
+                          yyextra->curIndent=computeIndent(yytext);
+                          initSpecialBlock(yyscanner);
+                          yyextra->docBlock += "@param ";
+                          yyextra->docBlock += yyextra->current->argList.back().name;
+                          yyextra->docBlock += " ";
+                          yyextra->docBlockContext = FunctionParamDefVal;
+                          BEGIN(SpecialComment);
+                        }
+    {POUNDCOMMENT}      { // a comment
                         }
      \n                 {
                             yyextra->defVal << *yytext;
