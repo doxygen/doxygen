@@ -2073,17 +2073,19 @@ void HtmlDocVisitor::operator()(const DocXRefItem &x)
 
   forceEndParagraph(x);
   bool anonymousEnum = x.file()=="@";
+  DString key = x.key();
+  if (key.startsWith("Doxygen_List_")) key=key.mid(13);
   if (!anonymousEnum)
   {
     DString fn = x.file();
     addHtmlExtensionIfMissing(fn);
-    m_t << "<dl class=\"" << x.key() << "\"><dt><b><a class=\"el\" href=\""
+    m_t << "<dl class=\"" << key << "\"><dt><b><a class=\"el\" href=\""
         << x.relPath() << fn
         << "#" << x.anchor() << "\">";
   }
   else
   {
-    m_t << "<dl class=\"" << x.key() << "\"><dt><b>";
+    m_t << "<dl class=\"" << key << "\"><dt><b>";
   }
   filter(x.title());
   if (!anonymousEnum) m_t << "</a>";
