@@ -264,8 +264,9 @@ DocAnchor::DocAnchor(DocParser *parser,DocNodeVariant *parent,const DString &id,
 
 DocVerbatim::DocVerbatim(DocParser *parser,DocNodeVariant *parent,const DString &context,
     const DString &text, Type t,bool isExample,
-    const DString &exampleFile,bool isBlock,const DString &lang)
-  : DocNode(parser,parent), p(std::make_unique<Private>(context, text, t, isExample, exampleFile, parser->context.relPath, lang, isBlock))
+    const DString &exampleFile,bool isBlock,const DString &lang,const DString &listingsNumbers)
+  : DocNode(parser,parent), p(std::make_unique<Private>(context, text, t, isExample, exampleFile,
+      parser->context.relPath, lang, isBlock, listingsNumbers))
 {
 }
 
@@ -4141,6 +4142,27 @@ Token DocPara::handleStartCode()
   AUTO_TRACE();
   Token retval = parser()->tokenizer.lex();
   DString lang = parser()->context.token->name;
+  DString caption;
+  DString listingsNumbers;
+  size_t attrStart=lang.find('\x1f');
+  if (attrStart!=DString::npos)
+  {
+    size_t captionStart=lang.find('\x1f',attrStart+1);
+    if (captionStart!=DString::npos)
+    {
+      size_t numbersStart=lang.find('\x1f',captionStart+1);
+      if (numbersStart!=DString::npos)
+      {
+        caption=lang.mid(captionStart+1,numbersStart-captionStart-1);
+        listingsNumbers=lang.mid(numbersStart+1);
+      }
+      else
+      {
+        caption=lang.mid(captionStart+1);
+      }
+    }
+    lang=lang.left(attrStart);
+  }
   if (!lang.empty() && lang.at(0)!='.')
   {
     lang="."+lang;
@@ -4162,7 +4184,13 @@ Token DocPara::handleStartCode()
                                  DocVerbatim::Code,
                                  parser()->context.isExample,
                                  parser()->context.exampleName,
-                                 false,lang);
+                                 false,lang,listingsNumbers);
+  if (!caption.empty())
+  {
+    DocVerbatim *dv = children().get_last<DocVerbatim>();
+    DocParser::AutoSaveContext saveContext(*parser());
+    parser()->internalValidatingParseDoc(&children().back(),dv->children(),caption);
+  }
   if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"code section ended without end marker");

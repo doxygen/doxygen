@@ -554,6 +554,7 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
                                         .setSearchCtx(m_ctx)
                                        );
       m_ci.endCodeFragment("DoxyCode");
+      visitCaption(m_t,s);
       forceStartParagraph(s);
       break;
     case DocVerbatim::Verbatim:
@@ -2494,4 +2495,3 @@ void HtmlDocVisitor::forceStartParagraph(const Node &n)
     if (needsTag) m_t << "<p>";
   }
 }
-
