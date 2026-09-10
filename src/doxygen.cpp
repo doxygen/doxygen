@@ -11102,6 +11102,12 @@ static std::string resolveSymlink(const std::string &path)
 
 static StringUnorderedSet g_pathsVisited(1009);
 
+// compare two paths case insensitively, with a case sensitive tie breaker for stable total order
+static bool compareFileNames(const std::string &f1,const std::string &f2)
+{
+  return dstricmp_sort(f1.c_str(),f2.c_str())<0;
+}
+
 //----------------------------------------------------------------------------
 // Read all files matching at least one pattern in 'patList' in the
 // directory represented by 'fi'.
@@ -11152,9 +11158,18 @@ static void readDir(FileInfo *fi,
 
   bool caseSenseNames = useCaseSenseNames();
 
+  StringVector dirEntries;
   for (const auto &dirEntry : dir.iterator())
   {
-    FileInfo cfi(dirEntry.path());
+    dirEntries.push_back(dirEntry.path());
+  }
+  // sort the entries so that the order in which FileDef objects are created (and with
+  // it the numbering used by SHORT_NAMES) does not depend on the file system.
+  std::sort(dirEntries.begin(),dirEntries.end(),compareFileNames);
+
+  for (const auto &dirEntryPath : dirEntries)
+  {
+    FileInfo cfi(dirEntryPath);
     auto checkPatterns = [&]() -> bool
     {
       return (patList==nullptr     ||  cfi.match(*patList,caseSenseNames)) &&
@@ -11209,9 +11224,7 @@ static void readDir(FileInfo *fi,
   if (resultList && !dirResultList.empty())
   {
     // sort the resulting list to make the order platform independent.
-    std::stable_sort(dirResultList.begin(),
-              dirResultList.end(),
-              [](const auto &f1,const auto &f2) { return dstricmp_sort(f1.c_str(),f2.c_str())<0; });
+    std::stable_sort(dirResultList.begin(),dirResultList.end(),compareFileNames);
 
     // append the sorted results to resultList
     resultList->insert(resultList->end(), dirResultList.begin(), dirResultList.end());
