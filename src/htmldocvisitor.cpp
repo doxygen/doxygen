@@ -38,6 +38,7 @@
 #include "parserintf.h"
 #include "plantuml.h"
 #include "portable.h"
+#include "reflist.h"
 #include "util.h"
 #include "vhdldocgen.h"
 
@@ -2073,17 +2074,19 @@ void HtmlDocVisitor::operator()(const DocXRefItem &x)
 
   forceEndParagraph(x);
   bool anonymousEnum = x.file()=="@";
+  DString key = x.key();
+  key.stripPrefix(doxygenList);
   if (!anonymousEnum)
   {
     DString fn = x.file();
     addHtmlExtensionIfMissing(fn);
-    m_t << "<dl class=\"" << x.key() << "\"><dt><b><a class=\"el\" href=\""
+    m_t << "<dl class=\"" << key << "\"><dt><b><a class=\"el\" href=\""
         << x.relPath() << fn
         << "#" << x.anchor() << "\">";
   }
   else
   {
-    m_t << "<dl class=\"" << x.key() << "\"><dt><b>";
+    m_t << "<dl class=\"" << key << "\"><dt><b>";
   }
   filter(x.title());
   if (!anonymousEnum) m_t << "</a>";

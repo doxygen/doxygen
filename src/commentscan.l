@@ -4452,7 +4452,7 @@ static void addXRefItemToEntry(Entry *current, const DString &docs,
   std::unique_lock<std::mutex> lock(g_sectionMutex);
 
   DString listName=baseName;
-  if (Config_getEnum(MARKDOWN_ID_STYLE) == MARKDOWN_ID_STYLE_t::GITHUB) listName = "Doxygen_List_" + listName;
+  if (Config_getEnum(MARKDOWN_ID_STYLE) == MARKDOWN_ID_STYLE_t::GITHUB) listName = doxygenList + listName;
   RefList *refList = RefListManager::instance().add(listName,listTitle,itemTitle);
   RefItem *item = nullptr;
   for (auto it = current->sli.rbegin(); it != current->sli.rend(); ++it)

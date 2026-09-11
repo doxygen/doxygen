@@ -50,10 +50,10 @@ RefItem *RefList::find(int itemId)
 
 bool RefList::isEnabled() const
 {
-  if      (m_listName=="todo"       && !Config_getBool(GENERATE_TODOLIST))       return false;
-  else if (m_listName=="test"       && !Config_getBool(GENERATE_TESTLIST))       return false;
-  else if (m_listName=="bug"        && !Config_getBool(GENERATE_BUGLIST))        return false;
-  else if (m_listName=="deprecated" && !Config_getBool(GENERATE_DEPRECATEDLIST)) return false;
+  if      ((m_listName=="todo"       || m_listName==doxygenList+"todo")       && !Config_getBool(GENERATE_TODOLIST))       return false;
+  else if ((m_listName=="test"       || m_listName==doxygenList+"test")       && !Config_getBool(GENERATE_TESTLIST))       return false;
+  else if ((m_listName=="bug"        || m_listName==doxygenList+"bug")        && !Config_getBool(GENERATE_BUGLIST))        return false;
+  else if ((m_listName=="deprecated" || m_listName==doxygenList+"deprecated") && !Config_getBool(GENERATE_DEPRECATEDLIST)) return false;
   return true;
 }
 
