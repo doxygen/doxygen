@@ -38,6 +38,7 @@
 #include "parserintf.h"
 #include "plantuml.h"
 #include "portable.h"
+#include "reflist.h"
 #include "util.h"
 #include "vhdldocgen.h"
 
@@ -2074,7 +2075,7 @@ void HtmlDocVisitor::operator()(const DocXRefItem &x)
   forceEndParagraph(x);
   bool anonymousEnum = x.file()=="@";
   DString key = x.key();
-  if (key.startsWith("Doxygen_List_")) key=key.mid(13);
+  key.stripPrefix(doxygenList);
   if (!anonymousEnum)
   {
     DString fn = x.file();
