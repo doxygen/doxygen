@@ -4323,7 +4323,12 @@ void ClassDefImpl::addInnerCompound(Definition *d)
   if (d->definitionType()==Definition::TypeClass) // only classes can be
                                                   // nested in classes.
   {
-    m_innerClasses.add(d->localName(),toClassDef(d));
+    ClassDef *cd = toClassDef(d);
+    m_innerClasses.add(d->localName(),cd);
+    if (cd && cd->isAnonymous())
+    {
+      m_isSimple = false;
+    }
   }
 }
 
