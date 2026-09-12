@@ -68,9 +68,12 @@ void ManDocVisitor::operator()(const DocWhiteSpace &w)
     m_t << w.chars();
     m_firstCol=w.chars().at(w.chars().length()-1)=='\n';
   }
-  else
+  else if (!m_firstCol)
   {
     m_t << " ";
+  }
+  else
+  {
     m_firstCol=false;
   }
 }
