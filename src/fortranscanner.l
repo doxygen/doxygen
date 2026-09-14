@@ -1601,7 +1601,7 @@ private                                 {
                                           }
                                         }
 
-<DocCopyBlock>^{B}*{COMM}               { // start of a comment line, just ingnore the comment indicator and leading whitespace
+<DocCopyBlock>^{B}*{COMM}               { // start of a comment line, just ignore the comment indicator and leading whitespace
                                         }
 <DocCopyBlock>"~~~"[~]*                 {
                                           DString pat = yytext;
