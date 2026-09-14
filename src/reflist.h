@@ -26,6 +26,8 @@
 class Definition;
 class RefList;
 
+static inline const DString doxygenList = "Doxygen_List_";
+
 /** This struct represents an item in the list of references. */
 class RefItem
 {

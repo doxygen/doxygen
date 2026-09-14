@@ -1601,17 +1601,7 @@ private                                 {
                                           }
                                         }
 
-<DocCopyBlock>^{B}*{COMM}               { // start of a comment line
-                                          if (yyextra->docBlockName=="verbatim")
-                                          {
-                                            REJECT;
-                                          }
-                                          else
-                                          {
-                                            DString indent;
-                                            indent.fill(' ',computeIndent(yytext) + 2);
-                                            yyextra->docBlock += indent;
-                                          }
+<DocCopyBlock>^{B}*{COMM}               { // start of a comment line, just ingnore the comment indicator and leading whitespace
                                         }
 <DocCopyBlock>"~~~"[~]*                 {
                                           DString pat = yytext;
@@ -3141,6 +3131,9 @@ static void startCommentBlock(yyscan_t yyscanner,bool brief)
 static void handleCommentBlock(yyscan_t yyscanner,const DString &doc,bool brief)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  //printf("handleCommentBlock(doc=[%s] brief=%d yyextra->docBlockInBody=%d yyextra->docBlockJavaStyle=%d\n",
+  //  qPrint(doc),brief,yyextra->docBlockInBody,yyextra->docBlockJavaStyle);
+
   bool hideInBodyDocs = Config_getBool(HIDE_IN_BODY_DOCS);
   if (yyextra->docBlockInBody && hideInBodyDocs)
   {
