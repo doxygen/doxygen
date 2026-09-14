@@ -189,6 +189,7 @@ class FileDef : public DefinitionMutable, public Definition
     virtual bool generateSourceFile() const = 0;
     virtual void sortMemberLists() = 0;
 
+    virtual void setIncludeFile(FileDef *fd,const DString &incName,bool local,bool force) = 0;
     virtual void addIncludeDependency(const FileDef *fd,const DString &incName,IncludeKind kind) = 0;
     virtual void addIncludedByDependency(const FileDef *fd,const DString &incName,IncludeKind kind) = 0;
 

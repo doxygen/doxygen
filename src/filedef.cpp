@@ -195,6 +195,7 @@ class FileDefImpl final : public DefinitionMixin<FileDef>
     void addMembersToMemberGroup() override;
     void distributeMemberGroupDocumentation() override;
     void findSectionsInDocumentation() override;
+    void setIncludeFile(FileDef *fd, const DString &includeName,bool local, bool force) override;
     void addIncludedUsingDirectives(FileDefSet &visitedFiles) override;
     void addListReferences() override;
     void addRequirementReferences() override;
@@ -238,6 +239,7 @@ class FileDefImpl final : public DefinitionMixin<FileDef>
     IncludeInfoList       m_includedByList;
     LinkedRefMap<NamespaceDef> m_usingDirList;
     LinkedRefMap<const Definition> m_usingDeclList;
+    std::unique_ptr<IncludeInfo> m_incInfo;
     DString              m_path;
     DString              m_filePath;
     DString              m_inclDepFileName;
@@ -598,7 +600,39 @@ void FileDefImpl::writeClassesToTagFile(TextStream &tagFile, const ClassLinkedRe
 
 void FileDefImpl::writeIncludeFiles(OutputList &ol)
 {
-  if (!m_includeList.empty())
+  if (m_incInfo)
+  {
+    DString nm=m_incInfo->includeName.empty() ?
+      (m_incInfo->fileDef ?
+       m_incInfo->fileDef->docName() : DString()
+      ) :
+      m_incInfo->includeName;
+    if (!nm.empty())
+    {
+      ol.startParagraph();
+      ol.startTypewriter();
+      ol.docify(::includeStatement(SrcLangExt::Cpp,m_incInfo->kind));
+      ol.docify(::includeOpen(SrcLangExt::Cpp,m_incInfo->kind));
+      ol.pushGeneratorState();
+      ol.disable(OutputType::Html);
+      ol.docify(nm);
+      ol.disableAllBut(OutputType::Html);
+      ol.enable(OutputType::Html);
+      if (m_incInfo->fileDef)
+      {
+        ol.writeObjectLink(DString(),m_incInfo->fileDef->includeName(),DString(),nm);
+      }
+      else
+      {
+        ol.docify(nm);
+      }
+      ol.popGeneratorState();
+      ol.docify(::includeClose(SrcLangExt::Cpp,m_incInfo->kind));
+      ol.endTypewriter();
+      ol.endParagraph();
+    }
+  }
+  else if (!m_includeList.empty())
   {
     ol.startTextBlock(true);
     for (const auto &ii : m_includeList)
@@ -1525,6 +1559,27 @@ const LinkedRefMap<NamespaceDef> &FileDefImpl::getUsedNamespaces() const
 void FileDefImpl::addUsingDeclaration(const Definition *d)
 {
   m_usingDeclList.add(d->qualifiedName(),d);
+}
+
+void FileDefImpl::setIncludeFile(FileDef *fd,
+             const DString &includeName,bool local, bool force)
+{
+  //printf("FileDefImpl::setIncludeFile(%p,%s,%d,%d)\n",fd,includeName,local,force);
+  if (!m_incInfo) m_incInfo = std::make_unique<IncludeInfo>();
+  if ((!includeName.empty() && m_incInfo->includeName.empty()) ||
+      (fd!=nullptr && m_incInfo->fileDef==nullptr)
+     )
+  {
+    //printf("Setting file info\n");
+    m_incInfo->fileDef     = fd;
+    m_incInfo->includeName = includeName;
+    m_incInfo->kind        = local ? IncludeKind::IncludeLocal : IncludeKind::IncludeSystem;
+  }
+  if (force && !includeName.empty())
+  {
+    m_incInfo->includeName = includeName;
+    m_incInfo->kind        = local ? IncludeKind::IncludeLocal : IncludeKind::IncludeSystem;
+  }
 }
 
 void FileDefImpl::addIncludeDependency(const FileDef *fd,const DString &incName,IncludeKind kind)

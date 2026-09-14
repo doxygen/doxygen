@@ -960,12 +960,14 @@ Structural indicators
 \section cmdheaderfile \\headerfile <header-file> [<header-name>]
 
   \addindex \\headerfile
-  Intended to be used for class, struct, or union documentation, where
+  Intended to be used for class, struct, union, file or namespace documentation, where
   the documentation is in front of the definition. The arguments of
   this command are the same as the second and third argument of
   \ref cmdclass "\\class".
+
   The \<header-file\> name refers to the file that should be included by the
   application to obtain the definition of the class, struct, or union.
+
   The \<header-name\> argument can be used to overwrite the
   name of the link that is used in the class documentation to something other
   than \<header-file\>. This can be useful if the include name is not located

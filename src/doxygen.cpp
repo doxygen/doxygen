@@ -503,93 +503,8 @@ static void organizeSubGroups(const Entry *root)
 
 //----------------------------------------------------------------------
 
-static void buildFileList(const Entry *root)
-{
-  if ((root->section.isFileDoc() || (root->section.isFile() && Config_getBool(EXTRACT_ALL))) &&
-      !root->name.empty() && !root->tagInfo() // skip any file coming from tag files
-     )
-  {
-    bool ambig = false;
-    FileDef *fd=Doxygen::inputNameLinkedMap->findFileDef(root->name,ambig);
-    if (!fd || ambig)
-    {
-      bool save_ambig = ambig;
-      // use the directory of the file to see if the described file is in the same
-      // directory as the describing file.
-      DString fn = root->fileName;
-      size_t newIndex=fn.rfind('/');
-      if (newIndex==DString::npos)
-      {
-        fn = root->name;
-      }
-      else
-      {
-        fn = fn.left(newIndex)+"/"+root->name;
-      }
-      fd=Doxygen::inputNameLinkedMap->findFileDef(fn,ambig);
-      if (!fd) ambig = save_ambig;
-    }
-    //printf("**************** root->name=%s fd=%p\n",qPrint(root->name),(void*)fd);
-    if (fd && !ambig)
-    {
-      //printf("Adding documentation!\n");
-      // using false in setDocumentation is small hack to make sure a file
-      // is documented even if a \file command is used without further
-      // documentation
-      fd->setDocumentation(root->doc,root->docFile,root->docLine,false);
-      fd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-      fd->addSectionsToDefinition(root->anchors);
-      fd->setRefItems(root->sli);
-      fd->setRequirementReferences(root->rqli);
-      root->commandOverrides.apply_includeGraph   ([&](bool b) { fd->overrideIncludeGraph(b);    });
-      root->commandOverrides.apply_includedByGraph([&](bool b) { fd->overrideIncludedByGraph(b); });
-      for (const Grouping &g : root->groups)
-      {
-        GroupDef *gd=nullptr;
-        if (!g.groupname.empty() && (gd=Doxygen::groupLinkedMap->find(g.groupname)))
-        {
-          if (!gd->containsFile(fd))
-          {
-            gd->addFile(fd);
-            fd->makePartOfGroup(gd);
-            //printf("File %s: in group %s\n",qPrint(fd->name()),qPrint(gd->name()));
-          }
-        }
-        else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
-        {
-          warn(root->fileName, root->startLine,
-               "Found non-existing group '{}' for the command '{}', ignoring command",
-               g.groupname, Grouping::getGroupPriName( g.pri )
-              );
-        }
-      }
-    }
-    else
-    {
-      DString text(4096, DString::ExplicitSize);
-      text.sprintf("the name '%s' supplied as "
-          "the argument in the \\file statement ",
-          qPrint(root->name));
-      if (ambig) // name is ambiguous
-      {
-        text+="matches the following input files:\n";
-        text+=Doxygen::inputNameLinkedMap->showFileDefMatches(root->name);
-        text+="\n";
-        text+="Please use a more specific name by "
-          "including a (larger) part of the path!";
-      }
-      else // name is not an input file
-      {
-        text+="is not an input file";
-      }
-      warn(root->fileName,root->startLine,"{}", text);
-    }
-  }
-  for (const auto &e : root->children()) buildFileList(e.get());
-}
-
 template<class DefMutable>
-static void addIncludeFile(DefMutable *cd,FileDef *ifd,const Entry *root)
+static void addIncludeFile(DefMutable *def,FileDef *ifd,const Entry *root)
 {
   if (
       (!root->doc.stripWhiteSpace().empty() ||
@@ -623,7 +538,7 @@ static void addIncludeFile(DefMutable *cd,FileDef *ifd,const Entry *root)
     { // explicit request
       DString text;
       text.sprintf("the name '%s' supplied as "
-                  "the argument of the \\class, \\struct, \\union, or \\include command ",
+                  "the argument of the \\class, \\struct, \\union, or \\headerfile command ",
                   qPrint(includeFile)
                  );
       if (ambig) // name is ambiguous
@@ -675,16 +590,104 @@ static void addIncludeFile(DefMutable *cd,FileDef *ifd,const Entry *root)
       }
       if (fd->generateSourceFile()) // generate code for header
       {
-        cd->setIncludeFile(fd,iName,local,!root->includeName.empty());
+        def->setIncludeFile(fd,iName,local,!root->includeName.empty());
       }
       else // put #include in the class documentation without link
       {
-        cd->setIncludeFile(nullptr,iName,local,true);
+        def->setIncludeFile(nullptr,iName,local,true);
       }
     }
   }
 }
 
+
+//----------------------------------------------------------------------
+
+static void buildFileList(const Entry *root)
+{
+  if ((root->section.isFileDoc() || (root->section.isFile() && Config_getBool(EXTRACT_ALL))) &&
+      !root->name.empty() && !root->tagInfo() // skip any file coming from tag files
+     )
+  {
+    bool ambig = false;
+    FileDef *fd=Doxygen::inputNameLinkedMap->findFileDef(root->name,ambig);
+    if (!fd || ambig)
+    {
+      bool save_ambig = ambig;
+      // use the directory of the file to see if the described file is in the same
+      // directory as the describing file.
+      DString fn = root->fileName;
+      size_t newIndex=fn.rfind('/');
+      if (newIndex==DString::npos)
+      {
+        fn = root->name;
+      }
+      else
+      {
+        fn = fn.left(newIndex)+"/"+root->name;
+      }
+      fd=Doxygen::inputNameLinkedMap->findFileDef(fn,ambig);
+      if (!fd) ambig = save_ambig;
+    }
+    //printf("**************** root->name=%s fd=%p\n",qPrint(root->name),(void*)fd);
+    if (fd && !ambig)
+    {
+      //printf("Adding documentation!\n");
+      // using false in setDocumentation is small hack to make sure a file
+      // is documented even if a \file command is used without further
+      // documentation
+      fd->setDocumentation(root->doc,root->docFile,root->docLine,false);
+      fd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+      fd->addSectionsToDefinition(root->anchors);
+      fd->setRefItems(root->sli);
+      fd->setRequirementReferences(root->rqli);
+      addIncludeFile(fd,fd,root);
+      root->commandOverrides.apply_includeGraph   ([&](bool b) { fd->overrideIncludeGraph(b);    });
+      root->commandOverrides.apply_includedByGraph([&](bool b) { fd->overrideIncludedByGraph(b); });
+      for (const Grouping &g : root->groups)
+      {
+        GroupDef *gd=nullptr;
+        if (!g.groupname.empty() && (gd=Doxygen::groupLinkedMap->find(g.groupname)))
+        {
+          if (!gd->containsFile(fd))
+          {
+            gd->addFile(fd);
+            fd->makePartOfGroup(gd);
+            //printf("File %s: in group %s\n",qPrint(fd->name()),qPrint(gd->name()));
+          }
+        }
+        else if (!gd && g.pri == Grouping::GROUPING_INGROUP)
+        {
+          warn(root->fileName, root->startLine,
+               "Found non-existing group '{}' for the command '{}', ignoring command",
+               g.groupname, Grouping::getGroupPriName( g.pri )
+              );
+        }
+      }
+    }
+    else
+    {
+      DString text(4096, DString::ExplicitSize);
+      text.sprintf("the name '%s' supplied as "
+          "the argument in the \\file statement ",
+          qPrint(root->name));
+      if (ambig) // name is ambiguous
+      {
+        text+="matches the following input files:\n";
+        text+=Doxygen::inputNameLinkedMap->showFileDefMatches(root->name);
+        text+="\n";
+        text+="Please use a more specific name by "
+          "including a (larger) part of the path!";
+      }
+      else // name is not an input file
+      {
+        text+="is not an input file";
+      }
+      warn(root->fileName,root->startLine,"{}", text);
+    }
+  }
+  for (const auto &e : root->children()) buildFileList(e.get());
+}
 
 DString stripTemplateSpecifiers(const DString &s)
 {
@@ -1937,6 +1940,7 @@ static void buildNamespaceList(const Entry *root)
           nd->insertUsedFile(fd);
           nd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
           nd->setBodyDef(fd);
+          addIncludeFile(nd,fd,root);
 
           // also add namespace to the correct structural context
           Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,fullName,nullptr,tagInfo);

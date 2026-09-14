@@ -119,6 +119,7 @@ class NamespaceDefImpl final : public DefinitionMixin<NamespaceDefMutable>
     DString title() const override;
     DString compoundTypeString() const override;
 
+    void setIncludeFile(FileDef *fd,const DString &incName,bool local,bool force) override;
     void setMetaData(const DString &m) override;
     int countVisibleMembers() const override;
     void writeSummaryLinks(OutputList &ol) const override;
@@ -143,6 +144,7 @@ class NamespaceDefImpl final : public DefinitionMixin<NamespaceDefMutable>
     void writeClassesToTagFile(TextStream &,const ClassLinkedRefMap &d);
     void writeConceptsToTagFile(TextStream &);
     void setFileNameLocal(const DString &fn);
+    void writeIncludeFiles(OutputList &ol) const;
 
     void writeNamespaceDeclarations(OutputList &ol,const DString &title,
             bool isConstantGroup=false);
@@ -154,6 +156,7 @@ class NamespaceDefImpl final : public DefinitionMixin<NamespaceDefMutable>
     LinkedRefMap<NamespaceDef> m_usingDirList;
     LinkedRefMap<const Definition> m_usingDeclList;
     LinkedRefMap<const Definition> m_innerCompounds;
+    std::unique_ptr<IncludeInfo> m_incInfo;
 
     MemberLinkedRefMap    m_allMembers;
     MemberLists           m_memberLists;
@@ -434,6 +437,63 @@ void NamespaceDefImpl::insertConcept(ConceptDef *cd)
 void NamespaceDefImpl::insertNamespace(NamespaceDef *nd)
 {
   m_namespaces.add(nd->name(),nd);
+}
+
+void NamespaceDefImpl::setIncludeFile(FileDef *fd,
+             const DString &includeName,bool local, bool force)
+{
+  //printf("NamespaceDefImpl::setIncludeFile(%p,%s,%d,%d)\n",fd,includeName,local,force);
+  if (!m_incInfo) m_incInfo = std::make_unique<IncludeInfo>();
+  if ((!includeName.empty() && m_incInfo->includeName.empty()) ||
+      (fd!=nullptr && m_incInfo->fileDef==nullptr)
+     )
+  {
+    //printf("Setting file info\n");
+    m_incInfo->fileDef     = fd;
+    m_incInfo->includeName = includeName;
+    m_incInfo->kind        = local ? IncludeKind::IncludeLocal : IncludeKind::IncludeSystem;
+  }
+  if (force && !includeName.empty())
+  {
+    m_incInfo->includeName = includeName;
+    m_incInfo->kind        = local ? IncludeKind::IncludeLocal : IncludeKind::IncludeSystem;
+  }
+}
+
+void NamespaceDefImpl::writeIncludeFiles(OutputList &ol) const
+{
+  if (m_incInfo)
+  {
+    DString nm=m_incInfo->includeName.empty() ?
+      (m_incInfo->fileDef ?
+       m_incInfo->fileDef->docName() : DString()
+      ) :
+      m_incInfo->includeName;
+    if (!nm.empty())
+    {
+      ol.startParagraph();
+      ol.startTypewriter();
+      ol.docify(::includeStatement(SrcLangExt::Cpp,m_incInfo->kind));
+      ol.docify(::includeOpen(SrcLangExt::Cpp,m_incInfo->kind));
+      ol.pushGeneratorState();
+      ol.disable(OutputType::Html);
+      ol.docify(nm);
+      ol.disableAllBut(OutputType::Html);
+      ol.enable(OutputType::Html);
+      if (m_incInfo->fileDef)
+      {
+        ol.writeObjectLink(DString(),m_incInfo->fileDef->includeName(),DString(),nm);
+      }
+      else
+      {
+        ol.docify(nm);
+      }
+      ol.popGeneratorState();
+      ol.docify(::includeClose(SrcLangExt::Cpp,m_incInfo->kind));
+      ol.endTypewriter();
+      ol.endParagraph();
+    }
+  }
 }
 
 
@@ -1094,6 +1154,8 @@ void NamespaceDefImpl::writeDocumentation(OutputList &ol)
         writeAuthorSection(ol);
         break;
       case LayoutDocEntry::ClassIncludes:
+        writeIncludeFiles(ol);
+        break;
       case LayoutDocEntry::ClassInheritanceGraph:
       case LayoutDocEntry::ClassNestedClasses:
       case LayoutDocEntry::ClassCollaborationGraph:

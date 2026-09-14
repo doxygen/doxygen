@@ -974,6 +974,7 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
   { "namespace/detaileddescription",              { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::DetailedDesc,
                                                             []() { return compileOptions(theTranslator->trDetailedDescription()); })
                                                   } },
+  { "namespace/includes",                         { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::ClassIncludes) } },
   { "namespace/authorsection",                    { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::AuthorSection) } },
   { "namespace/memberdecl",                       { startCb(&LayoutParser::startMemberDecl),
                                                     endCb(&LayoutParser::endMemberDecl)

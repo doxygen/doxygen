@@ -103,6 +103,7 @@ class NamespaceDefMutable : public DefinitionMutable, public NamespaceDef
     ABSTRACT_BASE_CLASS(NamespaceDefMutable)
 
     // --- setters/actions
+    virtual void setIncludeFile(FileDef *fd,const DString &incName,bool local,bool force) = 0;
     virtual void setMetaData(const DString &m) = 0;
     virtual void insertUsedFile(FileDef *fd) = 0;
     virtual void writeDocumentation(OutputList &ol) = 0;
