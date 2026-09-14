@@ -4963,9 +4963,23 @@ bool mainPageHasTitle()
 
 DString getDotImageExtension()
 {
-  DString imgExt = Config_getEnumAsString(DOT_IMAGE_FORMAT);
-  size_t i= imgExt.find(':'); // strip renderer part when using e.g. 'png:cairo:gd' as format
-  return i==DString::npos ? imgExt : imgExt.left(i);
+  return getDotImageExtension(Config_getEnumAsString(DOT_IMAGE_FORMAT));
+}
+DString getDotImageExtension(DString &format)
+{
+  size_t i= format.find(':'); // strip renderer part when using e.g. 'png:cairo:gd' as format
+  return i==DString::npos ? format : format.left(i);
+}
+
+DString getDotImageExtensionGenerated(DString &format)
+{
+  StringVector splitExt = split(format.str(),":");
+  DString extGen;
+  for (unsigned i = splitExt.size(); i-- > 0; )
+  {
+    extGen += splitExt[i] + (i!=0 ? "." : "");
+  }
+  return extGen;
 }
 
 bool openOutputFile(const DString &outFile,std::ofstream &f)

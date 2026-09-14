@@ -399,6 +399,10 @@ DString filterTitle(const DString &title);
 
 /*! Returns the file extension to use for dot files as specified via the DOT_IMAGE_FORMAT configuration option. */
 DString getDotImageExtension();
+/*! Returns the file extension to use for dot files as specified via the argument `format`. */
+DString getDotImageExtension(DString &format);
+
+DString getDotImageExtensionGenerated(DString &format);
 
 DString externalLinkTarget(const bool parent = false);
 
