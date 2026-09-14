@@ -4965,13 +4965,13 @@ DString getDotImageExtension()
 {
   return getDotImageExtension(Config_getEnumAsString(DOT_IMAGE_FORMAT));
 }
-DString getDotImageExtension(DString &format)
+DString getDotImageExtension(const DString &format)
 {
   size_t i= format.find(':'); // strip renderer part when using e.g. 'png:cairo:gd' as format
   return i==DString::npos ? format : format.left(i);
 }
 
-DString getDotImageExtensionGenerated(DString &format)
+DString getDotImageExtensionGenerated(const DString &format)
 {
   StringVector splitExt = split(format.str(),":");
   DString extGen;
