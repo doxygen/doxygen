@@ -4975,8 +4975,9 @@ DString getDotImageExtensionGenerated(const DString &format)
 {
   StringVector splitExt = split(format.str(),":");
   DString extGen;
-  for (unsigned i = splitExt.size(); i-- > 0; )
+  for (size_t i = splitExt.size(); i > 0; )
   {
+    --i;
     extGen += splitExt[i] + (i!=0 ? "." : "");
   }
   return extGen;
