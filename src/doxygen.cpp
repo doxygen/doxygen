@@ -1894,6 +1894,7 @@ static void buildNamespaceList(const Entry *root)
           addNamespaceToGroups(root,nd);
           nd->setRefItems(root->sli);
           nd->setRequirementReferences(root->rqli);
+          addIncludeFile(nd,fd,root);
         }
       }
       else // fresh namespace
