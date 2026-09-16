@@ -296,6 +296,8 @@ bool DotRunner::run(const DotJobs &dotJobs)
   for (const auto &[fmtStr, byDir] : byFormatAndDir)
   {
     DString format = DString(fmtStr);
+    DString extension = getDotImageExtension(format);
+    DString extGen = getDotImageExtensionGenerated(format);
 
     for (const auto &[dirStr, jobs] : byDir)
     {
@@ -432,13 +434,13 @@ bool DotRunner::run(const DotJobs &dotJobs)
       }
 
       // Post-process each output file. dot -O appends the format suffix to the
-      // full input filename, so the output is absPath + relDotName + "." + format.
-      // Rename to remove the .dot infix, producing absPath + baseName + "." + format.
+      // full input filename, so the output is absPath + relDotName + "." + extension.
+      // Rename to remove the .dot infix, producing absPath + baseName + "." + extension.
       for (const auto *job : jobs)
       {
         DString base   = job->absPath + getBaseNameOfOutput(job->relDotName);
-        DString dotOutput = job->absPath + job->relDotName + "." + format;
-        DString output = base + "." + format;
+        DString dotOutput = job->absPath + job->relDotName + "." + extGen;
+        DString output = base + "." + extension;
         Dir d;
         if (!d.rename(dotOutput.str(), output.str()))
         {
