@@ -652,6 +652,12 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          yyextra->token.name = yytext;
                          return Token::make_TK_LNKWORD();
                        }
+<St_Para>{LNKWORDN}("<tt>"[^<]*"</tt>"|"<TT>"[^<]*"</TT>") {
+                         const int tagPos = static_cast<int>(DString(yytext).find('<'));
+                         yyless(tagPos);
+                         yyextra->token.name = yytext;
+                         return Token::make_TK_LNKWORD();
+                       }
 <St_Para>{LNKWORD1}                   |
 <St_Para>{LNKWORD1}{FUNCARG}          |
 <St_Para>{LNKWORD2}                   |

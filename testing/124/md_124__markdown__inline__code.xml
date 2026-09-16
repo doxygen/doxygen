@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="md_124__markdown__inline__code" kind="page">
+    <compoundname>md_124__markdown__inline__code</compoundname>
+    <title>124_markdown_inline_code</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <sect1 id="md_124__markdown__inline__code_1autotoc_md0">
+        <title>Adjacent inline code</title>
+        <para>Test: one<computeroutput>.h</computeroutput>and one<computeroutput>.c</computeroutput>file. </para>
+      </sect1>
+    </detaileddescription>
+    <location file="124_markdown_inline_code.md"/>
+  </compounddef>
+</doxygen>
