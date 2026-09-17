@@ -30,13 +30,20 @@ struct HtmlAttrib
 class HtmlAttribList final : public std::vector<HtmlAttrib>
 {
   public:
-    void mergeAttribute(const DString &optName,const DString &optValue)
+    void mergeAttribute(const DString &optName,const DString &optValue, bool prepend = false)
     {
       auto it = std::find_if(begin(),end(),
                            [&optName](const auto &opt) { return opt.name==optName; });
       if (it!=end()) // attribute name already in the list: append values
       {
-        it->value += " " + optValue;
+        if (prepend)
+        {
+          it->value = optValue + " " + it->value;
+        }
+        else
+        {
+          it->value += " " + optValue;
+        }
       }
       else // attribute name not yet in the list
       {
