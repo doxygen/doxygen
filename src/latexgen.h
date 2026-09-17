@@ -177,7 +177,7 @@ class LatexGenerator final : public OutputGenerator, public OutputGenIntf
     void endMemberItem(MemberItemType) override;
     void startMemberTemplateParams() override;
     void endMemberTemplateParams(const DString &,const DString &) override;
-    void startCompoundTemplateParams() override { m_t << "\\subsubsection*{";}
+    void startCompoundTemplateParams() override { m_t << "\\doxysubsubsection*{";}
     void endCompoundTemplateParams() override { m_t << "}\n"; }
 
     void startMemberGroupHeader(const DString &,bool) override;
