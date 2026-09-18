@@ -1329,6 +1329,7 @@ Doxygen を使用して、使用した設定ファイルをテンプレート設
 <![CDATA[\c PAPER_TYPE タグを使用して、プリンターで使用される用紙タイプを設定できます。]]>
       </docs>
       <value name="a4" desc="(210 x 297 mm)"/>
+      <value name="a3" desc="(297 x 420 mm)"/>
       <value name="letter" desc="(8.5 x 11 インチ)"/>
       <value name="legal" desc="(8.5 x 14 インチ)"/>
       <value name="executive" desc="(7.25 x 10.5 インチ)"/>

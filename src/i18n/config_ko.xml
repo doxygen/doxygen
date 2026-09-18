@@ -1328,6 +1328,7 @@ Doxygen을 사용하여 사용된 설정 파일을 템플릿 설정 파일과 �
 <![CDATA[\c PAPER_TYPE 태그를 사용하여 프린터에서 사용되는 용지 유형을 설정할 수 있습니다.]]>
       </docs>
       <value name="a4" desc="(210 x 297 mm)"/>
+      <value name="a3" desc="(297 x 420 mm)"/>
       <value name="letter" desc="(8.5 x 11 인치)"/>
       <value name="legal" desc="(8.5 x 14 인치)"/>
       <value name="executive" desc="(7.25 x 10.5 인치)"/>
