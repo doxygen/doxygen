@@ -1776,22 +1776,6 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   }
 
   //------------------------
-  // check and correct PAPER_TYPE
-  DString paperType = Config_getEnumAsString(PAPER_TYPE);
-  paperType=paperType.lower().stripWhiteSpace();
-  if (paperType.empty() || paperType=="a4wide")
-  {
-    // use a4
-    Config_updateEnum(PAPER_TYPE,PAPER_TYPE_t::a4);
-  }
-  else if (paperType!="a4" && paperType!="letter" &&
-           paperType!="legal" && paperType!="executive")
-  {
-    err("Unknown page type '{}' specified\n",paperType);
-    Config_updateEnum(PAPER_TYPE,PAPER_TYPE_t::a4);
-  }
-
-  //------------------------
   // check & correct STRIP_FROM_PATH
   StringVector stripFromPath = Config_getList(STRIP_FROM_PATH);
   if (stripFromPath.empty()) // by default use the current path
