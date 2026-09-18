@@ -446,7 +446,9 @@ void HtmlDocVisitor::operator()(const DocStyleChange &s)
     case DocStyleChange::Typewriter:
       if (s.enable())
       {
-        m_t << "<span class=\"tt\"" << s.attribs().toString() << ">";
+        auto attribs = s.attribs();
+        attribs.mergeAttribute("class","tt", true);
+        m_t << "<span" << attribs.toString() << ">";
         m_insidePre=true;
       }
       else
