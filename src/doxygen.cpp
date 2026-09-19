@@ -3352,10 +3352,28 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
 
   // find the scope of this variable
   int index = computeQualifiedIndex(name);
-  if (index!=-1 && root->parent()->section.isGroupDoc() && root->parent()->tagInfo())
-    // grouped members are stored with full scope
+  // grouped members are stored with full scope
+  bool qualifiedGroupMember = index!=-1 && root->parent()->section.isGroupDoc() && root->parent()->tagInfo();
+  // A specialization of a variable template that lives in a namespace, i.e.
+  // `template<class T> constexpr bool std::ranges::enable_view<MyView<T>> = true;`.
+  // Its scope has to be spelled out, so it must not be mistaken for the definition of a static
+  // data member, which is declared in its class as well and is therefore picked up from there.
+  bool variableTemplateSpecialization = index!=-1 && !root->tArgLists.empty() &&
+                                        name.mid(index+2).find('<')!=DString::npos &&
+                                        getClass(name.left(index))==nullptr;
+  if (qualifiedGroupMember || variableTemplateSpecialization)
   {
-    buildScopeFromQualifiedName(name.left(index+2),root->lang,root->tagInfo());
+    Definition *d = buildScopeFromQualifiedName(name.left(index+2),root->lang,root->tagInfo());
+    if (variableTemplateSpecialization)
+      // the scope may have been made up for this specialization, but it holds a documented member
+      // now, which is only reachable through a page of its own
+    {
+      for (Definition *s=d; s && s!=Doxygen::globalScope; s=s->getOuterScope())
+      {
+        NamespaceDefMutable *ndm = toNamespaceDefMutable(s);
+        if (ndm && ndm->isArtificial()) ndm->setArtificial(false);
+      }
+    }
     scope=name.left(index);
     name=name.mid(index+2);
   }
