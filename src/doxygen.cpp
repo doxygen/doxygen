@@ -1489,10 +1489,15 @@ static void resolveClassNestingRelations()
           dm->addInnerCompound(cd);
         }
         cd->setOuterScope(d);
-        warn(cd->getDefFileName(),cd->getDefLine(),
-            "Incomplete input: scope for class {} not found!{}",name,
-            name.startsWith("std::") ? " Try enabling BUILTIN_STL_SUPPORT." : ""
-            );
+        // A specialization can only be written for a template that has been declared before, so a missing
+        // scope means that declaration is outside the input - e.g. `template<> struct std::hash<MyClass>`.
+        if (cd->localName().find('<')==DString::npos)
+        {
+          warn(cd->getDefFileName(),cd->getDefLine(),
+              "Incomplete input: scope for class {} not found!{}",name,
+              name.startsWith("std::") ? " Try enabling BUILTIN_STL_SUPPORT." : ""
+              );
+        }
       }
     }
   }
