@@ -1327,6 +1327,7 @@ Doxygen (www.doxygen.org) 所使用的设置。
 <![CDATA[\c PAPER_TYPE 标签可用于设置打印机使用的纸张类型。]]>
       </docs>
       <value name="a4" desc="（210 x 297 毫米）"/>
+      <value name="a3" desc="（297 x 420 毫米）"/>
       <value name="letter" desc="（8.5 x 11 英寸）"/>
       <value name="legal" desc="（8.5 x 14 英寸）"/>
       <value name="executive" desc="（7.25 x 10.5 英寸）"/>

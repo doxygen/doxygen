@@ -3104,6 +3104,7 @@ EXTRA_SEARCH_MAPPINGS = tagname1=loc1 tagname2=loc2 ...
 ]]>
       </docs>
       <value name='a4' desc='(210 x 297 mm)'/>
+      <value name='a3' desc='(297 x 420 mm)'/>
       <value name='letter' desc='(8.5 x 11 inches)'/>
       <value name='legal' desc='(8.5 x 14 inches)'/>
       <value name='executive' desc='(7.25 x 10.5 inches)'/>

@@ -589,6 +589,7 @@ void RTFGenerator::beginRTFDocument()
   {
     // width & height values are inches * 1440
     case PAPER_TYPE_t::a4:        m_t << "\\paperw11900\\paperh16840"; break;
+    case PAPER_TYPE_t::a3:        m_t << "\\paperw16480\\paperh23800"; break;
     case PAPER_TYPE_t::letter:    m_t << "\\paperw12240\\paperh15840"; break;
     case PAPER_TYPE_t::legal:     m_t << "\\paperw12240\\paperh20160"; break;
     case PAPER_TYPE_t::executive: m_t << "\\paperw10440\\paperh15120"; break;
