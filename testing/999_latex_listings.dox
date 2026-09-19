@@ -1,0 +1,34 @@
+// objective: test exact Markdown code block output and Pandoc-style attributes with the optional LaTeX listings backend
+// config: GENERATE_LATEX = YES
+// config: LATEX_OUTPUT = $TESTOUTDIR/latex
+// config: LATEX_USE_LISTINGS = YES
+// config: LATEX_LISTINGS_STYLE = MyStyle
+// config: LATEX_LISTINGS_NUMBERED = YES
+// latexcheck: index.tex:\begin{lstlisting}[style=MyStyle,language=c]\nint foo = 1;\n\end{lstlisting}\n\captionof{DoxyListing}{C example}
+// latexcheck: index.tex:\begin{lstlisting}[style=MyStyle,language=yaml]\nname: example\n\end{lstlisting}
+// latexcheck: index.tex:\begin{lstlisting}[style=MyStyle]\nenabled = true\n\end{lstlisting}\n\captionof{DoxyListing}{Caption only example}
+// latexcheck: index.tex:\begin{lstlisting}[style=MyStyle,language=c,numbers=none]\nint unnumbered;\n\end{lstlisting}
+// latexcheck: index.tex:\begin{lstlisting}[style=MyStyle]\n-option1 -option2-foo\nraw _ % # $ & { } ~ ^ \\\n\end{lstlisting}
+/** \mainpage LaTeX listings
+
+```{.c #listings-example caption="C example"}
+int foo = 1;
+```
+
+```yaml
+name: example
+```
+
+```{caption="Caption only example"}
+enabled = true
+```
+
+```{.c numbers=none}
+int unnumbered;
+```
+
+```none
+-option1 -option2-foo
+raw _ % # $ & { } ~ ^ \\
+```
+*/

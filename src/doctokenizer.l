@@ -759,7 +759,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          yyextra->token.name = yyextra->token.name.mid(i+1,yyextra->token.name.length()-i-2);
                          BEGIN(St_Code);
                        }
-<St_iCodeOpt>{BLANK}*"{"(".")?{CODEID}"}" {
+<St_iCodeOpt>{BLANK}*"{"([^}\n])*"}" {
                          yyextra->token.name = yytext;
                          size_t i=yyextra->token.name.find('{'); /* } to keep vi happy */
                          yyextra->token.name = yyextra->token.name.mid(i+1,yyextra->token.name.length()-i-2);
