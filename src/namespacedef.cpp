@@ -442,7 +442,8 @@ void NamespaceDefImpl::insertNamespace(NamespaceDef *nd)
 void NamespaceDefImpl::setIncludeFile(FileDef *fd,
              const DString &includeName,bool local, bool force)
 {
-  //printf("NamespaceDefImpl::setIncludeFile(%p,%s,%d,%d)\n",fd,includeName,local,force);
+  //printf("NamespaceDefImpl::setIncludeFile(%p,%s,%d,%d)\n",fd,qPrint(includeName),local,force);
+  if (!force) return; // only use header provided via \headerfile
   if (!m_incInfo) m_incInfo = std::make_unique<IncludeInfo>();
   if ((!includeName.empty() && m_incInfo->includeName.empty()) ||
       (fd!=nullptr && m_incInfo->fileDef==nullptr)
