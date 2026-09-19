@@ -1541,6 +1541,7 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
 <![CDATA[Тег \c PAPER_TYPE определяет размер бумаги для вывода LaTeX.]]>
       </docs>
       <value name="a4" desc="(210 x 297 мм)"/>
+      <value name="a3" desc="(297 x 420 mm)"/>
       <value name="letter" desc="(8.5 x 11 дюймов)"/>
       <value name="legal" desc="(8.5 x 14 дюймов)"/>
       <value name="executive" desc="(7.25 x 10.5 дюймов)"/>

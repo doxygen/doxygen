@@ -1329,6 +1329,7 @@ Para un ejemplo, vea la documentación.
 <![CDATA[La etiqueta \c PAPER_TYPE se puede usar para establecer el tipo de papel que usa la impresora. Los valores posibles son: \c a4, \c letter, \c legal y \c executive.]]>
       </docs>
       <value name="a4" desc="(210 x 297 mm)"/>
+      <value name="a3" desc="(297 x 420 mm)"/>
       <value name="letter" desc="(8.5 x 11 pulgadas)"/>
       <value name="legal" desc="(8.5 x 14 pulgadas)"/>
       <value name="executive" desc="(7.25 x 10.5 pulgadas)"/>
