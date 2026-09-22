@@ -2132,6 +2132,7 @@ STopt  [^\n@\\]*
                                                 break;
                                               case SectionHandling::Replace:
                                                 {
+                                                  fprintf(stderr,"==> '%s'\n",yytext);
                                                   if (cmdName == "fileinfo")
                                                   {
                                                     int i=0;
@@ -2139,16 +2140,6 @@ STopt  [^\n@\\]*
                                                     yyextra->sectionTitle+=fullMatch.left(i);
                                                     addOutput(yyscanner,fullMatch.left(i));
                                                     handleFileInfoSection(yyscanner,cmdName,optList);
-                                                    if (idxEnd == DString::npos)
-                                                    {
-                                                      yyextra->sectionTitle+=fullMatch.mid(i+9);
-                                                      addOutput(yyscanner,fullMatch.mid(i+9));
-                                                    }
-                                                    else
-                                                    {
-                                                      yyextra->sectionTitle+=fullMatch.mid(idxEnd+1);
-                                                      addOutput(yyscanner,fullMatch.mid(idxEnd+1));
-                                                    }
                                                   }
                                                   else if (cmdName == "lineinfo")
                                                   {
@@ -2156,12 +2147,8 @@ STopt  [^\n@\\]*
                                                     while (yytext[i]==' ' || yytext[i]=='\t') i++;
                                                     yyextra->sectionTitle+=fullMatch.left(i);
                                                     yyextra->sectionTitle+=DString().setNum(yyextra->lineNr);
-                                                    yyextra->sectionTitle+=' ';
-                                                    yyextra->sectionTitle+=fullMatch.mid(i+9);
                                                     addOutput(yyscanner,fullMatch.left(i));
                                                     addOutput(yyscanner,DString().setNum(yyextra->lineNr));
-                                                    addOutput(yyscanner,' ');
-                                                    addOutput(yyscanner,fullMatch.mid(i+9));
                                                   }
                                                   else if (cmdName == "raisewarning")
                                                   {
