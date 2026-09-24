@@ -1498,9 +1498,10 @@ void DefinitionImpl::writeNavigationPath(OutputList &ol) const
 void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
 {
   // first check if we have anything to show or if the outline is already shown on the outline panel
-  if (p->sectionRefs.empty() || (Config_getBool(GENERATE_TREEVIEW) && Config_getBool(PAGE_OUTLINE_PANEL))) return;
+  if (p->sectionRefs.empty()) return;
   // generate the embedded toc
   //ol.writeLocalToc(p->sectionRefs,localToc);
+  if (Config_getBool(GENERATE_TREEVIEW) && Config_getBool(PAGE_OUTLINE_PANEL)) ol.disable(OutputType::Html);
 
   auto generateTocEntries = [this,&ol]()
   {
@@ -1555,6 +1556,7 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
     ol.endLocalToc();
     ol.popGeneratorState();
   }
+  ol.enable(OutputType::Html);
 }
 
 //----------------------------------------------------------------------------------------
