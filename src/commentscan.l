@@ -2132,7 +2132,6 @@ STopt  [^\n@\\]*
                                                 break;
                                               case SectionHandling::Replace:
                                                 {
-                                                  fprintf(stderr,"==> '%s'\n",yytext);
                                                   if (cmdName == "fileinfo")
                                                   {
                                                     int i=0;
