@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="namespacens" kind="namespace" language="C++">
+    <compoundname>ns</compoundname>
+    <sectiondef kind="var">
+      <memberdef kind="variable" id="125__specialize__external__variable__template_8cpp_1a2dd75880ea53eef409a28945810abf1b" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>class T</type>
+          </param>
+        </templateparamlist>
+        <type>bool</type>
+        <definition>bool ns::trait</definition>
+        <argsstring/>
+        <name>trait</name>
+        <qualifiedname>ns::trait</qualifiedname>
+        <initializer>= false</initializer>
+        <briefdescription>
+          <para>A variable template that is part of the input. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="125_specialize_external_variable_template.cpp" line="16" column="27" bodyfile="125_specialize_external_variable_template.cpp" bodystart="16" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="125__specialize__external__variable__template_8cpp_1a01f842dbc77eeb7ed689b46c2726cb7e" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>class T</type>
+          </param>
+        </templateparamlist>
+        <type>bool</type>
+        <definition>bool ns::trait&lt; MyView&lt; T &gt; &gt;</definition>
+        <argsstring/>
+        <name>trait&lt; MyView&lt; T &gt; &gt;</name>
+        <qualifiedname>ns::trait&lt; MyView&lt; T &gt; &gt;</qualifiedname>
+        <initializer>= true</initializer>
+        <briefdescription>
+          <para>A specialization must not be merged into the primary template above. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="125_specialize_external_variable_template.cpp" line="20" column="22" bodyfile="125_specialize_external_variable_template.cpp" bodystart="20" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="125_specialize_external_variable_template.cpp" line="13" column="1"/>
+  </compounddef>
+</doxygen>
