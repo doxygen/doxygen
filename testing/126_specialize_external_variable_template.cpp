@@ -1,6 +1,6 @@
 // objective: test that a qualified specialization of a variable template is documented in its namespace
-// check: namespacestd_1_1ranges.xml
 // check: namespacens.xml
+// check: namespacestd_1_1ranges.xml
 
 /** @brief A view type of our own. */
 template<class T>

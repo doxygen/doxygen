@@ -3,7 +3,7 @@
   <compounddef id="namespacens" kind="namespace" language="C++">
     <compoundname>ns</compoundname>
     <sectiondef kind="var">
-      <memberdef kind="variable" id="125__specialize__external__variable__template_8cpp_1a2dd75880ea53eef409a28945810abf1b" prot="public" static="no" constexpr="yes" mutable="no">
+      <memberdef kind="variable" id="126__specialize__external__variable__template_8cpp_1a2dd75880ea53eef409a28945810abf1b" prot="public" static="no" constexpr="yes" mutable="no">
         <templateparamlist>
           <param>
             <type>class T</type>
@@ -22,9 +22,9 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="125_specialize_external_variable_template.cpp" line="16" column="27" bodyfile="125_specialize_external_variable_template.cpp" bodystart="16" bodyend="-1"/>
+        <location file="126_specialize_external_variable_template.cpp" line="16" column="27" bodyfile="126_specialize_external_variable_template.cpp" bodystart="16" bodyend="-1"/>
       </memberdef>
-      <memberdef kind="variable" id="125__specialize__external__variable__template_8cpp_1a01f842dbc77eeb7ed689b46c2726cb7e" prot="public" static="no" constexpr="yes" mutable="no">
+      <memberdef kind="variable" id="126__specialize__external__variable__template_8cpp_1a01f842dbc77eeb7ed689b46c2726cb7e" prot="public" static="no" constexpr="yes" mutable="no">
         <templateparamlist>
           <param>
             <type>class T</type>
@@ -43,13 +43,13 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="125_specialize_external_variable_template.cpp" line="20" column="22" bodyfile="125_specialize_external_variable_template.cpp" bodystart="20" bodyend="-1"/>
+        <location file="126_specialize_external_variable_template.cpp" line="20" column="22" bodyfile="126_specialize_external_variable_template.cpp" bodystart="20" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="125_specialize_external_variable_template.cpp" line="13" column="1"/>
+    <location file="126_specialize_external_variable_template.cpp" line="13" column="1"/>
   </compounddef>
 </doxygen>
