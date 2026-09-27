@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="125__static__ref_8cpp" kind="file" language="C++">
+    <compoundname>125_static_ref.cpp</compoundname>
+    <sectiondef kind="var">
+      <memberdef kind="variable" id="125__static__ref_8cpp_1a6a30a22be2f4d59e221ed6bb0c04b364" prot="public" static="yes" mutable="no">
+        <type>const int</type>
+        <definition>const int MY_STATIC_CONST</definition>
+        <argsstring/>
+        <name>MY_STATIC_CONST</name>
+        <initializer>= 1</initializer>
+        <briefdescription>
+          <para>A documented file-scope static variable. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="125_static_ref.cpp" line="11" column="18" bodyfile="125_static_ref.cpp" bodystart="11" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="125__static__ref_8cpp_1a32a845ed948f2d5b0d6914fdf7566d74" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void myFunction</definition>
+        <argsstring>()</argsstring>
+        <name>myFunction</name>
+        <briefdescription>
+          <para>Refers to <ref refid="125__static__ref_8cpp_1a6a30a22be2f4d59e221ed6bb0c04b364" kindref="member">MY_STATIC_CONST</ref> from the same file, which resolves. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="125_static_ref.cpp" line="14" column="6" declfile="125_static_ref.cpp" declline="14" declcolumn="6"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="125_static_ref.cpp"/>
+  </compounddef>
+</doxygen>

@@ -133,7 +133,8 @@ bool resolveLink(/* in */  const DString &scName,
                  /* out */ const Definition **resContext,
                  /* out */ DString &resAnchor,
                  /* in */  SrcLangExt lang,
-                 /* in */  const DString &prefix=DString()
+                 /* in */  const DString &prefix=DString(),
+                 /* in */  const FileDef *currentFile=nullptr
                 );
 
 DString resolveTypeDef(const Definition *d,const DString &name,

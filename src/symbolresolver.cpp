@@ -113,6 +113,15 @@ static bool isCodeSymbol(Definition::DefType defType)
          defType==Definition::TypePackage || defType==Definition::TypeConcept;
 }
 
+/** Returns true for a static function or variable that is not a class member,
+ *  so it is only visible within the file that defines it.
+ */
+static bool isFileLocalStatic(const Definition *d)
+{
+  const MemberDef *md = toMemberDef(d);
+  return md && md->isStatic() && md->getClassDef()==nullptr;
+}
+
 //--------------------------------------------------------------------------------------
 
 /** Helper class representing the stack of items considered while resolving
@@ -518,7 +527,9 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
   size_t nameLen = name.length()+1;
   size_t explicitPartLen = explicitScopePart.length();
   size_t strippedTemplateParamsLen = strippedTemplateParams.length();
-  size_t fileScopeLen = hasUsingStatements ? 1+m_fileScope->absFilePath().length() : 0;
+  bool resultDependsOnFileScope = hasUsingStatements ||
+    (m_fileScope && std::any_of(range.begin(),range.end(),isFileLocalStatic));
+  size_t fileScopeLen = resultDependsOnFileScope ? 1+m_fileScope->absFilePath().length() : 0;
   size_t argsLen = args.length()+1;
 
   // below is a more efficient coding of
@@ -535,11 +546,12 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
   key+=explicitScopePart.str();
   key+=strippedTemplateParams.str();
 
-  // if a file scope is given and it contains using statements we should
-  // also use the file part in the key (as a class name can be in
-  // two different namespaces and a using statement in a file can select
-  // one of them).
-  if (hasUsingStatements)
+  // if a file scope is given and the result can depend on it we should
+  // also use the file part in the key:
+  // - a class name can be in two different namespaces and a using
+  //   statement in a file can select one of them.
+  // - skipDefinition() only accepts a file-local static from the file scope.
+  if (resultDependsOnFileScope)
   {
     // below is a more efficient coding of
     // key+="+"+m_fileScope->name();
@@ -597,8 +609,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
           return true;
         }
         if (emd &&
-            emd->isStatic() &&              // a static function or variable
-            emd->getClassDef()==nullptr &&  // not a class member
+            isFileLocalStatic(emd) &&
             emd->getFileDef()!=m_fileScope) // defined in a different file
         {
           // skip lookup for static members that are not in the current file scope

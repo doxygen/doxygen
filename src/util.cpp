@@ -2311,7 +2311,8 @@ bool resolveLink(/* in */ const DString &scName,
     /* out */ const Definition **resContext,
     /* out */ DString &resAnchor,
     /* in */ SrcLangExt lang,
-    /* in */ const DString &prefix
+    /* in */ const DString &prefix,
+    /* in */ const FileDef *currentFile
     )
 {
   *resContext=nullptr;
@@ -2438,7 +2439,7 @@ bool resolveLink(/* in */ const DString &scName,
   else // probably a member reference
   {
     const MemberDef *md = nullptr;
-    bool res = resolveRef(scName,lr,true,resContext,&md,lang);
+    bool res = resolveRef(scName,lr,true,resContext,&md,lang,true,currentFile);
     if (md) resAnchor=md->anchor();
     AUTO_TRACE_EXIT("member? res={}",res);
     return res;

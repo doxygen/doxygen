@@ -84,8 +84,16 @@ static const StringUnorderedSet g_plantumlEngine {
 
 //---------------------------------------------------------------------------
 
+// The file the documentation block being parsed came from, so that symbol
+// lookup can tell a file-scope static in this file from one in another file.
+static const FileDef *currentFileDef(const DocParser *parser)
+{
+  bool ambig = false;
+  return Doxygen::inputNameLinkedMap->findFileDef(parser->context.fileName,ambig);
+}
+
 // replaces { with < and } with > and also
-// replaces &gt; with < and &gt; with > within string s
+// replaces &lt; with < and &gt; with > within string s
 static void unescapeCRef(DString &s)
 {
   DString result;
@@ -786,7 +794,8 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const DString &target,co
       return;
     }
   }
-  else if (resolveLink(context,target,true,&compound,anchor,lang,parser->context.prefix))
+  else if (resolveLink(context,target,true,&compound,anchor,lang,parser->context.prefix,
+                       currentFileDef(parser)))
   {
     bool isFile = compound ?
                  (compound->definitionType()==Definition::TypeFile ||
@@ -1011,7 +1020,8 @@ DocLink::DocLink(DocParser *parser,DocNodeVariant *parent,const DString &target)
   }
   if (resolveLink(parser->context.context,stripKnownExtensions(target),
                   parser->context.inSeeBlock,&compound,anchor,
-                  parser->context.lang,parser->context.prefix))
+                  parser->context.lang,parser->context.prefix,
+                  currentFileDef(parser)))
   {
     m_anchor = anchor;
     if (compound && compound->isLinkable())
