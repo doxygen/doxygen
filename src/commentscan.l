@@ -2038,7 +2038,7 @@ STopt  [^\n@\\]*
                                           BEGIN( Comment );
                                         }
 <SectionTitle>{STopt}"\\\\ilinebr"      { // escaped end of section title
-                                          yyextra->sectionTitle+=yytext;
+                                          yyextra->sectionTitle+=substitute(yytext,"#","@#");
                                         }
 <SectionTitle>{STopt}/"\\ilinebr"       { // end of section title
                                           addSection(yyscanner);
@@ -2076,12 +2076,16 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,'\n');
                                         }
 <SectionTitle>[^\n@\\]*                 { // any character without special meaning
-                                          yyextra->sectionTitle+=yytext;
+                                          yyextra->sectionTitle+=substitute(yytext,"#","@#");
                                           addOutput(yyscanner,yytext);
                                         }
 <SectionTitle>{B}*{CMD}{CMD}            {
                                           yyextra->sectionTitle+=yytext;
                                           addOutput(yyscanner,yytext);
+                                        }
+<SectionTitle>{CMD}#                    {  // escaped hash
+                                          yyextra->sectionTitle+=yytext;
+                                          addOutput(yyscanner,*yytext);
                                         }
 <SectionTitle>{B}*{CMD}[a-z_A-Z]+"{"[^}]*"}"{B}*  |
 <SectionTitle>{B}*{CMD}[a-z_A-Z]+{B}*   { // handling command in section title
@@ -4604,7 +4608,7 @@ static void addSection(yyscan_t yyscanner, bool addYYtext)
     if (!si->ref().empty()) // we are from a tag file
     {
       // create a new section element
-      if (addYYtext) yyextra->sectionTitle+=yytext;
+      if (addYYtext) yyextra->sectionTitle+=substitute(yytext,"#","@#");
       yyextra->sectionTitle=yyextra->sectionTitle.stripWhiteSpace();
       si = sm.replace(yyextra->sectionLabel,yyextra->fileName,yyextra->lineNr,
                       yyextra->sectionTitle,sectionLevelToType(yyextra->sectionLevel),
@@ -4627,7 +4631,7 @@ static void addSection(yyscan_t yyscanner, bool addYYtext)
   else
   {
     // create a new section element
-    if (addYYtext) yyextra->sectionTitle+=yytext;
+    if (addYYtext) yyextra->sectionTitle+=substitute(yytext,"#","@#");
     yyextra->sectionTitle=yyextra->sectionTitle.stripWhiteSpace();
     si = sm.add(yyextra->sectionLabel,yyextra->fileName,yyextra->lineNr,
                 yyextra->sectionTitle,sectionLevelToType(yyextra->sectionLevel),
