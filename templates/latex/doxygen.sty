@@ -696,7 +696,7 @@
 }
 
 % Used for the cite command
-\newcommand{\DoxyCite}[3]{%
+\newcommand{\DoxyCite}[4]{%
   \ifthenelse{#3=1}% 1 with square parenthesis
   {
     \ifthenelse{\equal{#2}{number}}%
@@ -726,6 +726,12 @@
   }%
 }
 
+\newcommand{\DoxyTOC}[1]{%
+  \begingroup%
+  \renewcommand{\DoxyCite}[4]{##4}%
+  #1%
+  \endgroup%
+}
 % Used when hyperlinks are turned on
 % Third argument is the SectionType, see the doxygen internal
 % documentation for the values (relevant: Page ... Subsubsection).

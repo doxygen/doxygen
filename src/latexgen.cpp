@@ -2283,8 +2283,8 @@ void LatexGenerator::writeInheritedSectionTitle(
 void LatexGenerator::startLocalToc(int level)
 {
   int maxLevel = level + m_hierarchyLevel;
-  m_t << "\\etocsetnexttocdepth{" << maxLevel << "}\n";
-  m_t << "\\localtableofcontents\n";
+  m_t << "\\DoxyTOC{\\etocsetnexttocdepth{" << maxLevel << "}";
+  m_t << "\\localtableofcontents}\n";
 }
 
 void LatexGenerator::startEmbeddedDoc(size_t indent)

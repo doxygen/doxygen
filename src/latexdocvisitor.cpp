@@ -692,7 +692,7 @@ void LatexDocVisitor::operator()(const DocCite &cite)
   if (m_hide) return;
   auto opt = cite.option();
   DString txt;
-  if (opt.noCite())
+  if (m_texOrPdf == TexOrPdf::PDF || opt.noCite())
   {
     if (!cite.file().empty())
     {
@@ -716,7 +716,8 @@ void LatexDocVisitor::operator()(const DocCite &cite)
       DString anchorPrefix = CitationManager::instance().anchorPrefix();
       anchor = anchor.mid(anchorPrefix.length()); // strip prefix
 
-      txt = "\\DoxyCite{" + anchor + "}";
+      if (m_texOrPdf == TexOrPdf::TEX) txt = "\\protect";
+      txt += "\\DoxyCite{" + anchor + "}";
       if (opt.isNumber())
       {
         txt += "{number}";
@@ -731,8 +732,12 @@ void LatexDocVisitor::operator()(const DocCite &cite)
       }
       if (!opt.noPar()) txt += "{1}";
       else txt += "{0}";
-
       m_t << txt;
+
+      txt = cite.getText();
+      m_t << "{\\bfseries ";
+      filter(txt);
+      m_t << "}";
     }
     else
     {
