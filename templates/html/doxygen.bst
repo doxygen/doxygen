@@ -1325,51 +1325,6 @@ ITERATE {presort}
 
 SORT
 
-STRINGS { longest.label last.sort.label next.extra }
-
-INTEGERS { longest.label.width last.extra.num }
-
-FUNCTION {initialize.longest.label}
-{ "" 'longest.label :=
-  #0 int.to.chr$ 'last.sort.label :=
-  "" 'next.extra :=
-  #0 'longest.label.width :=
-  #0 'last.extra.num :=
-}
-
-FUNCTION {forward.pass}
-{ last.sort.label sort.label =
-    { last.extra.num #1 + 'last.extra.num :=
-      last.extra.num int.to.chr$ 'extra.label :=
-    }
-    { "a" chr.to.int$ 'last.extra.num :=
-      "" 'extra.label :=
-      sort.label 'last.sort.label :=
-    }
-  if$
-}
-
-FUNCTION {reverse.pass}
-{ next.extra "b" =
-    { "a" 'extra.label := }
-    'skip$
-  if$
-  label extra.label * 'label :=
-  label width$ longest.label.width >
-    { label 'longest.label :=
-      label width$ 'longest.label.width :=
-    }
-    'skip$
-  if$
-  extra.label 'next.extra :=
-}
-
-EXECUTE {initialize.longest.label}
-
-ITERATE {forward.pass}
-
-REVERSE {reverse.pass}
-
 FUNCTION {begin.bib}
 {
   "# label-style: default" write$ newline$
