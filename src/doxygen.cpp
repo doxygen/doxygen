@@ -11200,9 +11200,19 @@ static void readDir(FileInfo *fi,
 
   bool caseSenseNames = useCaseSenseNames();
 
+  // Process the entries in a fixed order, so that the order in which FileDefs
+  // are created (which e.g. determines the SHORT_NAMES numbering) and in which
+  // subdirectories are visited does not depend on the file system.
+  StringVector entries;
   for (const auto &dirEntry : dir.iterator())
   {
-    FileInfo cfi(dirEntry.path());
+    entries.push_back(dirEntry.path());
+  }
+  std::sort(entries.begin(),entries.end());
+
+  for (const auto &entryPath : entries)
+  {
+    FileInfo cfi(entryPath);
     auto checkPatterns = [&]() -> bool
     {
       return (patList==nullptr     ||  cfi.match(*patList,caseSenseNames)) &&
