@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="md_127__markdown__inline__code" kind="page">
+    <compoundname>md_127__markdown__inline__code</compoundname>
+    <title>127_markdown_inline_code</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <sect1 id="md_127__markdown__inline__code_1autotoc_md0">
+        <title>Adjacent inline code</title>
+        <para>Test: one<computeroutput>.h</computeroutput>and one<computeroutput>.c</computeroutput>file.</para>
+        <para>
+          <itemizedlist>
+            <listitem>
+              <para>t1 test<computeroutput>.h</computeroutput> test<computeroutput>.c</computeroutput></para>
+            </listitem>
+            <listitem>
+              <para>t2 test<emphasis>.h</emphasis> test<emphasis>.c</emphasis></para>
+            </listitem>
+            <listitem>
+              <para>t3 test<bold>.h</bold> and x<computeroutput>y</computeroutput>z</para>
+            </listitem>
+            <listitem>
+              <para>t4 std::vector&lt;int&gt; stays a template </para>
+            </listitem>
+          </itemizedlist>
+        </para>
+      </sect1>
+    </detaileddescription>
+    <location file="127_markdown_inline_code.md"/>
+  </compounddef>
+</doxygen>

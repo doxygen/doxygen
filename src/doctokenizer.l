@@ -652,6 +652,16 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          yyextra->token.name = yytext;
                          return Token::make_TK_LNKWORD();
                        }
+<St_Para>{LNKWORDN}"<"{HTMLKEYW}">"[^<]*"</"{HTMLKEYW}">" { // a word directly followed by a complete inline
+                                  // html span, e.g. one<tt>.h</tt> (from a markdown code span) or test<em>.h</em>,
+                                  // is not a template: return only the word and let the html tag rules handle the span
+                         const std::string text(yytext);
+                         const size_t closeTagPos = text.rfind('<');
+                         const size_t openTagPos  = text.rfind('<', closeTagPos - 1);
+                         yyless(static_cast<int>(openTagPos));
+                         yyextra->token.name = yytext;
+                         return Token::make_TK_LNKWORD();
+                       }
 <St_Para>{LNKWORD1}                   |
 <St_Para>{LNKWORD1}{FUNCARG}          |
 <St_Para>{LNKWORD2}                   |
