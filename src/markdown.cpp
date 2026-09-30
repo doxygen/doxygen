@@ -166,6 +166,7 @@ struct Markdown::Private
       bool *pIsIdGenerated=nullptr);
   void writeOneLineHeaderOrRuler(std::string_view data);
   void writeFencedCodeBlock(std::string_view data, std::string_view lang,
+      std::string_view anchor,std::string_view caption,std::string_view listingsNumbers,
       size_t blockStart,size_t blockEnd);
   size_t writeBlockQuote(std::string_view data);
   size_t writeCodeBlock(std::string_view,size_t refIndent);
@@ -2364,8 +2365,50 @@ static bool isEndOfList(std::string_view data)
   return dots==1;
 }
 
+static void parseFencedCodeAttributes(std::string_view attributes,DString &lang,
+                                      DString &anchor,DString &caption,DString &listingsNumbers)
+{
+  size_t i=0;
+  while (i<attributes.size())
+  {
+    while (i<attributes.size() && disspace(attributes[i])) i++;
+    if (i>=attributes.size()) break;
+    if (attributes[i]=='.' || attributes[i]=='#')
+    {
+      char marker=attributes[i++];
+      size_t start=i;
+      while (i<attributes.size() && !disspace(attributes[i])) i++;
+      if (marker=='.') lang=attributes.substr(start,i-start);
+      else             anchor=attributes.substr(start,i-start);
+    }
+    else if (literal_at(attributes.substr(i),"caption=\""))
+    {
+      i += 9;
+      size_t start=i;
+      while (i<attributes.size() && attributes[i]!='\"') i++;
+      if (i>=attributes.size()) break;
+      caption=attributes.substr(start,i-start);
+      i++;
+    }
+    else if (literal_at(attributes.substr(i),"numbers="))
+    {
+      i += 8;
+      size_t start=i;
+      while (i<attributes.size() && !disspace(attributes[i])) i++;
+      listingsNumbers=attributes.substr(start,i-start);
+    }
+    else
+    {
+      size_t start=i;
+      while (i<attributes.size() && !disspace(attributes[i])) i++;
+      if (lang.empty()) lang=attributes.substr(start,i-start);
+    }
+  }
+}
+
 static bool isFencedCodeBlock(std::string_view data,size_t refIndent,
-                             DString &lang,size_t &start,size_t &end,size_t &offset,
+                             DString &lang,DString &anchor,DString &caption,DString &listingsNumbers,
+                             size_t &start,size_t &end,size_t &offset,
                              DString &fileName,int lineNr)
 {
   AUTO_TRACE("data='{}' refIndent={}",Trace::trunc(data),refIndent);
@@ -2403,20 +2446,23 @@ static bool isFencedCodeBlock(std::string_view data,size_t refIndent,
   } // not enough tildes
   // skip whitespace
   while (i<size && data[i]==' ') { i++; }
-  if (i<size && data[i]=='{') // extract .py from ```{.py} ... ```
+  lang="";
+  anchor="";
+  caption="";
+  listingsNumbers="";
+  if (i<size && data[i]=='{') // extract attributes from ```{.py #id caption="..."} ... ```
   {
     i++; // skip over {
-    if (data[i] == dot) i++; // skip over initial dot
-    size_t startLang=i;
+    size_t startAttributes=i;
     while (i<size && (data[i]!='\n' && data[i]!='}')) i++; // find matching }
     if (i<size && data[i]=='}')
     {
-      lang = data.substr(startLang,i-startLang);
+      parseFencedCodeAttributes(data.substr(startAttributes,i-startAttributes),lang,anchor,caption,listingsNumbers);
       i++;
     }
     else // missing closing bracket, treat `{` as part of the content
     {
-      i=startLang-1;
+      i=startAttributes-1;
       lang="";
     }
   }
@@ -3239,6 +3285,7 @@ size_t Markdown::Private::findEndOfLine(std::string_view data,size_t offset)
 }
 
 void Markdown::Private::writeFencedCodeBlock(std::string_view data,std::string_view lang,
+                std::string_view anchor,std::string_view caption,std::string_view listingsNumbers,
                 size_t blockStart,size_t blockEnd)
 {
   AUTO_TRACE("data='{}' lang={} blockStart={} blockEnd={}",Trace::trunc(data),lang,blockStart,blockEnd);
@@ -3251,10 +3298,28 @@ void Markdown::Private::writeFencedCodeBlock(std::string_view data,std::string_v
     blockStart--;
     blockEnd--;
   }
-  out+="@icode";
-  if (!lang.empty())
+  if (!anchor.empty())
   {
-    out+="{"+lang+"}";
+    out += "@anchor ";
+    out += anchor;
+    out += " ";
+  }
+  out+="@icode";
+  if (!lang.empty() || !caption.empty() || !listingsNumbers.empty())
+  {
+    out+="{"+lang;
+    if (!caption.empty() || !listingsNumbers.empty())
+    {
+      out += "\x1f";
+      out += "\x1f";
+      out += caption;
+      if (!listingsNumbers.empty())
+      {
+        out += "\x1f";
+        out += listingsNumbers;
+      }
+    }
+    out+="}";
   }
   out+=" ";
   addStrEscapeUtf8Nbsp(data.substr(blockStart+i,blockEnd-blockStart));
@@ -3319,7 +3384,8 @@ DString Markdown::Private::processQuotations(std::string_view data,size_t refInd
     if (pi!=std::string::npos)
     {
       size_t blockStart=0, blockEnd=0, blockOffset=0;
-      if (isFencedCodeBlock(data.substr(pi),currentIndent,lang,blockStart,blockEnd,blockOffset,fileName,lineNr))
+      DString anchor,caption,listingsNumbers;
+      if (isFencedCodeBlock(data.substr(pi),currentIndent,lang,anchor,caption,listingsNumbers,blockStart,blockEnd,blockOffset,fileName,lineNr))
       {
         auto addSpecialCommand = [&](const DString &startCmd,const DString &endCmd)
         {
@@ -3384,7 +3450,7 @@ DString Markdown::Private::processQuotations(std::string_view data,size_t refInd
         }
         else // normal code block
         {
-          writeFencedCodeBlock(data.substr(pi),lang.view(),blockStart,blockEnd);
+          writeFencedCodeBlock(data.substr(pi),lang.view(),anchor.view(),caption.view(),listingsNumbers.view(),blockStart,blockEnd);
         }
         i=pi+blockOffset;
         pi=std::string::npos;
@@ -3506,6 +3572,7 @@ DString Markdown::Private::processBlocks(std::string_view data,const size_t inde
     {
       size_t blockStart=0, blockEnd=0, blockOffset=0;
       DString lang;
+      DString anchor,caption,listingsNumbers;
       size_t blockIndent = currentIndent;
       size_t ref = 0;
       //printf("isHeaderLine(%s)=%d\n",DString(data+i).left(size-i).data(),level);
@@ -3583,11 +3650,11 @@ DString Markdown::Private::processBlocks(std::string_view data,const size_t inde
         i=ref+pi;
         end=i+1;
       }
-      else if (isFencedCodeBlock(data.substr(pi),currentIndent,lang,blockStart,blockEnd,blockOffset,fileName,lineNr))
+      else if (isFencedCodeBlock(data.substr(pi),currentIndent,lang,anchor,caption,listingsNumbers,blockStart,blockEnd,blockOffset,fileName,lineNr))
       {
         //printf("Found FencedCodeBlock lang='%s' start=%d end=%d code={%s}\n",
         //       qPrint(lang),blockStart,blockEnd,DString(data+pi+blockStart).left(blockEnd-blockStart).data());
-        writeFencedCodeBlock(data.substr(pi),lang.view(),blockStart,blockEnd);
+        writeFencedCodeBlock(data.substr(pi),lang.view(),anchor.view(),caption.view(),listingsNumbers.view(),blockStart,blockEnd);
         i=pi+blockOffset;
         pi=std::string::npos;
         end=i+1;

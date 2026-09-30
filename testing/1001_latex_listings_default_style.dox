@@ -1,0 +1,22 @@
+// objective: test the bundled default LaTeX listings style
+// config: GENERATE_LATEX = YES
+// config: LATEX_OUTPUT = $TESTOUTDIR/latex
+// config: LATEX_USE_LISTINGS = YES
+// latexcheck: index.tex:\begin{lstlisting}[style=DoxyCode,language=c]\nint foo = 1;\n\end{lstlisting}
+// latexcheck: index.tex:\begin{lstlisting}[style=DoxyCode]\nplain text\n\end{lstlisting}
+// latexcheck: doxygen.sty:\def\DoxyUseListingsEnabled{}
+// latexcheck: doxygen.sty:\RequirePackage{listings}
+// latexcheck: doxygen.sty:\lstdefinestyle{DoxyCode}{
+// latexcheck: doxygen.sty:\RequirePackage{accsupp}
+// latexcheck: doxygen.sty:DoxyListingNumber}[1]{
+// latexcheck: doxygen.sty:numberstyle=\tiny\DoxyListingNumber,
+/** \mainpage LaTeX listings default style
+
+```c
+int foo = 1;
+```
+
+```none
+plain text
+```
+*/

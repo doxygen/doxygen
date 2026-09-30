@@ -686,6 +686,10 @@ void LatexGenerator::cleanup()
 
 static void writeDefaultStyleSheet(TextStream &t)
 {
+  if (Config_getBool(LATEX_USE_LISTINGS))
+  {
+    t << "\\def\\DoxyUseListingsEnabled{}\n";
+  }
   t << ResourceMgr::instance().getAsString("doxygen.sty");
 }
 
