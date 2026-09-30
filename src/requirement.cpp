@@ -222,9 +222,9 @@ void RequirementManager::generatePage()
     }
     doc += "</span> ";
     doc += "</td><td>";
-    doc += "<div class=\"req_title\">"+req->title()+"</div>";
+    doc += "<div class=\"req_title\">"+convertToHtml(req->title())+"</div>";
     doc += "<p/><div class=\"req_docs\">";
-    doc += req->doc();
+    doc += convertToHtml(req->doc());
     req->sortReferences();
     auto symToString = [](const Definition *sym)
     {
@@ -374,10 +374,6 @@ void RequirementManager::writeRef(OutputList &ol,const RequirementRef &ref)
       title += " (";
       title += req->title();
       title += ")";
-    }
-    else
-    {
-      title = ref.reqId();
     }
     ol.writeObjectLink(DString(),req->getOutputFileBase(),ref.reqId(),title);
   }
