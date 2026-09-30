@@ -1219,13 +1219,13 @@ class TranslatorGerman : public Translator
     /*! Used as a section header for IDL properties */
     DString trProperties() override
     {
-      return "Propertys";
+      return "Eigenschaften";
     }
 
     /*! Used as a section header for IDL property documentation */
     DString trPropertyDocumentation() override
     {
-      return "Dokumentation der Propertys";
+      return "Dokumentation der Eigenschaften";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1843,7 +1843,7 @@ class TranslatorGerman : public Translator
     /*! C# Type Constraint list */
     DString trTypeConstraints() override
     {
-      return "Type Constraints";
+      return "Type Beschränkungen";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2230,7 +2230,7 @@ class TranslatorGerman : public Translator
         case VhdlSpecifier::MISCELLANEOUS:
           return "Verschiedenes";
         case VhdlSpecifier::UCF_CONST:
-          return "Constraints";
+          return "Beschränkungen";
         default:
           return "Klasse";
       }
@@ -2343,10 +2343,10 @@ class TranslatorGerman : public Translator
     { return "Operationen Dokumentation"; }
 
     DString trDataMembers() override
-    { return "Data Members"; }
+    { return "Data Elemente"; }
 
     DString trDataMemberDocumentation() override
-    { return "Data Member Dokumentation"; }
+    { return "Data Element Dokumentation"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.9.2
@@ -2449,12 +2449,12 @@ class TranslatorGerman : public Translator
           if (lang == SrcLangExt::Fortran) result=trType(true,true);
           else result=trClass(true,true);
           break;
-        case ClassDef::Struct:     result="Struct"; break;
-        case ClassDef::Union:      result="Union"; break;
-        case ClassDef::Interface:  result="Interface"; break;
-        case ClassDef::Protocol:   result="Protocol"; break;
-        case ClassDef::Category:   result="Category"; break;
-        case ClassDef::Exception:  result="Exception"; break;
+        case ClassDef::Struct:     result="Struktur"; break;
+        case ClassDef::Union:      result="Varianten"; break;
+        case ClassDef::Interface:  result="Schnittstellen"; break;
+        case ClassDef::Protocol:   result="Protocoll"; break;
+        case ClassDef::Category:   result="Kategorie"; break;
+        case ClassDef::Exception:  result="Ausnahmen"; break;
         case ClassDef::Service:    result="Service"; break;
         case ClassDef::Singleton:  result="Singleton"; break;
         default: break;
@@ -2466,14 +2466,14 @@ class TranslatorGerman : public Translator
     {
       bool extractAll = Config_getBool(EXTRACT_ALL);
       DString result="Hier ist eine Lister aller ";
-      if (!extractAll) result+="documented ";
+      if (!extractAll) result+="dokumentierten ";
 
       switch (hl)
       {
         case FileMemberHighlight::All:
           if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
           {
-            result+="functions, variables, defines, enums, and typedefs";
+            result+="Funktionen, Variablen, Makros, Aufzählungen, und Typen-Definitionen";
           }
           else
           {
@@ -2567,7 +2567,7 @@ class TranslatorGerman : public Translator
       {
         if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
-          result+="die struct/union Dokumentation für jedes Feld:";
+          result+="die Strukturen/Varianten Dokumentation für jedes Feld:";
         }
         else
         {
@@ -2640,7 +2640,8 @@ class TranslatorGerman : public Translator
 
       // TODO: plural form !!!
       if (!extractAll)
-        result += singularResult + " mit Verweise auf die Namensraum-Dokumentation:"; else
+        result += singularResult + " mit Verweise auf die Namensraum-Dokumentation:";
+      else
         result += singularResult + " mit Verweise auf dem sich beziehenden Namensraum:";
 
       return result;
@@ -2674,39 +2675,46 @@ class TranslatorGerman : public Translator
       {
         case ModuleMemberHighlight::All:
           if (!extractAll)
-              singularResult += "die verlinkte Modul-Beschreibung für jedes Mitglied:"; else
+              singularResult += "die verlinkte Modul-Beschreibung für jedes Mitglied:";
+          else
               pluralResult   += "die verlinkten Modul-Beschreibungen aller Mitglieder:";
           break;
         case ModuleMemberHighlight::Functions:
           if (!extractAll)
-              singularResult += "die verlinkte Modul-Beschreibung für jede Funktion:"; else
+              singularResult += "die verlinkte Modul-Beschreibung für jede Funktion:";
+          else
               pluralResult   += "die verlinkten Modul-Beschreibungen aller Funktionen:";
           break;
         case ModuleMemberHighlight::Variables:
           if (!extractAll)
-              singularResult += "die verlinkte Modul-Beschreibung für jede Variable:"; else
+              singularResult += "die verlinkte Modul-Beschreibung für jede Variable:";
+          else
               pluralResult   += "die verlinkten Modul-Beschreibungen für alle Variablen:";
           break;
         case ModuleMemberHighlight::Typedefs:
           if (!extractAll)
-              singularResult += "die verlinkte Modul-Beschreibung für jede Typ-Definition:"; else
+              singularResult += "die verlinkte Modul-Beschreibung für jede Typ-Definition:";
+          else
               pluralResult   += "die verlinkten Modul-Beschreibungen für jeden Definitions-Typen:";
           break;
         case ModuleMemberHighlight::Enums:
           if (!extractAll)
-              singularResult += "die verlinkte Modul-Beschreibung für jede Aufzählung:"; else
+              singularResult += "die verlinkte Modul-Beschreibung für jede Aufzählung:";
+          else
               pluralResult   += "die verlinkten Modul-Beschreibungen aller Aufzählungen:";
           break;
         case ModuleMemberHighlight::EnumValues:
           if (!extractAll)
-              singularResult += "die verlinkte Modul-Beschreibung für jedem Aufzählungswert:"; else
+              singularResult += "die verlinkte Modul-Beschreibung für jedem Aufzählungswert:";
+          else
               pluralResult   += "die verlinkten Modul-Beschreibungen aller Aufzählungswerte:";
           break;
         case ModuleMemberHighlight::Total: // for completeness
           break;
       }
       if (!extractAll)
-        result = singularResult; else
+        result = singularResult;
+      else
         result = pluralResult;
 
       return result;
@@ -2749,7 +2757,7 @@ class TranslatorGerman : public Translator
     // indicates a symbol implements (satisfies) a requirement
     DString trSatisfies(bool singular) override
     {
-      return createNoun(true,singular,"Erfüllt anforderung","en");
+      return createNoun(true,singular,"Erfüllt Anforderung","en");
     }
     // indicates a requirement is satisfied (implemented) by one or more symbols
     DString trSatisfiedBy(const DString &list) override
@@ -2769,7 +2777,7 @@ class TranslatorGerman : public Translator
     // indicates a symbol verifies (tests) a requirement
     DString trVerifies(bool singular) override
     {
-      return createNoun(true,singular,"Verifiziert anforderung","en");
+      return createNoun(true,singular,"Verifiziert Anforderung","en");
     }
     // indicates a requirement is verified (tested) by one or more symbols
     DString trVerifiedBy(const DString &list) override
