@@ -567,8 +567,14 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
     switch(md->memberType())
     {
       case MemberType::Variable:
-        addMemberToList(MemberListType::DecVarMembers(),md);
-        addMemberToList(MemberListType::DocVarMembers(),md);
+        if (md->anonymousMemberForDeclaration()==nullptr) // not a split member that has a separate declaration member
+        {
+          addMemberToList(MemberListType::DecVarMembers(),md);
+        }
+        if (!md->isAnonymous() && md->anonymousMemberForDetails()==nullptr) // not a split member that has a separate details member
+        {
+          addMemberToList(MemberListType::DocVarMembers(),md);
+        }
         break;
       case MemberType::Function:
         addMemberToList(MemberListType::DecFuncMembers(),md);

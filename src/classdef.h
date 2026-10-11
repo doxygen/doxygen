@@ -298,7 +298,8 @@ class ClassDef : public Definition
 
     virtual bool isSimple() const = 0;
 
-    virtual const ClassDef *tagLessReference() const = 0;
+    virtual const ClassDef *taglessParent() const = 0;
+    virtual bool hasNamedVariable() const = 0;
 
     virtual const MemberDef *isSmartPointer() const = 0;
 
@@ -344,6 +345,8 @@ class ClassDef : public Definition
     virtual void writeDocumentationForInnerClasses(OutputList &ol) const = 0;
     virtual void writeMemberPages(OutputList &ol) const = 0;
     virtual void writeMemberList(OutputList &ol) const = 0;
+    virtual void writeDeclaration(OutputList &ol,bool inGroup,
+                 int indentLevel, const ClassDef *inheritedFrom,const DString &inheritId) const = 0;
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *md) const = 0;
     virtual void writeSummaryLinks(OutputList &ol) const = 0;
     virtual void writePageNavigation(OutputList &ol) const = 0;
@@ -383,7 +386,8 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void setTypeConstraints(const ArgumentList &al) = 0;
     virtual void setCategoryOf(ClassDef *cd) = 0;
     virtual void setUsedOnly(bool b) = 0;
-    virtual void setTagLessReference(const ClassDef *cd) = 0;
+    virtual void setTaglessParent(const ClassDef *cd) = 0;
+    virtual void setHasNamedVariable(bool b) = 0;
     virtual void setMetaData(const DString &md) = 0;
     virtual void setRequiresClause(const DString &req) = 0;
     virtual void addQualifiers(const StringVector &qualifiers) = 0;

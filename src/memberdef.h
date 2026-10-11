@@ -245,6 +245,9 @@ class MemberDef : public Definition
     virtual DString getScopeString() const = 0;
     virtual const ClassDef *getClassDefOfAnonymousType() const = 0;
 
+    virtual const MemberDef *anonymousMemberForDeclaration() const = 0;
+    virtual const MemberDef *anonymousMemberForDetails() const = 0;
+
     // cached typedef functions
     virtual bool isTypedefValCached() const = 0;
     virtual const ClassDef *getCachedTypedefVal() const = 0;
@@ -346,6 +349,8 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void setEnumClassScope(ClassDef *cd) = 0;
     virtual void setDocumentedEnumValues(bool value) = 0;
     virtual void setAnonymousEnumType(const MemberDef *md) = 0;
+    virtual void setAnonymousMemberForDeclaration(const MemberDef *md) = 0;
+    virtual void setAnonymousMemberForDetails(const MemberDef *md) = 0;
 
     // example related members
     virtual bool addExample(const DString &anchor,const DString &name,const DString &file) = 0;

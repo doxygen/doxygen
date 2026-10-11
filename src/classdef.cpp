@@ -120,7 +120,7 @@ static DString makeDisplayName(const ClassDef *cd,bool includeScope)
   }
   else
   {
-    if (cd->tagLessReference())
+    if (cd->taglessParent())
     {
       size_t idx=cd->name().rfind("::");
       if (includeScope || idx==DString::npos)
@@ -272,7 +272,8 @@ class ClassDefImpl final : public DefinitionMixin<ClassDefMutable>
     DString anchor() const override;
     bool isEmbeddedInOuterScope() const override;
     bool isSimple() const override;
-    const ClassDef *tagLessReference() const override;
+    const ClassDef *taglessParent() const override;
+    bool hasNamedVariable() const override;
     const MemberDef *isSmartPointer() const override;
     bool isJavaEnum() const override;
     DString title() const override;
@@ -323,7 +324,8 @@ class ClassDefImpl final : public DefinitionMixin<ClassDefMutable>
     void makeTemplateArgument(bool b=true) override;
     void setCategoryOf(ClassDef *cd) override;
     void setUsedOnly(bool b) override;
-    void setTagLessReference(const ClassDef *cd) override;
+    void setTaglessParent(const ClassDef *cd) override;
+    void setHasNamedVariable(bool b) override;
     void setMetaData(const DString &md) override;
     void findSectionsInDocumentation() override;
     void addMembersToMemberGroup() override;
@@ -338,6 +340,8 @@ class ClassDefImpl final : public DefinitionMixin<ClassDefMutable>
     void writeDocumentationForInnerClasses(OutputList &ol) const override;
     void writeMemberPages(OutputList &ol) const override;
     void writeMemberList(OutputList &ol) const override;
+    void writeDeclaration(OutputList &ol,bool inGroup,int indentLevel,
+                          const ClassDef *inheritedFrom,const DString &inheritId) const override;
     void writeQuickMemberLinks(OutputList &ol,const MemberDef *md) const override;
     void writePageNavigation(OutputList &ol) const override;
     void writeSummaryLinks(OutputList &ol) const override;
@@ -552,7 +556,8 @@ class ClassDefImpl final : public DefinitionMixin<ClassDefMutable>
     /** Does this class overloaded the -> operator? */
     const MemberDef *m_arrowOperator = nullptr;
 
-    const ClassDef *m_tagLessRef = nullptr;
+    const ClassDef *m_taglessParent = nullptr;
+    bool m_hasNamedVariable = false;
 
     /** Does this class represent a Java style enum? */
     bool m_isJavaEnum = false;
@@ -723,8 +728,10 @@ class ClassDefAliasImpl final : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->isEmbeddedInOuterScope(); }
     bool isSimple() const override
     { return getCdAlias()->isSimple(); }
-    const ClassDef *tagLessReference() const override
-    { return getCdAlias()->tagLessReference(); }
+    const ClassDef *taglessParent() const override
+    { return getCdAlias()->taglessParent(); }
+    bool hasNamedVariable() const override
+    { return getCdAlias()->hasNamedVariable(); }
     const MemberDef *isSmartPointer() const override
     { return getCdAlias()->isSmartPointer(); }
     bool isJavaEnum() const override
@@ -776,6 +783,9 @@ class ClassDefAliasImpl final : public DefinitionAliasMixin<ClassDef>
     { getCdAlias()->writeMemberPages(ol); }
     void writeMemberList(OutputList &ol) const override
     { getCdAlias()->writeMemberList(ol); }
+    void writeDeclaration(OutputList &ol,bool inGroup,
+                 int indentLevel, const ClassDef *inheritedFrom,const DString &inheritId) const override
+    { getCdAlias()->writeDeclaration(ol,inGroup,indentLevel,inheritedFrom,inheritId); }
     void writeQuickMemberLinks(OutputList &ol,const MemberDef *md) const override
     { getCdAlias()->writeQuickMemberLinks(ol,md); }
     void writeSummaryLinks(OutputList &ol) const override
@@ -846,7 +856,8 @@ ClassDefImpl::ClassDefImpl(
   m_usedOnly = false;
   m_isSimple = Config_getBool(INLINE_SIMPLE_STRUCTS);
   m_arrowOperator = nullptr;
-  m_tagLessRef = nullptr;
+  m_taglessParent = nullptr;
+  m_hasNamedVariable = false;
   m_spec=TypeSpecifier();
   //DString ns;
   //extractNamespaceName(name,className,ns);
@@ -924,7 +935,8 @@ std::unique_ptr<ClassDef> ClassDefImpl::deepCopy(const DString &name) const
   result->m_vhdlSummaryTitles = m_vhdlSummaryTitles;
   result->m_isSimple = m_isSimple;
   result->m_arrowOperator = m_arrowOperator;
-  result->m_tagLessRef = m_tagLessRef;
+  result->m_taglessParent = m_taglessParent;
+  result->m_hasNamedVariable = m_hasNamedVariable;
   result->m_isJavaEnum = m_isJavaEnum;
   result->m_spec = m_spec;
   result->m_metaData = m_metaData;
@@ -1172,10 +1184,13 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
                   break;
                 case Protection::Public:
                   {
-                    addMemberToList(MemberListType::PubAttribs(),md,true);
-                    const int MAX_CELL_SIZE=60;
-                    size_t typeLen = removeAnonymousScopes(md->typeString()).length();
-                    isSimple = typeLen + md->name().length() + md->argsString().length() <= MAX_CELL_SIZE;
+                    if (md->anonymousMemberForDeclaration()==nullptr) // not a split member that has a separate declaration member
+                    {
+                      addMemberToList(MemberListType::PubAttribs(),md,true);
+                      const int MAX_CELL_SIZE=60;
+                      size_t typeLen = removeAnonymousScopes(md->typeString()).length();
+                      isSimple = typeLen + md->name().length() + md->argsString().length() <= MAX_CELL_SIZE;
+                    }
                   }
                   break;
                 case Protection::Private:
@@ -1231,6 +1246,13 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
       m_isSimple = false;
     }
     //printf("adding %s simple=%d total_simple=%d\n",qPrint(md->qualifiedName()),isSimple,m_isSimple);
+    if ((!md->isEnumerate() && md->isAnonymous()) || // non-enum anonymous member (e.g. nameless member associated with anonymous struct/union)
+        md->anonymousMemberForDetails()!=nullptr)
+    {
+      return; // The member is split in two, one for the declaration and one for the details.
+              // Skip this member if it has an associated member for the details,
+              // which implies this is the member for the declaration part only.
+    }
 
     /*******************************************************/
     /* insert member in the detailed documentation section */
@@ -3569,6 +3591,38 @@ void ClassDefImpl::setPrimaryConstructorParams(const ArgumentList &list)
   m_primaryConstructorParams = list;
 }
 
+/*! called from MemberDef::writeDeclaration() to (recursively) write the
+ *  definition of an anonymous struct, union or class.
+ */
+void ClassDefImpl::writeDeclaration(OutputList &ol,bool inGroup,int indentLevel,
+    const ClassDef *inheritedFrom,const DString &inheritId) const
+{
+  //printf("ClassName='%s' inGroup=%d\n",qPrint(name()),inGroup);
+
+  ol.docify(compoundTypeString());
+  ol.docify(" {");
+  ol.endMemberItem(OutputGenerator::MemberItemType::AnonymousStart);
+  ol.endMemberDeclaration(DString(),inheritId);
+
+  // write user defined member groups
+  for (const auto &mg : m_memberGroups)
+  {
+    mg->writePlainDeclarations(ol,inGroup,this,nullptr,nullptr,nullptr,nullptr,indentLevel,inheritedFrom,inheritId);
+  }
+
+  for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Class))
+  {
+    if (lde->kind()==LayoutDocEntry::MemberDecl)
+    {
+      const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
+      if (lmd)
+      {
+        writePlainMemberDeclaration(ol,lmd->type,inGroup,indentLevel,inheritedFrom,inheritId);
+      }
+    }
+  }
+}
+
 /*! a link to this class is possible within this project */
 bool ClassDefImpl::isLinkableInProject() const
 {
@@ -3592,13 +3646,13 @@ bool ClassDefImpl::isLinkableInProject() const
     //      !m_isStatic  || extractStatic,
     //      !isReference());
     return
-      !isArtificial() && !isHidden() &&            /* not hidden */
-      !isAnonymous() &&                            /* not anonymous */
+      !isArtificial() && !isHidden() &&      /* not hidden */
+      !isAnonymous() &&                      /* not anonymous */
       protectionLevelVisible(m_prot)      && /* private/internal */
       (!m_isLocal      || extractLocal)   && /* local */
       (hasDocumentation() || m_tempArgs.hasTemplateDocumentation() || !hideUndoc)     && /* documented */
       (!m_isStatic     || extractStatic)  && /* static */
-      !isReference();                              /* not an external reference */
+      !isReference();                        /* not an external reference */
   }
 }
 
@@ -4319,8 +4373,7 @@ void ClassDefImpl::setGroupDefForAllMembers(GroupDef *gd,Grouping::GroupPri_t pr
 void ClassDefImpl::addInnerCompound(Definition *d)
 {
   //printf("**** %s::addInnerCompound(%s)\n",qPrint(name()),qPrint(d->name()));
-  if (d->definitionType()==Definition::TypeClass) // only classes can be
-                                                  // nested in classes.
+  if (d->definitionType()==Definition::TypeClass) // only classes can be nested in classes.
   {
     ClassDef *cd = toClassDef(d);
     m_innerClasses.add(d->localName(),cd);
@@ -5290,14 +5343,24 @@ bool ClassDefImpl::isEmbeddedInOuterScope() const
   return b1 || b2;  // either reason will do
 }
 
-const ClassDef *ClassDefImpl::tagLessReference() const
+const ClassDef *ClassDefImpl::taglessParent() const
 {
-  return m_tagLessRef;
+  return m_taglessParent;
 }
 
-void ClassDefImpl::setTagLessReference(const ClassDef *cd)
+void ClassDefImpl::setTaglessParent(const ClassDef *cd)
 {
-  m_tagLessRef = cd;
+  m_taglessParent = cd;
+}
+
+bool ClassDefImpl::hasNamedVariable() const
+{
+  return m_hasNamedVariable;
+}
+
+void ClassDefImpl::setHasNamedVariable(bool b)
+{
+  m_hasNamedVariable = b;
 }
 
 void ClassDefImpl::removeMemberFromLists(MemberDef *md)

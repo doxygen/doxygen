@@ -206,6 +206,8 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     ClassDef *relatedAlso() const override;
     bool hasDocumentedEnumValues() const override;
     const MemberDef *getAnonymousEnumType() const override;
+    const MemberDef *anonymousMemberForDeclaration() const override;
+    const MemberDef *anonymousMemberForDetails() const override;
     bool isDocsForDefinition() const override;
     const MemberDef *getEnumScope() const override;
     const MemberVector &enumFieldList() const override;
@@ -286,6 +288,8 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     void setEnumClassScope(ClassDef *cd) override;
     void setDocumentedEnumValues(bool value) override;
     void setAnonymousEnumType(const MemberDef *md) override;
+    void setAnonymousMemberForDeclaration(const MemberDef *md) override;
+    void setAnonymousMemberForDetails(const MemberDef *md) override;
     bool addExample(const DString &anchor,const DString &name,const DString &file) override;
     void setPrototype(bool p,const DString &df,int line, size_t column) override;
     void setExplicitExternal(bool b,const DString &df,int line,size_t column) override;
@@ -403,6 +407,8 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     bool        m_livesInsideEnum = false;
     const MemberDef  *m_annEnumType = nullptr;  // the anonymous enum that is the type of this member
     MemberVector m_enumFields;              // enumeration fields
+    const MemberDef  *m_annMemberForDecl = nullptr;
+    const MemberDef  *m_annMemberForDetails = nullptr;
 
     MemberDef  *m_redefines = nullptr;    // the members that this member redefines
     MemberVector m_redefinedBy;             // the list of members that redefine this one
@@ -836,6 +842,10 @@ class MemberDefAliasImpl final : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->hasDocumentedEnumValues(); }
     const MemberDef *getAnonymousEnumType() const override
     { return getMdAlias()->getAnonymousEnumType(); }
+    const MemberDef *anonymousMemberForDeclaration() const override
+    { return getMdAlias()->anonymousMemberForDeclaration(); }
+    const MemberDef *anonymousMemberForDetails() const override
+    { return getMdAlias()->anonymousMemberForDetails(); }
     bool isDocsForDefinition() const override
     { return getMdAlias()->isDocsForDefinition(); }
     const MemberDef *getEnumScope() const override
@@ -1392,6 +1402,8 @@ void MemberDefImpl::init(Definition *d,
   m_memSpec=TypeSpecifier();
   m_vhdlSpec=VhdlSpecifier::UNKNOWN;
   m_annEnumType=nullptr;
+  m_annMemberForDecl=nullptr;
+  m_annMemberForDetails=nullptr;
   m_groupAlias=nullptr;
   m_explExt=false;
   m_tspec=false;
@@ -1482,6 +1494,8 @@ std::unique_ptr<MemberDef> MemberDefImpl::deepCopy() const
   result->m_enumScope                      = m_enumScope                      ;
   result->m_livesInsideEnum                = m_livesInsideEnum                ;
   result->m_annEnumType                    = m_annEnumType                    ;
+  result->m_annMemberForDecl               = m_annMemberForDecl               ;
+  result->m_annMemberForDetails            = m_annMemberForDetails            ;
   result->m_enumFields                     = m_enumFields                     ;
   result->m_redefines                      = m_redefines                      ;
   result->m_redefinedBy                    = m_redefinedBy                    ;
@@ -1698,6 +1712,10 @@ DString MemberDefImpl::getOutputFileBase() const
   {
     return templateMaster()->getOutputFileBase();
   }
+  else if (anonymousMemberForDetails())
+  {
+    return anonymousMemberForDetails()->getOutputFileBase();
+  }
   else if (groupDef)
   {
     baseName=groupDef->getOutputFileBase();
@@ -1788,6 +1806,7 @@ DString MemberDefImpl::anchor() const
   DString result=m_anc;
   if (m_groupAlias)     return m_groupAlias->anchor();
   if (m_templateMaster) return m_templateMaster->anchor();
+  if (anonymousMemberForDetails()) return anonymousMemberForDetails()->anchor();
   if (m_enumScope && m_enumScope!=this) // avoid recursion for C#'s public enum E { E, F }
   {
     result.prepend(m_enumScope->anchor());
@@ -2245,7 +2264,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   // start a new member declaration
   OutputGenerator::MemberItemType anonType = !m_tArgList.empty() ? OutputGenerator::MemberItemType::Templated      :
                                                                    OutputGenerator::MemberItemType::Normal;
-  ol.startMemberItem(annoClassDef ? DString() : anchor(), anonType, inheritId);
+  ol.startMemberItem(annoClassDef && isAnonymous() ? DString() : anchor(), anonType, inheritId);
 
 
   // If there is no detailed description we need to write the anchor here.
@@ -2332,8 +2351,25 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     const MemberDef *amd = getAnonymousEnumType();
     if (annoClassDef && amd==nullptr) // type is an anonymous compound
     {
-      ol.writeObjectLink(annoClassDef->getReference(),annoClassDef->getOutputFileBase(),
-                         annoClassDef->anchor(),ltype.left(ai)+ltype.mid(ai+al));
+      if (isAnonymous()) // anonymous type without a variable name, e.g. "struct { int x; };" or "union { int x; };"
+      {
+        ol.startAnonTypeScope(indentLevel);
+        annoClassDef->writeDeclaration(ol,inGroup,indentLevel+1,inheritedFrom,inheritId);
+        //printf(">>>>>>>>>>>>>> startMemberItem(2)\n");
+        anonType = OutputGenerator::MemberItemType::AnonymousEnd;
+        ol.startMemberItem(anchor(),anonType,inheritId);
+        for (int j=0;j< indentLevel;j++)
+        {
+          ol.writeNonBreakableSpace(3);
+        }
+        ol.docify("};");
+        endAnonScopeNeeded=true;
+      }
+      else
+      {
+        ol.writeObjectLink(annoClassDef->getReference(),annoClassDef->getOutputFileBase(),
+                           annoClassDef->anchor(),ltype.left(ai)+ltype.mid(ai+al));
+      }
     }
     else if (amd) // type is an anonymous enum
     {
@@ -2376,7 +2412,10 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     ol.popGeneratorState();
   }
 
-  ol.insertMemberAlign(m_tArgList.hasParameters());
+  if (!isAnonymous())
+  {
+    ol.insertMemberAlign(m_tArgList.hasParameters());
+  }
 
   // *** write name
   if (!isAnonymous() && !_isAnonymousBitField()) // hide anonymous stuff
@@ -3611,7 +3650,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
           DString annTypeName = annoClassDef->displayName(true);
           if (suffix.empty())
           {
-            suffix=" "+localName();
+            suffix="::"+localName();
           }
           ol.writeObjectLink(annoClassDef->getReference(),annoClassDef->getOutputFileBase(),
               annoClassDef->anchor(),annTypeName);
@@ -3632,7 +3671,9 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
           prefix = match.prefix().str();
           suffix = removeAnonymousScopes(match.suffix().str());
           ol.docify(prefix);
-          ol.docify(" { ... } ");
+          ol.docify(" ");
+          if (getNamespaceDef()) ol.docify(getNamespaceDef()->displayName());
+          //ol.docify(" { ... } ");
           linkifyText(TextGeneratorOLImpl(ol),suffix,options);
         }
       }
@@ -5536,6 +5577,16 @@ const MemberDef *MemberDefImpl::getAnonymousEnumType() const
   return m_annEnumType;
 }
 
+const MemberDef *MemberDefImpl::anonymousMemberForDeclaration() const
+{
+  return m_annMemberForDecl;
+}
+
+const MemberDef *MemberDefImpl::anonymousMemberForDetails() const
+{
+  return m_annMemberForDetails;
+}
+
 bool MemberDefImpl::isDocsForDefinition() const
 {
   return m_docsForDefinition;
@@ -5926,6 +5977,16 @@ void MemberDefImpl::setDocumentedEnumValues(bool value)
 void MemberDefImpl::setAnonymousEnumType(const MemberDef *md)
 {
   m_annEnumType = md;
+}
+
+void MemberDefImpl::setAnonymousMemberForDeclaration(const MemberDef *md)
+{
+  m_annMemberForDecl = md;
+}
+
+void MemberDefImpl::setAnonymousMemberForDetails(const MemberDef *md)
+{
+  m_annMemberForDetails = md;
 }
 
 void MemberDefImpl::setPrototype(bool p,const DString &df,int line,size_t column)

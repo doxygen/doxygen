@@ -668,6 +668,14 @@ static void writeRequirementRefs(const Definition *d,TextStream &t,const char *p
   writeRefsForType(verifiesRefs,"verifies");
 }
 
+// namespace members are also inserted in the file scope, but
+// to prevent this duplication in the XML output, we optionally filter those here.
+static bool memberVisible(const Definition *d,const MemberDef *md)
+{
+    return Config_getBool(XML_NS_MEMB_FILE_SCOPE) ||
+           d->definitionType()!=Definition::TypeFile ||
+           md->getNamespaceDef()==nullptr;
+}
 
 static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &t,const Definition *def)
 {
@@ -685,6 +693,21 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
   // + template arguments
   //     (templateArguments(), definitionTemplateParameterLists())
   // - call graph
+
+  // in case the member is an placeholder for an anonymous type without name (i.e. the union in struct S { union { int x; }; };), then
+  // we need to generate the members (e.g. x) of that type instead of the placeholder member.
+  const ClassDef *annoClassDef=md->getClassDefOfAnonymousType();
+  if (annoClassDef && md->isAnonymous() && !md->isEnumerate())
+  {
+    for (const auto &imd : *annoClassDef->getMemberList(MemberListType::PubAttribs()))
+    {
+      if (memberVisible(def,imd))
+      {
+        generateXMLForMember(imd,ti,t,def);
+      }
+    }
+    return;
+  }
 
   // enum values are written as part of the enum
   if (md->memberType()==MemberType::EnumValue) return;
@@ -1251,14 +1274,6 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
   t << "      </memberdef>\n";
 }
 
-// namespace members are also inserted in the file scope, but
-// to prevent this duplication in the XML output, we optionally filter those here.
-static bool memberVisible(const Definition *d,const MemberDef *md)
-{
-    return Config_getBool(XML_NS_MEMB_FILE_SCOPE) ||
-           d->definitionType()!=Definition::TypeFile ||
-           md->getNamespaceDef()==nullptr;
-}
 
 static void generateXMLSection(const Definition *d,TextStream &ti,TextStream &t,
                       const MemberList *ml,const DString &kind,const DString &header=DString(),

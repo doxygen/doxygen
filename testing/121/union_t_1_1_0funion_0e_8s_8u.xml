@@ -3,9 +3,9 @@
   <compounddef id="union_t_1_1_0funion_0e_8s_8u" kind="union" language="C++" prot="public">
     <compoundname>T::[union].s.u</compoundname>
     <sectiondef kind="public-attrib">
-      <memberdef kind="variable" id="union_t_1_1_0funion_0e_8s_8u_1ac17c366f5c2661d1b2579a92f1b8cc3b" prot="public" static="no" mutable="no">
+      <memberdef kind="variable" id="union_t_1_1_0funion_0e_8s_8u_1a667158bc3b5fc3449f4ae305810a69e0" prot="public" static="no" mutable="no">
         <type>int</type>
-        <definition>int T::@105130175255352330347034351325246210066126346122::@337034040244106107341147123013254310356115075002::ui</definition>
+        <definition>int T::@105130175255352330347034351325246210066126346122::@356150072167161073027142124010037115331350072134::ui</definition>
         <argsstring/>
         <name>ui</name>
         <qualifiedname>T::[struct].s::[union].s.u::ui</qualifiedname>
@@ -18,9 +18,9 @@
         </inbodydescription>
         <location file="121_anonymous.cpp" line="23" column="11"/>
       </memberdef>
-      <memberdef kind="variable" id="union_t_1_1_0funion_0e_8s_8u_1a1835106037f57c0fedcc9dd87fa07cec" prot="public" static="no" mutable="no">
+      <memberdef kind="variable" id="union_t_1_1_0funion_0e_8s_8u_1a4fc510cde25cb658d413b5dc6b6c044d" prot="public" static="no" mutable="no">
         <type>char</type>
-        <definition>char T::@105130175255352330347034351325246210066126346122::@337034040244106107341147123013254310356115075002::uc</definition>
+        <definition>char T::@105130175255352330347034351325246210066126346122::@356150072167161073027142124010037115331350072134::uc</definition>
         <argsstring/>
         <name>uc</name>
         <qualifiedname>T::[struct].s::[union].s.u::uc</qualifiedname>
@@ -40,11 +40,11 @@
     </detaileddescription>
     <location file="121_anonymous.cpp" line="21" column="5" bodyfile="121_anonymous.cpp" bodystart="22" bodyend="25"/>
     <listofallmembers>
-      <member refid="union_t_1_1_0funion_0e_8s_8u_1a1835106037f57c0fedcc9dd87fa07cec" prot="public" virt="non-virtual">
+      <member refid="union_t_1_1_0funion_0e_8s_8u_1a4fc510cde25cb658d413b5dc6b6c044d" prot="public" virt="non-virtual">
         <scope>T::[union].s.u</scope>
         <name>uc</name>
       </member>
-      <member refid="union_t_1_1_0funion_0e_8s_8u_1ac17c366f5c2661d1b2579a92f1b8cc3b" prot="public" virt="non-virtual">
+      <member refid="union_t_1_1_0funion_0e_8s_8u_1a667158bc3b5fc3449f4ae305810a69e0" prot="public" virt="non-virtual">
         <scope>T::[union].s.u</scope>
         <name>ui</name>
       </member>

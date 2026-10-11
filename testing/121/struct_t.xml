@@ -34,17 +34,55 @@
         </inbodydescription>
         <location file="121_anonymous.cpp" line="27" column="11"/>
       </memberdef>
+      <memberdef kind="variable" id="struct_t_1a138af210e974c1d478ad954aa02c4fbe" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int T::@232107032177334151031303003373145175047371003261::u_ui</definition>
+        <argsstring/>
+        <name>u_ui</name>
+        <qualifiedname>[union].__unnamed0__::u_ui</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>union member ui </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="121_anonymous.cpp" line="29" column="9"/>
+      </memberdef>
+      <memberdef kind="variable" id="struct_t_1a95efdb1fc31bdc18b6d51687abb02f75" prot="public" static="no" mutable="no">
+        <type>float</type>
+        <definition>float T::@232107032177334151031303003373145175047371003261::u_uf</definition>
+        <argsstring/>
+        <name>u_uf</name>
+        <qualifiedname>[union].__unnamed0__::u_uf</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>union member uf </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="121_anonymous.cpp" line="30" column="11"/>
+      </memberdef>
     </sectiondef>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
       <para>a struct </para>
     </detaileddescription>
-    <location file="121_anonymous.cpp" line="11" column="1" bodyfile="121_anonymous.cpp" bodystart="12" bodyend="28"/>
+    <location file="121_anonymous.cpp" line="11" column="1" bodyfile="121_anonymous.cpp" bodystart="12" bodyend="32"/>
     <listofallmembers>
       <member refid="struct_t_1a44fa4dfdae11dc48bfab763de3b4b0f2" prot="public" virt="non-virtual">
         <scope>T</scope>
         <name>s</name>
+      </member>
+      <member refid="struct_t_1a95efdb1fc31bdc18b6d51687abb02f75" prot="public" virt="non-virtual">
+        <scope>T</scope>
+        <name>u_uf</name>
+      </member>
+      <member refid="struct_t_1a138af210e974c1d478ad954aa02c4fbe" prot="public" virt="non-virtual">
+        <scope>T</scope>
+        <name>u_ui</name>
       </member>
       <member refid="struct_t_1aa841b7873c11bcfef7c9101d081e20d6" prot="public" virt="non-virtual">
         <scope>T</scope>

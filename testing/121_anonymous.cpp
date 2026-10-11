@@ -25,6 +25,10 @@ typedef struct
     } u; /**< union u */
     int y; /**< member y */
   } s; /**< struct s */
+  union {
+    int u_ui; /**< union member ui */
+    float u_uf; /**< union member uf */
+  };
 } T;
 
 /** a namespace */

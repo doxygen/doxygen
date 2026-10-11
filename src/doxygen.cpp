@@ -1569,7 +1569,7 @@ static void associateVariableWithAnonymousEnumType(const MemberDef *md,
   }
 }
 
-static ClassDefMutable *createTagLessInstance(const Definition *root,const ClassDef *templ,const DString &fieldName)
+static ClassDefMutable *createTagLessInstance(const Definition *root,const ClassDef *templ,const DString &fieldName,bool hasNamedVariable)
 {
   DString n = templ->name();
   // replace e.g. X::@1343:@4343::Y -> X::[struct]::Y
@@ -1604,21 +1604,29 @@ static ClassDefMutable *createTagLessInstance(const Definition *root,const Class
     cd->setBodySegment(templ->getDefLine(),templ->getStartBodyLine(),templ->getEndBodyLine());
     cd->setBodyDef(templ->getBodyDef());
 
-    if (root!=Doxygen::globalScope)
+    if (hasNamedVariable)
     {
-      DefinitionMutable *outerScope = toDefinitionMutable(const_cast<Definition*>(root));
-      if (root && root->definitionType()==Definition::TypeFile)
+      cd->setHasNamedVariable(true);
+      if (root!=Doxygen::globalScope)
       {
-        FileDef *fd = toFileDef(const_cast<Definition*>(root));
-        fd->insertClass(cd);
-        cd->setFileDef(fd);
-        cd->setOuterScope(Doxygen::globalScope);
+        DefinitionMutable *outerScope = toDefinitionMutable(const_cast<Definition*>(root));
+        if (root && root->definitionType()==Definition::TypeFile)
+        {
+          FileDef *fd = toFileDef(const_cast<Definition*>(root));
+          fd->insertClass(cd);
+          cd->setFileDef(fd);
+          cd->setOuterScope(Doxygen::globalScope);
+        }
+        else if (outerScope)
+        {
+          outerScope->addInnerCompound(cd);
+          cd->setOuterScope(const_cast<Definition*>(root));
+        }
       }
-      else if (outerScope)
-      {
-        outerScope->addInnerCompound(cd);
-        cd->setOuterScope(const_cast<Definition*>(root));
-      }
+    }
+    else
+    {
+      cd->setArtificial(true);
     }
 
     for (auto &gd : root->partOfGroups())
@@ -1635,7 +1643,6 @@ static ClassDefMutable *createTagLessInstance(const Definition *root,const Class
           md->memberType(),
           ArgumentList(),ArgumentList(),"");
       MemberDefMutable *imd = toMemberDefMutable(newMd.get());
-      imd->setMemberClass(cd);
       imd->setDefinition(md->definition());
       imd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
       imd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
@@ -1650,13 +1657,10 @@ static ClassDefMutable *createTagLessInstance(const Definition *root,const Class
       imd->setMaxInitLines(md->initializerLines());
       imd->setBitfields(md->bitfieldString());
       imd->setLanguage(md->getLanguage());
-      imd->setClassDefOfAnonymousType(cd);
-      cd->insertMember(imd);
-      associateVariableWithAnonymousEnumType(md,cd,imd,MemberListType::PubAttribs());
+      imd->setAnchor();
       MemberName *mn = Doxygen::memberNameLinkedMap->add(md->name());
       mn->push_back(std::move(newMd));
       return imd;
-
     };
 
     MemberList *ml = templ->getMemberList(MemberListType::PubAttribs());
@@ -1665,7 +1669,55 @@ static ClassDefMutable *createTagLessInstance(const Definition *root,const Class
       for (const auto &md : *ml)
       {
         //printf("    Member attribute %s def=%s\n",qPrint(md->name()),qPrint(md->definition()));
-        addMember(md);
+        MemberDefMutable *imd = addMember(md);
+        if (!hasNamedVariable && root) // we have an anonymous struct/union without associated member variable,
+                                       // so we also need to create a new member to show in the outer scope's detailed section.
+                                       // e.g. struct S { union { int a; int b; }; }; needs S::a and S::b as members
+        {
+          MemberDefMutable *dimd = addMember(md);
+          // link the detailed member to the original member
+          dimd->setAnonymousMemberForDeclaration(imd);
+          imd->setAnonymousMemberForDetails(dimd);
+          if (root && root->definitionType()==Definition::TypeClass && dimd)
+          {
+            ClassDefMutable *cm = toClassDefMutable(const_cast<Definition*>(root));
+            if (cm)
+            {
+              //printf("    Member attribute %s added to class %s\n",qPrint(md->name()),qPrint(cm->name()));
+              dimd->setMemberClass(cm);
+              cm->insertMember(dimd);
+              associateVariableWithAnonymousEnumType(md,cm,dimd,MemberListType::PubAttribs());
+            }
+          }
+          else if (root && root->definitionType()==Definition::TypeFile && dimd)
+          {
+            FileDef *fd = toFileDef(const_cast<Definition*>(root));
+            if (fd)
+            {
+              //printf("    Member attribute %s added to file %s\n",qPrint(md->name()),qPrint(fd->name()));
+              dimd->setOuterScope(fd);
+              dimd->setFileDef(fd);
+              fd->insertMember(dimd);
+              associateVariableWithAnonymousEnumType(md,fd,dimd,MemberListType::PubAttribs());
+            }
+          }
+          else if (root && root->definitionType()==Definition::TypeNamespace && dimd)
+          {
+            NamespaceDefMutable *ndm = toNamespaceDefMutable(const_cast<Definition*>(root));
+            if (ndm)
+            {
+              //printf("    Member attribute %s added to namespace %s\n",qPrint(md->name()),qPrint(ndm->name()));
+              dimd->setOuterScope(ndm);
+              dimd->setNamespace(ndm);
+              ndm->insertMember(dimd);
+              associateVariableWithAnonymousEnumType(md,ndm,dimd,MemberListType::PubAttribs());
+            }
+          }
+        }
+
+        imd->setMemberClass(cd);
+        cd->insertMember(imd);
+        associateVariableWithAnonymousEnumType(md,cd,imd,MemberListType::PubAttribs());
       }
     }
     ml = templ->getMemberList(MemberListType::PubTypes());
@@ -1675,6 +1727,10 @@ static ClassDefMutable *createTagLessInstance(const Definition *root,const Class
       {
         //printf("    Member type %s def=%s\n",qPrint(md->name()),qPrint(md->definition()));
         MemberDefMutable *mdm = addMember(md);
+        mdm->setMemberClass(cd);
+        cd->insertMember(mdm);
+        mdm->setClassDefOfAnonymousType(cd);
+        associateVariableWithAnonymousEnumType(md,cd,mdm,MemberListType::PubAttribs());
         if (md->isEnumerate() && md->name().startsWith("@")) // anonymous enum type
         {
           for (const auto &emd : md->enumFieldList())
@@ -1683,6 +1739,10 @@ static ClassDefMutable *createTagLessInstance(const Definition *root,const Class
             MemberDefMutable *emdm = addMember(emd);
             mdm->insertEnumField(emdm);
             emdm->setEnumScope(md);
+            emdm->setMemberClass(cd);
+            cd->insertMember(emdm);
+            emdm->setClassDefOfAnonymousType(cd);
+            associateVariableWithAnonymousEnumType(md,cd,emdm,MemberListType::PubAttribs());
           }
         }
       }
@@ -1702,28 +1762,57 @@ static ClassDefMutable *createTagLessInstance(const Definition *root,const Class
  */
 template<typename Container, typename TagContainer>
 static void processTagLessClasses(const Definition *root,
-                                  const Container *cd,
+                                  const Container *def,
                                   const TagContainer *tagParent,
                                   MemberListType varFilter,
                                   MemberListType typeFilter,
                                   const DString &prefix,int count)
 {
-  AUTO_TRACE("count={} name={}\n",count,cd->name());
-  if (tagParent /*&& !cd->getClasses().empty()*/)
+  AUTO_TRACE("count={} name={}\n",count,def->name());
+  if (tagParent)
   {
-    MemberList *ml = cd->getMemberList(varFilter);
+    MemberList *ml = def->getMemberList(varFilter);
     if (ml)
     {
       int pos=0;
+      // make a copy of the member list, since we may add new members to the list while iterating over it
+      std::vector<MemberDef *> members;
       for (const auto &md : *ml)
       {
+        members.push_back(md);
+      }
+      for (const auto &md : members)
+      {
+        MemberDefMutable *pmdm = nullptr;
+        if (tagParent!=def)
+        {
+          // associate the variable of the anonymous type with the type member
+          MemberList *pml = tagParent->getMemberList(varFilter);
+          if (pml)
+          {
+            for (const auto &pmd : *pml)
+            {
+              if (pmd->name()==md->name())
+              {
+                pmdm = toMemberDefMutable(pmd);
+              }
+            }
+          }
+        }
+        else
+        {
+          pmdm = toMemberDefMutable(md);
+        }
+        bool hasNamedVariable = pmdm==nullptr || !pmdm->isAnonymous();
+
         DString type = md->typeString();
         //printf("  member %s: type='%s' outerScope='%s'\n",qPrint(md->name()),qPrint(type),qPrint(md->getOuterScope()?md->getOuterScope()->name():"<null>"));
-        if ((cd->definitionType()!=Definition::TypeFile || md->getOuterScope()==Doxygen::globalScope) && // part namespace members only if cd is a namespace
+        if ((def->definitionType()!=Definition::TypeFile || md->getOuterScope()==Doxygen::globalScope) && // parse namespace members only if def is a namespace
             (type.find("::@")!=DString::npos || type.find(" @")!=DString::npos)) // member of tag less struct/union
         {
+          // make a copy of the class list, since we may add new members to the list while iterating over it
           std::vector<const ClassDef *> candidates;
-          for (const auto &icd : cd->getClasses())
+          for (const auto &icd : def->getClasses())
           {
             candidates.push_back(icd);
           }
@@ -1733,28 +1822,18 @@ static void processTagLessClasses(const Definition *root,
             if (type.find(icd->name())!=DString::npos) // matching tag less struct/union
             {
               DString name = md->name();
-              if (md->isAnonymous()) name = "__unnamed" + DString().setNum(pos++)+"__";
+              if (md->isAnonymous()) name = "__unnamed" + DString().setNum(pos++)+"__"; // TODO: remove dead code
               if (!prefix.empty()) name.prepend(prefix+".");
-              //printf("    found %s in scope %s\n",qPrint(name),qPrint(cd->name()));
-              ClassDefMutable *ncd = createTagLessInstance(root,icd,name);
+              //printf("    found %s in scope %s\n",qPrint(name),qPrint(def->name()));
+              ClassDefMutable *ncd = createTagLessInstance(root,icd,name,hasNamedVariable);
               if (ncd)
               {
                 processTagLessClasses(ncd,icd,ncd,MemberListType::PubAttribs(),MemberListType::PubTypes(),name,count+1);
                 //printf("      addTagged %s to %s\n",qPrint(ncd->name()),qPrint(tagParent->name()));
-                ncd->setTagLessReference(icd);
-
-                // associate the variable of the anonymous type with the type member
-                MemberList *pml = tagParent->getMemberList(varFilter);
-                if (pml)
+                ncd->setTaglessParent(icd);
+                if (pmdm)
                 {
-                  for (const auto &pmd : *pml)
-                  {
-                    MemberDefMutable *pmdm = toMemberDefMutable(pmd);
-                    if (pmdm && pmd->name()==md->name())
-                    {
-                      pmdm->setClassDefOfAnonymousType(ncd);
-                    }
-                  }
+                  pmdm->setClassDefOfAnonymousType(ncd);
                 }
               }
             }
@@ -1767,13 +1846,13 @@ static void processTagLessClasses(const Definition *root,
       }
     }
     // associate the variable of the anonymous enum type with the type member
-    ml = cd->getMemberList(typeFilter);
+    ml = def->getMemberList(typeFilter);
     if (ml)
     {
       for (const auto &md : *ml)
       {
-        MemberListType mlFilter = cd->definitionType()==Definition::TypeClass ? MemberListType::PubAttribs() : MemberListType::DecVarMembers();
-        associateVariableWithAnonymousEnumType(md,cd,md,mlFilter);
+        MemberListType mlFilter = def->definitionType()==Definition::TypeClass ? MemberListType::PubAttribs() : MemberListType::DecVarMembers();
+        associateVariableWithAnonymousEnumType(md,def,md,mlFilter);
       }
     }
   }
@@ -3497,10 +3576,6 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
   if (cd==nullptr && classScope!=scope) cd=getClassMutable(classScope);
   if (cd)
   {
-    // if cd is an anonymous (=tag less) scope we insert the member
-    // into a non-anonymous parent scope as well. This is needed to
-    // be able to refer to it using \var or \fn
-
     Relationship relationship = isMemberOf ? Relationship::Foreign :
       isRelated  ? Relationship::Related :
       Relationship::Member  ;
@@ -3514,6 +3589,7 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
         root->protection,
         relationship
         );
+
   }
   else if (!name.empty()) // global variable
   {
