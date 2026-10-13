@@ -3296,7 +3296,7 @@ DString Markdown::Private::processQuotations(std::string_view data,size_t refInd
 
     if ((listIndent=isListMarker(data.substr(i,end-i)))) // see if we need to increase the indent level
     {
-      if (listIndent<currentIndent+4)
+      if (lineIndent<currentIndent+4)
       {
         //printf("** start of list\n");
         insideList = true;
@@ -3479,7 +3479,7 @@ DString Markdown::Private::processBlocks(std::string_view data,const size_t inde
 
     if ((listIndent=isListMarker(data.substr(i,end-i)))) // see if we need to increase the indent level
     {
-      if (listIndent<currentIndent+4)
+      if (lineIndent<currentIndent+4)
       {
         //printf("** start of list\n");
         insideList = true;

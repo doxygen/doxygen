@@ -711,27 +711,27 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          yyextra->token.name = yytext;
                          return Token::char_to_command(yytext[0]);
                        }
-<St_Para>({BLANK}*\n)+{BLANK}*\n/{LISTITEM} { /* skip trailing paragraph followed by new list item */
+<St_Para>({BLANK}*(\n|"\\ilinebr"))+{BLANK}*\n/{LISTITEM} { /* skip trailing paragraph followed by new list item */
                          if (yyextra->insidePre || yyextra->autoListLevel==0)
                          {
                            REJECT;
                          }
                          lineCount(yytext,yyleng);
                        }
-<St_Para>({BLANK}*\n)+{BLANK}*\n/{CLISTITEM} { /* skip trailing paragraph followed by new checkbox item */
+<St_Para>({BLANK}*(\n|"\\ilinebr"))+{BLANK}*\n/{CLISTITEM} { /* skip trailing paragraph followed by new checkbox item */
                          if (yyextra->insidePre || yyextra->autoListLevel==0)
                          {
                            REJECT;
                          }
                        }
-<St_Para>({BLANK}*\n)+{BLANK}*\n/{MLISTITEM} { /* skip trailing paragraph followed by new list item */
+<St_Para>({BLANK}*(\n|"\\ilinebr"))+{BLANK}*\n/{MLISTITEM} { /* skip trailing paragraph followed by new list item */
                          if (!yyextra->markdownSupport || yyextra->insidePre || yyextra->autoListLevel==0)
                          {
                            REJECT;
                          }
                          lineCount(yytext,yyleng);
                        }
-<St_Para>({BLANK}*\n)+{BLANK}*\n/{OLISTITEM} { /* skip trailing paragraph followed by new list item */
+<St_Para>({BLANK}*(\n|"\\ilinebr"))+{BLANK}*\n/{OLISTITEM} { /* skip trailing paragraph followed by new list item */
                          if (!yyextra->markdownSupport || yyextra->insidePre || yyextra->autoListLevel==0)
                          {
                            REJECT;
