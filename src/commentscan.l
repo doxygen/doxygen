@@ -3569,6 +3569,11 @@ static bool handleImage(yyscan_t yyscanner,const DString &s, const StringVector 
       break; // real option handling will be done later on
     }
   }
+  if (!yyextra->spaceBeforeCmd.empty())
+  {
+    addOutput(yyscanner,yyextra->spaceBeforeCmd);
+    yyextra->spaceBeforeCmd.clear();
+  }
   if (optList.empty())
   {
     addOutput(yyscanner,"@"+s+" ");
