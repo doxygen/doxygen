@@ -348,6 +348,13 @@ eine doppelte Maskierung (\c \\\\{ und \c \\\\}) zu verwenden.]]>
 <![CDATA[Wenn das \c INLINE_SIMPLE_STRUCTS-Tag auf \c YES gesetzt ist, werden Strukturen, Klassen und Unions mit nur öffentlichen Datenfeldern oder einfachen Typedef-Feldern inline in der Dokumentation des Bereichs angezeigt, in dem sie definiert sind (d.h. Datei-, Namensbereich- oder Gruppendokumentation), vorausgesetzt dieser Bereich ist dokumentiert. Wenn auf \c NO gesetzt, werden Strukturen, Klassen und Unions auf einer separaten Seite (für HTML und Man-Pages) oder in einem Abschnitt (für \f$\mbox{\LaTeX}\f$ und RTF) angezeigt.]]>
       </docs>
     </option>
+    <option type="enum" id="TAGLESS_NAMESTYLE" defval="marker">
+      <docs>
+<![CDATA[Bestimmt, wie namenlose (anonyme) Strukturen und Unions, die als Member verwendet werden, in der Dokumentation und der XML-Ausgabe benannt werden.]]>
+      </docs>
+      <value name="marker" desc="verwendet den Anonymität-Marker des anonymer Bereichs und den Membernamen, z. B. Struct::[struct].member"/>
+      <value name="flat" desc="verwendet den abgeflachten Gültigkeitsbereich und den Membernamen, z. B. Struct.member; vermeidet Namen, die mit '[' beginnen"/>
+    </option>
     <option type="bool" id="TYPEDEF_HIDES_STRUCT" defval="0">
       <docs>
 <![CDATA[Wenn das \c TYPEDEF_HIDES_STRUCT-Tag aktiviert ist, wird eine Typedef einer Struktur, Union oder Aufzählung als Struktur, Union oder Aufzählung mit dem Namen der Typedef dokumentiert. So wird <code>typedef struct TypeS {} TypeT</code> in der Dokumentation als Struktur mit dem Namen \c TypeT erscheinen. Wenn deaktiviert, erscheint die Typedef als Mitglied einer Datei, eines Namensbereichs oder einer Klasse. Und die Struktur wird \c TypeS genannt. Dies kann typischerweise für C-Code nützlich sein, falls die Codierungskonvention vorschreibt, dass alle Verbundtypen typedefiniert sind und nur auf die Typedef verwiesen wird, niemals auf den Tag-Namen.]]>

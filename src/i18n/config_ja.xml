@@ -346,6 +346,13 @@ Doxygen を使用して、使用した設定ファイルをテンプレート設
 <![CDATA[\c INLINE_SIMPLE_STRUCTS タグが\c YES に設定されている場合、パブリックデータフィールドまたは単純なtypedefフィールドのみを持つ構造体、クラス、および共用体は、そのスコープが文書化されていれば、定義されているスコープ（ファイル、名前空間、またはグループ）のドキュメント内にインラインで表示されます。\c NO に設定されている場合、構造体、クラス、および共用体は別のページ（HTMLおよびManページの場合）またはセクション（\f$\mbox{\LaTeX}\f$およびRTFの場合）に表示されます。]]>
       </docs>
     </option>
+    <option type="enum" id="TAGLESS_NAMESTYLE" defval="marker">
+      <docs>
+<![CDATA[メンバーとして使用される無名（匿名）の構造体と共用体が、ドキュメントとXML出力でどのように命名されるかを決定します。]]>
+      </docs>
+      <value name="marker" desc="無名スコープのマーカーとメンバー名で参照します（例: Struct::[struct].member）"/>
+      <value name="flat" desc="フラット化されたスコープとメンバー名で参照します（例: Struct.member）。'[' で始まる名前を回避します"/>
+    </option>
     <option type="bool" id="TYPEDEF_HIDES_STRUCT" defval="0">
       <docs>
 <![CDATA[\c TYPEDEF_HIDES_STRUCT タグを有効にすると、構造体、共用体、または列挙型のtypedefは、typedef名を持つ構造体、共用体、または列挙型として文書化されます。例えば、<code>typedef struct TypeS {} TypeT</code>は、ドキュメント内で\c TypeT という名前の構造体として表示されます。無効な場合、typedefはファイル、名前空間、またはクラスのメンバーとして表示され、構造体は\c TypeS という名前になります。これは、コーディング規約ですべての複合型をtypedefし、タグ名ではなくtypedef名のみを参照する場合に、Cコードで特に便利です。]]>
