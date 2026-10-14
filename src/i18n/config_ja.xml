@@ -565,6 +565,11 @@ Doxygen を使用して、使用した設定ファイルをテンプレート設
 <![CDATA[\c MAX_INITIALIZER_LINES タグは、変数またはマクロ/定義の初期値がドキュメントに表示される最大行数を指定します。初期化子がここで指定した行数を超える場合は非表示になります。初期化子を完全に非表示にするには0を指定します。個々の変数やマクロ/定義の値の表示は、この設定に関係なく、ドキュメント内で\ref cmdshowinitializer "\\showinitializer"または\ref cmdhideinitializer "\\hideinitializer"コマンドを使用して制御できます。]]>
       </docs>
     </option>
+    <option type="bool" id="INLINE_FUNCTION_MACROS" defval="0">
+      <docs>
+<![CDATA[\c INLINE_FUNCTION_MACROS タグを \c YES に設定すると、関数形式マクロの本体が1行で構成されている場合、その本体を宣言と同じ行に表示します。本体は \ref cfg_max_initializer_lines "MAX_INITIALIZER_LINES" の設定も満たす場合にのみ表示されます。複数行のマクロ本体はこのオプションの影響を受けません。]]>
+      </docs>
+    </option>
     <option type="bool" id="SHOW_USED_FILES" defval="1">
       <docs>
 <![CDATA[\c SHOW_USED_FILES タグを\c NO に設定すると、クラスと構造体のドキュメントの下部に生成されるファイルのリストが無効になります。\c YES に設定されている場合、リストはドキュメントの生成に使用されたファイルを示します。]]>

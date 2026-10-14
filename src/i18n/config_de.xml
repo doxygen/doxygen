@@ -566,6 +566,11 @@ eine doppelte Maskierung (\c \\\\{ und \c \\\\}) zu verwenden.]]>
 <![CDATA[Das \c MAX_INITIALIZER_LINES-Tag bestimmt die maximale Anzahl von Zeilen, die der Anfangswert einer Variable oder eines Makros / Defines haben darf, um in der Dokumentation zu erscheinen. Wenn der Initialisierer aus mehr Zeilen besteht als hier angegeben, wird er ausgeblendet. Verwenden Sie den Wert 0, um Initialisierer vollständig auszublenden. Das Erscheinen des Werts einzelner Variablen und Makros / Defines kann mit dem Befehl \ref cmdshowinitializer "\\showinitializer" oder \ref cmdhideinitializer "\\hideinitializer" in der Dokumentation gesteuert werden, unabhängig von dieser Einstellung.]]>
       </docs>
     </option>
+    <option type="bool" id="INLINE_FUNCTION_MACROS" defval="0">
+      <docs>
+<![CDATA[Wenn das \c INLINE_FUNCTION_MACROS-Tag auf \c YES gesetzt ist, wird der Rumpf eines funktionsähnlichen Makros in derselben Zeile wie seine Deklaration angezeigt, sofern der Rumpf aus einer einzigen Zeile besteht. Der Rumpf wird nur angezeigt, wenn er zusätzlich die Einstellung \ref cfg_max_initializer_lines "MAX_INITIALIZER_LINES" erfüllt. Mehrzeilige Makrorümpfe sind von dieser Option nicht betroffen.]]>
+      </docs>
+    </option>
     <option type="bool" id="SHOW_USED_FILES" defval="1">
       <docs>
 <![CDATA[Setzen Sie das \c SHOW_USED_FILES-Tag auf \c NO, um die Liste der Dateien, die am Ende der Dokumentation einer Klasse angezeigt werden, zu deaktivieren.]]>

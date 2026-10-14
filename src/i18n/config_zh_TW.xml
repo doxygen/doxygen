@@ -565,6 +565,11 @@ Doxygen (www.doxygen.org) 所使用的設定。
 <![CDATA[\c MAX_INITIALIZER_LINES 標籤确定變數或巨集/定義的初始值可以顯示的最大行數，以便它出現在檔案中。如果初始化器包含的行數超過此處指定的數量，它將被隐藏。使用值 0 可完全隐藏初始化器。无论此設定如何，都可以在檔案中使用 \ref cmdshowinitializer "\\showinitializer" 或 \ref cmdhideinitializer "\\hideinitializer" 命令控制單個變數和巨集/定義的值的外观。]]>
       </docs>
     </option>
+    <option type="bool" id="INLINE_FUNCTION_MACROS" defval="0">
+      <docs>
+<![CDATA[將 \c INLINE_FUNCTION_MACROS 標籤設定為 \c YES 時，如果類函式巨集的巨集本體只有一行，則會將其顯示在與宣告相同的行上。只有當巨集本體同時滿足 \ref cfg_max_initializer_lines "MAX_INITIALIZER_LINES" 設定時才會顯示。多行巨集本體不受此選項影響。]]>
+      </docs>
+    </option>
     <option type="bool" id="SHOW_USED_FILES" defval="1">
       <docs>
 <![CDATA[將 \c SHOW_USED_FILES 標籤設定為 \c NO 以停用類別和結構檔案底部產生的檔案列資料表。如果設定為 \c YES ，列資料表將提及用於產生檔案的檔案。]]>

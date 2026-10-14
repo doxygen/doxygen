@@ -565,6 +565,11 @@ Doxygen을 사용하여 사용된 설정 파일을 템플릿 설정 파일과 �
 <![CDATA[\c MAX_INITIALIZER_LINES 태그는 변수 또는 매크로/정의의 초기 값이 문서에 표시되기 위해 가질 수 있는 최대 줄 수를 결정합니다. 초기화자가 여기에 지정된 줄 수를 초과하면 숨겨집니다. 초기화자를 완전히 숨기려면 0 값을 사용합니다. 개별 변수와 매크로/정의의 값 외관은 이 설정과 관계없이 문서에서 \ref cmdshowinitializer "\\showinitializer" 또는 \ref cmdhideinitializer "\\hideinitializer" 명령을 사용하여 제어할 수 있습니다.]]>
       </docs>
     </option>
+    <option type="bool" id="INLINE_FUNCTION_MACROS" defval="0">
+      <docs>
+<![CDATA[\c INLINE_FUNCTION_MACROS 태그를 \c YES로 설정하면 함수형 매크로의 본문이 한 줄로 구성된 경우 해당 본문을 선언과 같은 줄에 표시합니다. 본문은 \ref cfg_max_initializer_lines "MAX_INITIALIZER_LINES" 설정도 충족하는 경우에만 표시됩니다. 여러 줄로 된 매크로 본문은 이 옵션의 영향을 받지 않습니다.]]>
+      </docs>
+    </option>
     <option type="bool" id="SHOW_USED_FILES" defval="1">
       <docs>
 <![CDATA[\c SHOW_USED_FILES 태그를 \c NO 로 설정하면 클래스와 구조체의 문서 하단에 생성되는 파일 목록이 비활성화됩니다. \c YES 로 설정되면 목록은 문서 생성에 사용된 파일을 나타냅니다.]]>

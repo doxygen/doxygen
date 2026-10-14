@@ -565,6 +565,11 @@ Doxygen (www.doxygen.org) 所使用的设置。
 <![CDATA[\c MAX_INITIALIZER_LINES 标签确定变量或宏/定义的初始值可以显示的最大行数，以便它出现在文档中。如果初始化器包含的行数超过此处指定的数量，它将被隐藏。使用值 0 可完全隐藏初始化器。无论此设置如何，都可以在文档中使用 \ref cmdshowinitializer "\\showinitializer" 或 \ref cmdhideinitializer "\\hideinitializer" 命令控制单个变量和宏/定义的值的外观。]]>
       </docs>
     </option>
+    <option type="bool" id="INLINE_FUNCTION_MACROS" defval="0">
+      <docs>
+<![CDATA[将 \c INLINE_FUNCTION_MACROS 标签设置为 \c YES 时，如果类函数宏的宏体只有一行，则会将其显示在与声明相同的行上。只有当宏体同时满足 \ref cfg_max_initializer_lines "MAX_INITIALIZER_LINES" 设置时才会显示。多行宏体不受此选项影响。]]>
+      </docs>
+    </option>
     <option type="bool" id="SHOW_USED_FILES" defval="1">
       <docs>
 <![CDATA[将 \c SHOW_USED_FILES 标签设置为 \c NO 以禁用类和结构体文档底部生成的文件列表。如果设置为 \c YES ，列表将提及用于生成文档的文件。]]>
