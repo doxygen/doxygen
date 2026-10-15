@@ -6528,10 +6528,19 @@ static void addMemberFunction(const Entry *root,
       {
         DString memType = md->typeString();
         memType.stripPrefix("static "); // see bug700696
+        // a member defined outside its namespace may use the namespace-qualified
+        // name for its return type ("N::C" instead of "C"), while the in-class
+        // declaration uses the unqualified name, so strip the leading namespace
+        // before comparing the return types, see issue #12379
         funcType=substitute(stripTemplateSpecifiersFromScope(funcType,true),
             className+"::",""); // see bug700693 & bug732594
         memType=substitute(stripTemplateSpecifiersFromScope(memType,true),
             className+"::",""); // see bug758900
+        if (!namespaceName.empty())
+        {
+          funcType.stripPrefix(namespaceName+"::");
+          memType.stripPrefix(namespaceName+"::");
+        }
         if (memType=="auto" && !argList.trailingReturnType().empty())
         {
           memType = argList.trailingReturnType();
