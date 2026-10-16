@@ -5219,7 +5219,13 @@ DString detab(const DString &s,size_t &refIndent)
         }
         break;
       case '\\':
-        if (data[i] == '\\') // escaped command -> ignore
+        if (skip && data[i] == '\\' && i+8<size && literal_at(data+i+1,"endiskip"))
+        {
+          // literal backslash directly followed by \endiskip, e.g. `\` in a code span
+          result+=c;
+          col++;
+        }
+        else if (data[i] == '\\') // escaped command -> ignore
         {
           result+=c;
           result+=data[i++];
