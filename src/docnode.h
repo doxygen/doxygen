@@ -378,7 +378,8 @@ class DocVerbatim final : public DocNode
     enum Type { Code, HtmlOnly, ManOnly, LatexOnly, RtfOnly, XmlOnly, Verbatim, Dot, Msc, DocbookOnly, PlantUML, Mermaid, JavaDocCode, JavaDocLiteral };
     DocVerbatim(DocParser *parser,DocNodeVariant *parent,const DString &context,
                 const DString &text, Type t,bool isExample,
-                const DString &exampleFile,bool isBlock=false,const DString &lang=DString());
+                const DString &exampleFile,bool isBlock=false,const DString &lang=DString(),
+                const DString &listingsNumbers=DString());
     Type type() const            { return p->type; }
     DString text() const         { return p->text; }
     DString context() const      { return p->context; }
@@ -386,6 +387,7 @@ class DocVerbatim final : public DocNode
     DString exampleFile() const  { return p->exampleFile; }
     DString relPath() const      { return p->relPath; }
     DString language() const     { return p->lang; }
+    DString listingsNumbers() const { return p->listingsNumbers; }
     bool isBlock() const         { return p->isBlock; }
     bool hasCaption() const      { return !p->children.empty(); }
     DString width() const        { return p->width; }
@@ -407,9 +409,11 @@ class DocVerbatim final : public DocNode
     struct Private
     {
       Private(const DString &context_,const DString &text_, Type type_, bool isExample_,
-              const DString &exampleFile_, const DString &relPath_,const DString &lang_, bool isBlock_)
+              const DString &exampleFile_, const DString &relPath_,const DString &lang_, bool isBlock_,
+              const DString &listingsNumbers_)
         : context(context_),         text(text_),       type(type_),       isExample(isExample_),
-          exampleFile(exampleFile_), relPath(relPath_), lang(lang_), isBlock(isBlock_) {}
+          exampleFile(exampleFile_), relPath(relPath_), lang(lang_), isBlock(isBlock_),
+          listingsNumbers(listingsNumbers_) {}
       DString   context;
       DString   text;
       Type      type = Code;
@@ -418,6 +422,7 @@ class DocVerbatim final : public DocNode
       DString   relPath;
       DString   lang;
       bool      isBlock;
+      DString   listingsNumbers;
       DString   width;
       DString   height;
       DString   engine;
