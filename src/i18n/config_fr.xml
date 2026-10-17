@@ -349,6 +349,13 @@ d'utiliser une double échappement (\c \\\\{ et \c \\\\}).
 <![CDATA[Lorsque la balise \c INLINE_SIMPLE_STRUCTS est définie à \c YES, les structs, classes et unions avec uniquement des champs de données publics ou des champs typedef simples seront affichés en ligne dans la documentation de la portée dans laquelle ils sont définis (c'est-à-dire documentation de fichier, namespace ou groupe), à condition que cette portée soit documentée. Si défini à \c NO, les structs, classes et unions sont affichés sur une page séparée (pour HTML et pages de manuel) ou section (pour \f$\mbox{\LaTeX}\f$ et RTF).]]>
       </docs>
     </option>
+    <option type="enum" id="TAGLESS_NAMESTYLE" defval="marker">
+      <docs>
+<![CDATA[Détermine comment les structures et unions anonymes utilisées comme membres sont nommées dans la documentation et la sortie XML.]]>
+      </docs>
+      <value name="marker" desc="le type anonyme est référencé via son marqueur de portée anonyme et le nom du membre, p. ex. Struct::[struct].member"/>
+      <value name="flat" desc="le type anonyme est référencé via la portée aplatie et le nom du membre, p. ex. Struct.member ; évite les noms commençant par '['"/>
+    </option>
     <option type="bool" id="TYPEDEF_HIDES_STRUCT" defval="0">
       <docs>
 <![CDATA[Lorsque la balise \c TYPEDEF_HIDES_STRUCT est activée, un typedef d'une struct, union ou enum est documente comme struct, union ou enum avec le nom du typedef. Donc <code>typedef struct TypeS {} TypeT</code> apparaîtra dans la documentation comme une struct avec le nom \c TypeT. Lorsque désactivé, le typedef apparaîtra comme un membre d'un fichier, namespace ou classe. Et la struct sera nommée \c TypeS. Cela peut typiquement être utile pour le code C au cas ou la convention de codage dicte que tous les types composes sont typedefes et seul le typedef est référence, jamais le nom de tag.]]>

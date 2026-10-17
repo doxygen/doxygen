@@ -346,6 +346,13 @@ Doxygen (www.doxygen.org) 所使用的設定。
 <![CDATA[當 \c INLINE_SIMPLE_STRUCTS 標籤設定為 \c YES 時，僅具有公共資料欄位或簡單 typedef 欄位的結構、類別和聯合體將顯示在定義它們的作用域的檔案中（即檔案、命名空間或群組檔案），前提是此作用域已記錄。如果設定為 \c NO ，結構、類別和聯合體將顯示在單独的頁面上（對于 HTML 和 Man 頁面）或部分中（對于 \f$\mbox{\LaTeX}\f$ 和 RTF）。]]>
       </docs>
     </option>
+    <option type="enum" id="TAGLESS_NAMESTYLE" defval="marker">
+      <docs>
+<![CDATA[決定用作成員的無名（匿名）結構與聯合在文件及 XML 輸出中的命名方式。]]>
+      </docs>
+      <value name="marker" desc="透過匿名範圍標記與成員名稱引用匿名型別，例如 Struct::[struct].member"/>
+      <value name="flat" desc="透過扁平化範圍與成員名稱引用匿名型別，例如 Struct.member；避免以 '[' 開頭的名稱"/>
+    </option>
     <option type="bool" id="TYPEDEF_HIDES_STRUCT" defval="0">
       <docs>
 <![CDATA[啟用 \c TYPEDEF_HIDES_STRUCT 標籤後，結構、聯合體或列舉的 typedef 將記錄為具有 typedef 名稱的結構、聯合體或列舉。因此 <code>typedef struct TypeS {} TypeT</code> 將在檔案中顯示為名為 \c TypeT 的結構。停用時，typedef 將顯示為檔案、命名空間或類別的成員。結構將命名為 \c TypeS 。這通常對于 C 程式碼很有用，如果編碼约定要求所有複合類別型都是 typedef 的，並且只引用 typedef，從不引用標籤名稱。]]>

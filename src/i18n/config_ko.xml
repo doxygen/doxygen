@@ -346,6 +346,13 @@ Doxygen을 사용하여 사용된 설정 파일을 템플릿 설정 파일과 �
 <![CDATA[\c INLINE_SIMPLE_STRUCTS 태그가 \c YES 로 설정되면 공용 데이터 필드 또는 단순 typedef 필드만 있는 구조체, 클래스 및 공용체는 정의된 범위가 문서화된 경우 해당 범위의 문서 내에 인라인으로 표시됩니다(즉, 파일, 네임스페이스 또는 그룹의 문서). \c NO 로 설정되면 구조체, 클래스 및 공용체는 별도의 페이지(HTML 및 Man 페이지의 경우) 또는 섹션(\f$\mbox{\LaTeX}\f$ 및 RTF의 경우)에 표시됩니다.]]>
       </docs>
     </option>
+    <option type="enum" id="TAGLESS_NAMESTYLE" defval="marker">
+      <docs>
+<![CDATA[멤버로 사용되는 이름 없는(익명) 구조체와 공용체가 문서 및 XML 출력에서 어떻게 이름이 붙는지 결정합니다.]]>
+      </docs>
+      <value name="marker" desc="익명 범위 마커와 멤버 이름으로 참조합니다(예: Struct::[struct].member)"/>
+      <value name="flat" desc="평탄화된 범위와 멤버 이름으로 참조합니다(예: Struct.member). '['로 시작하는 이름을 피합니다"/>
+    </option>
     <option type="bool" id="TYPEDEF_HIDES_STRUCT" defval="0">
       <docs>
 <![CDATA[\c TYPEDEF_HIDES_STRUCT 태그가 활성화되면 구조체, 공용체 또는 열거형의 typedef는 typedef의 이름을 가진 구조체, 공용체 또는 열거형으로 문서화됩니다. 따라서 <code>typedef struct TypeS {} TypeT</code>는 문서에서 \c TypeT 라는 이름의 구조체로 나타납니다. 비활성화된 경우 typedef는 파일, 네임스페이스 또는 클래스의 멤버로 표시됩니다. 구조체는 \c TypeS 라는 이름이 됩니다. 이는 코딩 규칙이 모든 복합 유형을 typedef하고 typedef만 참조되며 태그 이름은 참조되지 않는 C 코드에서 일반적으로 편리합니다.]]>
