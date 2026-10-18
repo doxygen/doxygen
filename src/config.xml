@@ -835,6 +835,31 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='enum' id='TAGLESS_NAMESTYLE' defval='marker'>
+      <docs>
+<![CDATA[
+ Determines how tag-less (anonymous) structs and unions used as members are
+ named in the documentation and the XML output. This concerns anonymous
+ compounds contained in classes, namespaces or at file scope; the container
+ scope is used as a prefix.
+ <ul>
+ <li>\c marker: the anonymous type is referred to via its anonymous-scope
+ marker and the member name, e.g. <code>Struct::[struct].member</code> or
+ <code>Struct::[union].member</code>. This is the default as used since
+ release 1.18.</li>
+ <li>\c flat: the anonymous type is referred to via its flattened scope and
+ the member name, e.g. <code>Struct.member</code>. This matches the naming
+ used before release 1.18 and is friendlier for consumers of the XML output
+ (e.g. documentation generators) that cannot handle type names starting with
+ a '[' character.</li>
+ </ul>
+ Anonymous enums are not affected: they always keep the anchor-style naming
+ used for enum members.
+]]>
+      </docs>
+      <value name='marker' desc="reference the anonymous type by its anonymous-scope marker and the member name, e.g. Struct::[struct].member"/>
+      <value name='flat' desc="reference the anonymous type by its flattened scope and the member name, e.g. Struct.member; avoids names starting with a '[' character"/>
+    </option>
     <option type='bool' id='TYPEDEF_HIDES_STRUCT' defval='0'>
       <docs>
 <![CDATA[

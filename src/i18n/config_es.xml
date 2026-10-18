@@ -346,6 +346,13 @@ Cuando necesites usar literalmente `{`, `}` o `,` en el valor de un alias, debes
 <![CDATA[Si la etiqueta \c INLINE_SIMPLE_STRUCTS está configurada en \c YES, las estructuras, clases y uniones con solo campos de datos públicos o campos typedef simples se mostrarán en línea en la documentación del ámbito en el que están definidas (es decir, documentación de archivo, espacio de nombres o grupo), siempre que dicho ámbito este documentado. Si se configura en \c NO, las estructuras, clases y uniones se mostrarán en una página separada (para HTML y páginas de manual) o en una sección (para \f$\mbox{\LaTeX}\f$ y RTF).]]>
       </docs>
     </option>
+    <option type="enum" id="TAGLESS_NAMESTYLE" defval="marker">
+      <docs>
+<![CDATA[Determina cómo se nombran las estructuras y uniones anónimas usadas como miembros en la documentación y en la salida XML.]]>
+      </docs>
+      <value name="marker" desc="el tipo anónimo se referencia mediante su marcador de ámbito anónimo y el nombre del miembro, p. ej. Struct::[struct].member"/>
+      <value name="flat" desc="el tipo anónimo se referencia mediante el ámbito aplanado y el nombre del miembro, p. ej. Struct.member; evita nombres que empiezan por '['"/>
+    </option>
     <option type="bool" id="TYPEDEF_HIDES_STRUCT" defval="0">
       <docs>
 <![CDATA[Cuando la etiqueta \c TYPEDEF_HIDES_STRUCT está habilitada, una definición de tipo de una estructura, unión o enumeración se documenta como estructura, unión o enumeración con el nombre de la definición de tipo. Así, <code>typedef struct TypeS {} TypeT</code> aparecerá en la documentación como una estructura con nombre \c TypeT. Cuando está deshabilitado, la definición de tipo aparecerá como un miembro de un archivo, espacio de nombres o clase. Y la estructura se llamará \c TypeS. Esto puede ser típicamente útil para código C en caso de que la convención de codificación dicte que todos los tipos compuestos se definen con typedef y solo se hace referencia a la definición de tipo, nunca al nombre de la etiqueta.]]>

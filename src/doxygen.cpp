@@ -1571,21 +1571,40 @@ static void associateVariableWithAnonymousEnumType(const MemberDef *md,
 
 static ClassDefMutable *createTagLessInstance(const Definition *root,const ClassDef *templ,const DString &fieldName,bool hasNamedVariable)
 {
-  DString n = templ->name();
-  // replace e.g. X::@1343:@4343::Y -> X::[struct]::Y
-  if (size_t sn = n.find('@'); sn!=DString::npos)
+  DString fullName;
+  if (Config_getEnum(TAGLESS_NAMESTYLE)==TAGLESS_NAMESTYLE_t::flat)
   {
-    const char *p = n.data()+sn;
-    char c;
-    while ((c=*p))
-    {
-      if (!isdigit(c) && c!='@' &&  c!=':') break;
-      p++;
-    }
-    n = n.left(sn)+"["+templ->compoundTypeString().str()+"]"+p;
+    // "flat" style: refer to the anonymous compound via its flattened scope and
+    // member names, e.g. 'struct A { struct { int x; } y; };' yields 'A.y'.
+    // This matches the pre-1.18 naming and is friendlier for consumers of the
+    // XML output that cannot handle type names starting with '[' (e.g. mkdoxy).
+    fullName = removeAnonymousScopes(templ->name());
+    if (fullName.endsWith("::")) fullName = fullName.left(fullName.length()-2);
+    // add the field name as a suffix to make the name unique again; the
+    // separator is only added when there is a flattened scope left (a
+    // file-scope anonymous compound has none and would otherwise get a
+    // leading '.').
+    if (!fullName.empty()) fullName += ".";
+    fullName += fieldName;
   }
-  // add field name to the class name to make it unique again, e.g. X::[struct]::Y.m
-  DString fullName = n+"."+fieldName;
+  else // "marker" style (the default)
+  {
+    DString n = templ->name();
+    // replace e.g. X::@1343:@4343::Y -> X::[struct]::Y
+    if (size_t sn = n.find('@'); sn!=DString::npos)
+    {
+      const char *p = n.data()+sn;
+      char c;
+      while ((c=*p))
+      {
+        if (!isdigit(c) && c!='@' &&  c!=':') break;
+        p++;
+      }
+      n = n.left(sn)+"["+templ->compoundTypeString().str()+"]"+p;
+    }
+    // add field name to the class name to make it unique again, e.g. X::[struct]::Y.m
+    fullName = n+"."+fieldName;
+  }
 
   //printf("** adding class %s based on %s in %s\n",qPrint(fullName),qPrint(templ->name()),qPrint(root->name()));
   ClassDefMutable *cd = toClassDefMutable(
