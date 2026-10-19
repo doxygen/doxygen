@@ -347,6 +347,7 @@ DString latexEscapeIndexChars(const DString &s);
 DString latexEscapePDFString(const DString &s);
 DString latexFilterURL(const DString &s);
 void latexWriteIndexItem(TextStream &t,const DString &r1,const DString &s2 = "");
+const char *latexSectionName(int level);
 
 
 #endif

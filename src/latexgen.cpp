@@ -18,6 +18,7 @@
 
 // standard includes
 #include <algorithm>
+#include <array>
 
 // other headers
 #include "cite.h"
@@ -59,14 +60,6 @@ static DString g_footer_file;
 static const SelectionMarkerInfo latexMarkerInfo = { '%', "%%BEGIN ",8 ,"%%END ",6, "",0 };
 
 static DString substituteLatexKeywords(const DString &file, const DString &str, const DString &title);
-
-// Sectioning command for a nesting level: \doxysection, \doxysubsection, ...
-// doxygen.sty stops at \doxysubsubsubsubsubsubsection, which is used for all deeper levels.
-static DString sectionCommand(int level)
-{
-  const int maxLevel = 6;
-  return "\\doxy"+DString("sub").repeat(std::min(level,maxLevel))+"section";
-}
 
 LatexCodeGenerator::LatexCodeGenerator(TextStream *t,const DString &relPath,const DString &sourceFileName)
   : m_t(t), m_relPath(relPath), m_sourceFileName(sourceFileName)
@@ -1491,7 +1484,7 @@ void LatexGenerator::startTitleHead(const DString &fileName)
   if (hierarchyLevel < 0)
     m_t << "\\chapter{";
   else
-    m_t << sectionCommand(hierarchyLevel) << "{";
+    m_t << "\\" << latexSectionName(hierarchyLevel) << "{";
 }
 
 void LatexGenerator::endTitleHead(const DString &fileName,const DString &name)
@@ -1534,7 +1527,7 @@ void LatexGenerator::startGroupHeader(const DString &,int extraIndentLevel)
   else
   {
     extraIndentLevel += m_hierarchyLevel + 1;
-    m_t << sectionCommand(extraIndentLevel) << "{";
+    m_t << "\\" << latexSectionName(extraIndentLevel) << "{";
   }
   m_disableLinks=true;
 }
@@ -1553,7 +1546,7 @@ void LatexGenerator::startMemberHeader(const DString &,int)
     ++l;
   }
 
-  m_t << sectionCommand(l+1) << "*{";
+  m_t << "\\" << latexSectionName(l+1) << "*{";
   m_disableLinks=true;
 }
 
@@ -1588,7 +1581,7 @@ void LatexGenerator::startMemberDoc(const DString &clname,
   }
   else
   {
-    m_t << sectionCommand(m_hierarchyLevel + 2);
+    m_t << "\\" << latexSectionName(m_hierarchyLevel + 2);
   }
 
   m_t << "{";
@@ -2175,7 +2168,7 @@ void LatexGenerator::startInlineHeader()
   }
   else
   {
-    m_t << sectionCommand(m_hierarchyLevel + 1) << "*{";
+    m_t << "\\" << latexSectionName(m_hierarchyLevel + 1) << "*{";
   }
 }
 
@@ -2284,7 +2277,7 @@ void LatexGenerator::writeInheritedSectionTitle(
   }
   else
   {
-    m_t << sectionCommand(m_hierarchyLevel + 1) << "*{";
+    m_t << "\\" << latexSectionName(m_hierarchyLevel + 1) << "*{";
   }
   m_t << theTranslator->trInheritedFrom(convertToLaTeX(title,m_codeGen->insideTabbing()),
                                         objectLinkToString(ref, file, anchor, name, m_codeGen->insideTabbing(), m_disableLinks));
@@ -2694,6 +2687,22 @@ void latexWriteIndexItem(TextStream &m_t,const DString &s1,const DString &s2)
     }
     m_t << "}\n";
   }
+}
+
+static const int g_maxLevels = 7;
+static const std::array<const char *,g_maxLevels> g_secLabels =
+{ "doxysection",
+  "doxysubsection",
+  "doxysubsubsection",
+  "doxysubsubsubsection",
+  "doxysubsubsubsubsection",
+  "doxysubsubsubsubsubsection",
+  "doxysubsubsubsubsubsubsection"
+};
+
+const char *latexSectionName(int level)
+{
+  return g_secLabels[std::clamp(level,0,g_maxLevels-1)];
 }
 
 
