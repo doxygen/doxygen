@@ -53,13 +53,13 @@ const char *LatexDocVisitor::getSectionName(int level) const
   int l = level;
   if (compactLatex) l++;
 
-  if (l < 7)
+  if (l < LatexSections::maxLevels)
   {
     l += m_hierarchyLevel; /* May be -1 if generating main page */
     // Sections get special treatment because they inherit the parent's level
-    return latexSectionName(l);
+    return LatexSections::name(l);
   }
-  else if (l == 7)
+  else if (l == LatexSections::maxLevels)
   {
     return g_paragraphLabel;
   }

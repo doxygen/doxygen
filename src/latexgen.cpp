@@ -16,10 +16,6 @@
 // own header
 #include "latexgen.h"
 
-// standard includes
-#include <algorithm>
-#include <array>
-
 // other headers
 #include "cite.h"
 #include "classlist.h"
@@ -1484,7 +1480,7 @@ void LatexGenerator::startTitleHead(const DString &fileName)
   if (hierarchyLevel < 0)
     m_t << "\\chapter{";
   else
-    m_t << "\\" << latexSectionName(hierarchyLevel) << "{";
+    m_t << "\\" << LatexSections::name(hierarchyLevel) << "{";
 }
 
 void LatexGenerator::endTitleHead(const DString &fileName,const DString &name)
@@ -1527,7 +1523,7 @@ void LatexGenerator::startGroupHeader(const DString &,int extraIndentLevel)
   else
   {
     extraIndentLevel += m_hierarchyLevel + 1;
-    m_t << "\\" << latexSectionName(extraIndentLevel) << "{";
+    m_t << "\\" << LatexSections::name(extraIndentLevel) << "{";
   }
   m_disableLinks=true;
 }
@@ -1546,7 +1542,7 @@ void LatexGenerator::startMemberHeader(const DString &,int)
     ++l;
   }
 
-  m_t << "\\" << latexSectionName(l+1) << "*{";
+  m_t << "\\" << LatexSections::name(l+1) << "*{";
   m_disableLinks=true;
 }
 
@@ -1581,7 +1577,7 @@ void LatexGenerator::startMemberDoc(const DString &clname,
   }
   else
   {
-    m_t << "\\" << latexSectionName(m_hierarchyLevel + 2);
+    m_t << "\\" << LatexSections::name(m_hierarchyLevel + 2);
   }
 
   m_t << "{";
@@ -2168,7 +2164,7 @@ void LatexGenerator::startInlineHeader()
   }
   else
   {
-    m_t << "\\" << latexSectionName(m_hierarchyLevel + 1) << "*{";
+    m_t << "\\" << LatexSections::name(m_hierarchyLevel + 1) << "*{";
   }
 }
 
@@ -2277,7 +2273,7 @@ void LatexGenerator::writeInheritedSectionTitle(
   }
   else
   {
-    m_t << "\\" << latexSectionName(m_hierarchyLevel + 1) << "*{";
+    m_t << "\\" << LatexSections::name(m_hierarchyLevel + 1) << "*{";
   }
   m_t << theTranslator->trInheritedFrom(convertToLaTeX(title,m_codeGen->insideTabbing()),
                                         objectLinkToString(ref, file, anchor, name, m_codeGen->insideTabbing(), m_disableLinks));
@@ -2687,22 +2683,6 @@ void latexWriteIndexItem(TextStream &m_t,const DString &s1,const DString &s2)
     }
     m_t << "}\n";
   }
-}
-
-static const int g_maxLevels = 7;
-static const std::array<const char *,g_maxLevels> g_secLabels =
-{ "doxysection",
-  "doxysubsection",
-  "doxysubsubsection",
-  "doxysubsubsubsection",
-  "doxysubsubsubsubsection",
-  "doxysubsubsubsubsubsection",
-  "doxysubsubsubsubsubsubsection"
-};
-
-const char *latexSectionName(int level)
-{
-  return g_secLabels[std::clamp(level,0,g_maxLevels-1)];
 }
 
 
