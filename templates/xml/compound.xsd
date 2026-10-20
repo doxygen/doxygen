@@ -59,6 +59,7 @@
     <xsd:attribute name="inline" type="DoxBool" use="optional"/>
     <xsd:attribute name="sealed" type="DoxBool" use="optional"/>
     <xsd:attribute name="abstract" type="DoxBool" use="optional"/>
+    <xsd:attribute name="ref" type="DoxBool" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="listofallmembersType">
