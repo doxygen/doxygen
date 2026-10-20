@@ -987,6 +987,11 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     if (md->isProtectedSettable()) t << "yes"; else t << "no";
     t << "\"";
 
+    if (md->isInitonly())
+    {
+      t << " initonly=\"yes\"";
+    }
+
     if (md->isAssign() || md->isCopy() || md->isRetain() || md->isStrong() || md->isWeak())
     {
       t << " accessor=\"";

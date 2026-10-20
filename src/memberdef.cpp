@@ -2513,7 +2513,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
 
   if (isProperty() && (isSettable() || isGettable() ||
       isPrivateSettable() || isPrivateGettable() ||
-      isProtectedSettable() || isProtectedGettable()))
+      isProtectedSettable() || isProtectedGettable() || isInitonly()))
   {
       ol.writeLatexSpacing();
       ol.startTypewriter();
@@ -2524,6 +2524,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
       if (isProtectedGettable())    sl.emplace_back("protected get");
       if (isSettable())             sl.emplace_back("set");
       if (isProtectedSettable())    sl.emplace_back("protected set");
+      if (isInitonly())             sl.emplace_back("init");
       if (extractPrivate)
       {
         if (isPrivateGettable())    sl.emplace_back("private get");

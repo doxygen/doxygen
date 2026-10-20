@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_c" kind="class" language="C#" prot="public">
+    <compoundname>C</compoundname>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="class_c_1a97f5c47f391c5075163a8470756ec9dc" prot="private" static="no" mutable="no">
+        <type>int</type>
+        <definition>int C.initialValue</definition>
+        <argsstring/>
+        <name>initialValue</name>
+        <qualifiedname>C.initialValue</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="130_cs_init_accessor.cs" line="6" column="17" bodyfile="130_cs_init_accessor.cs" bodystart="6" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_c_1a99ea9d3c70c8bed52c763bbaffcaa286" prot="private" static="no" mutable="no">
+        <type>int</type>
+        <definition>int C.offset</definition>
+        <argsstring/>
+        <name>offset</name>
+        <qualifiedname>C.offset</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="130_cs_init_accessor.cs" line="7" column="17" bodyfile="130_cs_init_accessor.cs" bodystart="7" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="property">
+      <memberdef kind="property" id="class_c_1ad950664fc02c38fcba4fdc38623ca87a" prot="public" static="no" readable="no" writable="no" gettable="yes" privategettable="no" protectedgettable="no" settable="no" privatesettable="no" protectedsettable="no" initonly="yes">
+        <type>int</type>
+        <definition>int C.Init</definition>
+        <argsstring/>
+        <name>Init</name>
+        <qualifiedname>C.Init</qualifiedname>
+        <briefdescription>
+          <para>Property with an init accessor. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="130_cs_init_accessor.cs" line="9" column="16" bodyfile="130_cs_init_accessor.cs" bodystart="9" bodyend="9"/>
+      </memberdef>
+      <memberdef kind="property" id="class_c_1a699829263971574b8d01feaaad9da6fa" prot="public" static="no" readable="no" writable="no" gettable="yes" privategettable="no" protectedgettable="no" settable="no" privatesettable="no" protectedsettable="no">
+        <type>int</type>
+        <definition>int C.Initial</definition>
+        <argsstring/>
+        <name>Initial</name>
+        <qualifiedname>C.Initial</qualifiedname>
+        <briefdescription>
+          <para>Read-only property that reads a field named like an accessor. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="130_cs_init_accessor.cs" line="11" column="16" bodyfile="130_cs_init_accessor.cs" bodystart="11" bodyend="11"/>
+      </memberdef>
+      <memberdef kind="property" id="class_c_1a4d53305e1581a616bfb67e289736c4be" prot="public" static="no" readable="no" writable="no" gettable="yes" privategettable="no" protectedgettable="no" settable="no" privatesettable="no" protectedsettable="no">
+        <type>int</type>
+        <definition>int C.Offset</definition>
+        <argsstring/>
+        <name>Offset</name>
+        <qualifiedname>C.Offset</qualifiedname>
+        <briefdescription>
+          <para>Read-only property that reads a field that contains "set". </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="130_cs_init_accessor.cs" line="13" column="16" bodyfile="130_cs_init_accessor.cs" bodystart="13" bodyend="13"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>A class. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="130_cs_init_accessor.cs" line="4" column="7" bodyfile="130_cs_init_accessor.cs" bodystart="5" bodyend="14"/>
+    <listofallmembers>
+      <member refid="class_c_1ad950664fc02c38fcba4fdc38623ca87a" prot="public" virt="non-virtual">
+        <scope>C</scope>
+        <name>Init</name>
+      </member>
+      <member refid="class_c_1a699829263971574b8d01feaaad9da6fa" prot="public" virt="non-virtual">
+        <scope>C</scope>
+        <name>Initial</name>
+      </member>
+      <member refid="class_c_1a97f5c47f391c5075163a8470756ec9dc" prot="private" virt="non-virtual">
+        <scope>C</scope>
+        <name>initialValue</name>
+      </member>
+      <member refid="class_c_1a4d53305e1581a616bfb67e289736c4be" prot="public" virt="non-virtual">
+        <scope>C</scope>
+        <name>Offset</name>
+      </member>
+      <member refid="class_c_1a99ea9d3c70c8bed52c763bbaffcaa286" prot="private" virt="non-virtual">
+        <scope>C</scope>
+        <name>offset</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
