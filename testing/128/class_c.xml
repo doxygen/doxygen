@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_c" kind="class" language="C#" prot="public">
+    <compoundname>C</compoundname>
+    <sectiondef kind="protected-attrib">
+      <memberdef kind="variable" id="class_c_1a479209cf8a70670eebe2efdeca37f81b" prot="protected" static="no" mutable="no">
+        <type>int</type>
+        <definition>int C.ProtectedInternal</definition>
+        <argsstring/>
+        <name>ProtectedInternal</name>
+        <qualifiedname>C.ProtectedInternal</qualifiedname>
+        <briefdescription>
+          <para>Protected internal field. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="128_cs_protected_internal.cs" line="8" column="28" bodyfile="128_cs_protected_internal.cs" bodystart="8" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_c_1a98732066cccf0c0e88ce4dde2a13a1e3" prot="protected" static="no" mutable="no">
+        <type>int</type>
+        <definition>int C.InternalProtected</definition>
+        <argsstring/>
+        <name>InternalProtected</name>
+        <qualifiedname>C.InternalProtected</qualifiedname>
+        <briefdescription>
+          <para>Internal protected field. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="128_cs_protected_internal.cs" line="10" column="28" bodyfile="128_cs_protected_internal.cs" bodystart="10" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="package-attrib">
+      <memberdef kind="variable" id="class_c_1afa6ae12f02f6c144005d0c689b5634c5" prot="package" static="no" mutable="no">
+        <type>int</type>
+        <definition>int C.Internal</definition>
+        <argsstring/>
+        <name>Internal</name>
+        <qualifiedname>C.Internal</qualifiedname>
+        <briefdescription>
+          <para>Internal field. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="128_cs_protected_internal.cs" line="12" column="18" bodyfile="128_cs_protected_internal.cs" bodystart="12" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>A class. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="128_cs_protected_internal.cs" line="5" column="7" bodyfile="128_cs_protected_internal.cs" bodystart="6" bodyend="13"/>
+    <listofallmembers>
+      <member refid="class_c_1afa6ae12f02f6c144005d0c689b5634c5" prot="package" virt="non-virtual">
+        <scope>C</scope>
+        <name>Internal</name>
+      </member>
+      <member refid="class_c_1a98732066cccf0c0e88ce4dde2a13a1e3" prot="protected" virt="non-virtual">
+        <scope>C</scope>
+        <name>InternalProtected</name>
+      </member>
+      <member refid="class_c_1a479209cf8a70670eebe2efdeca37f81b" prot="protected" virt="non-virtual">
+        <scope>C</scope>
+        <name>ProtectedInternal</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

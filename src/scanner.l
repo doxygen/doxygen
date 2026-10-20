@@ -2607,7 +2607,11 @@ NONLopt [^\n]*
                                             }
                                             else if ((yyextra->insideCS || yyextra->insideD || yyextra->insidePHP || yyextra->insideJS) && dstrcmp(yytext,"internal")==0)
                                             {
-                                              yyextra->current->protection = Protection::Package;
+                                              // C# "protected internal" is also visible to derived classes in other assemblies
+                                              if (!(yyextra->insideCS && yyextra->current->protection==Protection::Protected))
+                                              {
+                                                yyextra->current->protection = Protection::Package;
+                                              }
                                             }
                                             else if (javaLike && dstrcmp(yytext,"private")==0)
                                             {
