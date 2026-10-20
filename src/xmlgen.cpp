@@ -376,7 +376,8 @@ static void writeTemplateArgumentList(TextStream &t,
                                       const ArgumentList &al,
                                       const Definition *scope,
                                       const FileDef *fileScope,
-                                      int indent)
+                                      int indent,
+                                      const ArgumentList &typeConstraints=ArgumentList())
 {
   DString indentStr;
   indentStr.fill(' ',indent);
@@ -405,10 +406,21 @@ static void writeTemplateArgumentList(TextStream &t,
         linkifyText(TextGeneratorXMLImpl(t),a.defval,options);
         t << "</defval>\n";
       }
-      if (!a.typeConstraint.empty())
+      DString typeConstraint = a.typeConstraint;
+      // C# where clauses, with one entry per constraint. A C# type parameter has its name in type.
+      const DString &paramName = a.name.empty() ? a.type : a.name;
+      for (const Argument &tc : typeConstraints)
+      {
+        if (tc.name==paramName && !tc.type.empty())
+        {
+          if (!typeConstraint.empty()) typeConstraint+=", ";
+          typeConstraint+=tc.type;
+        }
+      }
+      if (!typeConstraint.empty())
       {
         t << indentStr << "    <typeconstraint>";
-        linkifyText(TextGeneratorXMLImpl(t),a.typeConstraint,options);
+        linkifyText(TextGeneratorXMLImpl(t),typeConstraint,options);
         t << "</typeconstraint>\n";
       }
       if (a.hasTemplateDocumentation())
@@ -438,7 +450,7 @@ static void writeMemberTemplateLists(const MemberDef *md,TextStream &t)
 
 static void writeTemplateList(const ClassDef *cd,TextStream &t)
 {
-  writeTemplateArgumentList(t,cd->templateArguments(),cd,cd->getFileDef(),4);
+  writeTemplateArgumentList(t,cd->templateArguments(),cd,cd->getFileDef(),4,cd->typeConstraints());
 }
 
 static void writeTemplateList(const ConceptDef *cd,TextStream &t)
