@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="128_cs_protected_internal.cs" line="8" column="28" bodyfile="128_cs_protected_internal.cs" bodystart="8" bodyend="-1"/>
+        <location file="128_cs_protected_internal.cs" line="9" column="28" bodyfile="128_cs_protected_internal.cs" bodystart="9" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="class_c_1a98732066cccf0c0e88ce4dde2a13a1e3" prot="protected" static="no" mutable="no">
         <type>int</type>
@@ -31,7 +31,22 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="128_cs_protected_internal.cs" line="10" column="28" bodyfile="128_cs_protected_internal.cs" bodystart="10" bodyend="-1"/>
+        <location file="128_cs_protected_internal.cs" line="11" column="28" bodyfile="128_cs_protected_internal.cs" bodystart="11" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_c_1ab21ef17487eded5677d4b49fb43592f9" prot="protected" static="no" mutable="no">
+        <type>int</type>
+        <definition>int C.Protected</definition>
+        <argsstring/>
+        <name>Protected</name>
+        <qualifiedname>C.Protected</qualifiedname>
+        <briefdescription>
+          <para>Protected field. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="128_cs_protected_internal.cs" line="19" column="19" bodyfile="128_cs_protected_internal.cs" bodystart="19" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="package-attrib">
@@ -48,7 +63,54 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="128_cs_protected_internal.cs" line="12" column="18" bodyfile="128_cs_protected_internal.cs" bodystart="12" bodyend="-1"/>
+        <location file="128_cs_protected_internal.cs" line="13" column="18" bodyfile="128_cs_protected_internal.cs" bodystart="13" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_c_1a3339368dfe645d82e04e4f0479c74d4d" prot="package" static="no" mutable="no">
+        <type>int</type>
+        <definition>int C.PrivateProtected</definition>
+        <argsstring/>
+        <name>PrivateProtected</name>
+        <qualifiedname>C.PrivateProtected</qualifiedname>
+        <briefdescription>
+          <para>Private protected field. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="128_cs_protected_internal.cs" line="15" column="27" bodyfile="128_cs_protected_internal.cs" bodystart="15" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_c_1a1d95b31abbe8052dbc69c79d5fa9ae2c" prot="package" static="no" mutable="no">
+        <type>int</type>
+        <definition>int C.ProtectedPrivate</definition>
+        <argsstring/>
+        <name>ProtectedPrivate</name>
+        <qualifiedname>C.ProtectedPrivate</qualifiedname>
+        <briefdescription>
+          <para>Protected private field. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="128_cs_protected_internal.cs" line="17" column="27" bodyfile="128_cs_protected_internal.cs" bodystart="17" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="class_c_1a1233c6d29e8983da18901b979807604a" prot="private" static="no" mutable="no">
+        <type>int</type>
+        <definition>int C.Private</definition>
+        <argsstring/>
+        <name>Private</name>
+        <qualifiedname>C.Private</qualifiedname>
+        <briefdescription>
+          <para>Private field. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="128_cs_protected_internal.cs" line="21" column="17" bodyfile="128_cs_protected_internal.cs" bodystart="21" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -56,7 +118,7 @@
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="128_cs_protected_internal.cs" line="5" column="7" bodyfile="128_cs_protected_internal.cs" bodystart="6" bodyend="13"/>
+    <location file="128_cs_protected_internal.cs" line="6" column="7" bodyfile="128_cs_protected_internal.cs" bodystart="7" bodyend="22"/>
     <listofallmembers>
       <member refid="class_c_1afa6ae12f02f6c144005d0c689b5634c5" prot="package" virt="non-virtual">
         <scope>C</scope>
@@ -66,9 +128,25 @@
         <scope>C</scope>
         <name>InternalProtected</name>
       </member>
+      <member refid="class_c_1a1233c6d29e8983da18901b979807604a" prot="private" virt="non-virtual">
+        <scope>C</scope>
+        <name>Private</name>
+      </member>
+      <member refid="class_c_1a3339368dfe645d82e04e4f0479c74d4d" prot="package" virt="non-virtual">
+        <scope>C</scope>
+        <name>PrivateProtected</name>
+      </member>
+      <member refid="class_c_1ab21ef17487eded5677d4b49fb43592f9" prot="protected" virt="non-virtual">
+        <scope>C</scope>
+        <name>Protected</name>
+      </member>
       <member refid="class_c_1a479209cf8a70670eebe2efdeca37f81b" prot="protected" virt="non-virtual">
         <scope>C</scope>
         <name>ProtectedInternal</name>
+      </member>
+      <member refid="class_c_1a1d95b31abbe8052dbc69c79d5fa9ae2c" prot="package" virt="non-virtual">
+        <scope>C</scope>
+        <name>ProtectedPrivate</name>
       </member>
     </listofallmembers>
   </compounddef>

@@ -672,6 +672,12 @@ NONLopt [^\n]*
 <FindMembers>{B}*"private"{BN}*":"{BN}* {
                                           initMethodProtection(yyscanner,Protection::Private);
                                         }
+<FindMembers>{B}*("private"{BN}+"protected"|"protected"{BN}+"private")/{BN} { // C# "private protected" is only visible to derived classes in the same assembly
+                                          if (!yyextra->insideCS) REJECT;
+                                          lineCount(yyscanner);
+                                          addType(yyscanner);
+                                          yyextra->current->protection = Protection::Package;
+                                        }
 <FindMembers>{B}*"public"/({BN}|{CCS}|{CPPC}) {
                                           if (!yyextra->insideCpp) REJECT;
                                           initMethodProtection(yyscanner,Protection::Public);
