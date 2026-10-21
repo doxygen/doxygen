@@ -5219,7 +5219,18 @@ NONLopt [^\n]*
                                           BEGIN( FuncPtr );
                                         }
 <FindMembers>"("                        {
-                                          if (!yyextra->current->name.empty())
+                                          if (yyextra->insideCS && yyextra->current->name.empty())
+                                          {
+                                            // A parenthesized type in C# is a tuple type,
+                                            // not the start of a function argument list.
+                                            addType(yyscanner);
+                                            yyextra->current->type += *yytext;
+                                            yyextra->lastRoundContext = FindMembers;
+                                            yyextra->pCopyRoundString = &yyextra->current->type;
+                                            yyextra->roundCount = 0;
+                                            BEGIN(CopyRound);
+                                          }
+                                          else if (!yyextra->current->name.empty())
                                           {
                                             yyextra->current->args = yytext;
                                             yyextra->current->bodyLine = yyextra->yyLineNr;
