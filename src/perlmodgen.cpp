@@ -1353,7 +1353,8 @@ void PerlModDocVisitor::operator()(const DocParBlock &pb)
 }
 
 
-static void addTemplateArgumentList(const ArgumentList &al,PerlModOutput &output,const DString &)
+static void addTemplateArgumentList(const ArgumentList &al,PerlModOutput &output,const DString &,
+                                    const ArgumentList &typeConstraints=ArgumentList())
 {
   if (!al.hasParameters()) return;
   output.openList("template_parameters");
@@ -1367,6 +1368,19 @@ static void addTemplateArgumentList(const ArgumentList &al,PerlModOutput &output
             .addFieldQuotedString("definition_name", a.name);
     if (!a.defval.empty())
       output.addFieldQuotedString("default", a.defval);
+    DString typeConstraint = a.typeConstraint;
+    // C# where clauses, with one entry per constraint. A C# type parameter has its name in type.
+    const DString &paramName = a.name.empty() ? a.type : a.name;
+    for (const Argument &tc : typeConstraints)
+    {
+      if (tc.name==paramName && !tc.type.empty())
+      {
+        if (!typeConstraint.empty()) typeConstraint+=", ";
+        typeConstraint+=tc.type;
+      }
+    }
+    if (!typeConstraint.empty())
+      output.addFieldQuotedString("type_constraint", typeConstraint);
     output.closeHash();
   }
   output.closeList();
@@ -1374,7 +1388,7 @@ static void addTemplateArgumentList(const ArgumentList &al,PerlModOutput &output
 
 static void addTemplateList(const ClassDef *cd,PerlModOutput &output)
 {
-  addTemplateArgumentList(cd->templateArguments(),output,cd->name());
+  addTemplateArgumentList(cd->templateArguments(),output,cd->name(),cd->typeConstraints());
 }
 
 static void addTemplateList(const ConceptDef *cd,PerlModOutput &output)
