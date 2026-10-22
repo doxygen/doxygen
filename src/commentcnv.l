@@ -103,6 +103,7 @@ struct commentcnvYY_state
   int      inBufPos = 0;
   size_t   col = 0;
   size_t   blockHeadCol = 0;        // column at which the start of a special comment block was found
+  size_t   blockHeadPos = 0;        // position in outBuf at which the start of a C++ special comment block was written
   size_t   insertCommentCol = 0;    // column at which an include or snippet command was found
   bool     mlBrief = false;
   int      readLineCtx = 0;
@@ -428,6 +429,7 @@ SLASHopt [/]*
                                          while (i<(int)yyleng && yytext[i]=='/') i++;
                                        }
                                        yyextra->blockHeadCol=yyextra->col+1;
+                                       yyextra->blockHeadPos=yyextra->skip ? std::string::npos : yyextra->outBuf.size(); // see replaceComment()
                                        if (yytext[2] == '!')
                                        {
                                          copyToOutput(yyscanner,"/*!");
@@ -447,6 +449,7 @@ SLASHopt [/]*
                                      if (yyextra->mlBrief) REJECT;
                                      int i=17; //=strlen("//##Documentation");
                                      yyextra->blockHeadCol=yyextra->col+1;
+                                     yyextra->blockHeadPos=yyextra->skip ? std::string::npos : yyextra->outBuf.size(); // see replaceComment()
                                      copyToOutput(yyscanner,"/**");
                                      if (i<yyleng) replaceAliases(yyscanner,yytext+i);
                                      yyextra->inRoseComment=true;
@@ -2113,10 +2116,41 @@ static void replaceComment(yyscan_t yyscanner,int offset)
   else
   {
     size_t i=computeIndent(&yytext[offset]);
+    // A line in another column starts a new block, since it may document something
+    // else. If both the block and the line have a marker ending in '<' (//!< or ///<),
+    // they both document the member in front of them. The line then still starts a new
+    // block, but a C style one: handed back to the scanner as a single //!< line it
+    // would become the brief description, ahead of the lines that come before it
+    // (see issue #5266).
+    bool afterMember     = yyleng>0 && yytext[yyleng-1]=='<';
+    // The '<' of the line that started the block is not part of the text matched at that
+    // point, so look at what was written for it: "/*!" or "/**", then '<' if it had one.
+    bool headAfterMember = yyextra->blockHeadPos!=std::string::npos &&
+                           yyextra->blockHeadPos+3<yyextra->outBuf.size() &&
+                           yyextra->outBuf[yyextra->blockHeadPos+3]=='<';
+    bool sameEntity      = afterMember && headAfterMember;
     //printf("i=%d blockHeadCol=%d\n",i,yyextra->blockHeadCol);
     if (i==yyextra->blockHeadCol || i+1==yyextra->blockHeadCol)
     {
       replaceCommentMarker(yyscanner,std::string_view(yytext,yyleng));
+    }
+    else if (sameEntity)
+    {
+      // start the new block on this line, after the newline and the indentation
+      size_t p=offset;
+      while (p<(size_t)yyleng && (yytext[p]==' ' || yytext[p]=='\t')) p++;
+      bool javadoc = yytext[p+2]=='/';
+      copyToOutput(yyscanner," */");
+      copyToOutput(yyscanner,std::string_view(yytext,p));
+      yyextra->blockHeadCol=i+1;
+      yyextra->blockHeadPos=yyextra->outBuf.size();
+      // With AUTOBRIEF the first sentence of this block would become the brief description
+      // when the lines before it did not give one, so use the style AUTOBRIEF does not apply to.
+      bool qtAuto = Config_getBool(QT_AUTOBRIEF);
+      bool jdAuto = Config_getBool(JAVADOC_AUTOBRIEF);
+      if (javadoc && jdAuto && !qtAuto) javadoc=false;
+      else if (!javadoc && qtAuto && !jdAuto) javadoc=true;
+      copyToOutput(yyscanner,javadoc ? "/**<" : "/*!<");
     }
     else
     {
