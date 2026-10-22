@@ -5,7 +5,9 @@ public class C
 {
     private int initialValue;
     private int offset;
-    /// Property with an init accessor
+    /// \brief Property with an init accessor.
+    ///
+    /// The detailed description shows the init accessor as a label.
     public int Init { get; init; }
     /// Read-only property that reads a field named like an accessor
     public int Initial { get => initialValue; }

@@ -43,10 +43,11 @@
           <para>Property with an init accessor. </para>
         </briefdescription>
         <detaileddescription>
+          <para>The detailed description shows the init accessor as a label. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="130_cs_init_accessor.cs" line="9" column="16" bodyfile="130_cs_init_accessor.cs" bodystart="9" bodyend="9"/>
+        <location file="130_cs_init_accessor.cs" line="11" column="16" bodyfile="130_cs_init_accessor.cs" bodystart="11" bodyend="11"/>
       </memberdef>
       <memberdef kind="property" id="class_c_1a699829263971574b8d01feaaad9da6fa" prot="public" static="no" readable="no" writable="no" gettable="yes" privategettable="no" protectedgettable="no" settable="no" privatesettable="no" protectedsettable="no">
         <type>int</type>
@@ -61,7 +62,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="130_cs_init_accessor.cs" line="11" column="16" bodyfile="130_cs_init_accessor.cs" bodystart="11" bodyend="11"/>
+        <location file="130_cs_init_accessor.cs" line="13" column="16" bodyfile="130_cs_init_accessor.cs" bodystart="13" bodyend="13"/>
       </memberdef>
       <memberdef kind="property" id="class_c_1a4d53305e1581a616bfb67e289736c4be" prot="public" static="no" readable="no" writable="no" gettable="yes" privategettable="no" protectedgettable="no" settable="no" privatesettable="no" protectedsettable="no">
         <type>int</type>
@@ -76,7 +77,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="130_cs_init_accessor.cs" line="13" column="16" bodyfile="130_cs_init_accessor.cs" bodystart="13" bodyend="13"/>
+        <location file="130_cs_init_accessor.cs" line="15" column="16" bodyfile="130_cs_init_accessor.cs" bodystart="15" bodyend="15"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -84,7 +85,7 @@
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="130_cs_init_accessor.cs" line="4" column="7" bodyfile="130_cs_init_accessor.cs" bodystart="5" bodyend="14"/>
+    <location file="130_cs_init_accessor.cs" line="4" column="7" bodyfile="130_cs_init_accessor.cs" bodystart="5" bodyend="16"/>
     <listofallmembers>
       <member refid="class_c_1ad950664fc02c38fcba4fdc38623ca87a" prot="public" virt="non-virtual">
         <scope>C</scope>
