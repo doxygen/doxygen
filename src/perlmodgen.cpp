@@ -1530,6 +1530,19 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
     .addFieldQuotedString("protection", getProtectionName(md->protection()))
     .addFieldBoolean("static", md->isStatic());
 
+  if (md->memberType()==MemberType::Property)
+  {
+    m_output.addFieldBoolean("readable", md->isReadable())
+            .addFieldBoolean("writable", md->isWritable())
+            .addFieldBoolean("gettable", md->isGettable())
+            .addFieldBoolean("private_gettable", md->isPrivateGettable())
+            .addFieldBoolean("protected_gettable", md->isProtectedGettable())
+            .addFieldBoolean("settable", md->isSettable())
+            .addFieldBoolean("private_settable", md->isPrivateSettable())
+            .addFieldBoolean("protected_settable", md->isProtectedSettable())
+            .addFieldBoolean("initonly", md->isInitonly());
+  }
+
   addPerlModDocBlock(m_output,"brief",md->briefFile(),md->briefLine(),md->getOuterScope(),md,md->briefDescription());
   addPerlModDocBlock(m_output,"detailed",md->docFile(),md->docLine(),md->getOuterScope(),md,md->documentation());
   if (md->memberType()!=MemberType::Define &&

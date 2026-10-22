@@ -1727,6 +1727,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     bindIntParameter(memberdef_insert,":settable",md->isSettable());
     bindIntParameter(memberdef_insert,":privatesettable",md->isPrivateSettable());
     bindIntParameter(memberdef_insert,":protectedsettable",md->isProtectedSettable());
+    bindIntParameter(memberdef_insert,":initonly",md->isInitonly());
 
     if (md->isAssign() || md->isCopy() || md->isRetain()
      || md->isStrong() || md->isWeak())
