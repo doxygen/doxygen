@@ -2613,6 +2613,11 @@ NONLopt [^\n]*
                                             {
                                               yyextra->current->protection = Protection::Private;
                                             }
+                                            else if (yyextra->insideCS && YY_START==FindMembers && dstrcmp(yytext,"new")==0)
+                                            {
+                                              // C# new modifier hides an inherited member; it is not the member name.
+                                              yyextra->current->spec.setNew(true);
+                                            }
                                             else if (javaLike && dstrcmp(yytext,"static")==0)
                                             {
                                               if (YY_START==FindMembers)
