@@ -2762,6 +2762,7 @@ void ClassDefImpl::addClassAttributes(OutputList &ol) const
   if (isFinal())    sl.emplace_back("final");
   if (isSealed())   sl.emplace_back("sealed");
   if (isAbstract()) sl.emplace_back("abstract");
+  if (isRef())      sl.emplace_back("ref");
   if (isExported()) sl.emplace_back("export");
   if (getLanguage()==SrcLangExt::IDL && isPublished()) sl.emplace_back("published");
 
