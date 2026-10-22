@@ -2814,6 +2814,7 @@ StringVector MemberDefImpl::getLabels(const Definition *container) const
         if      (isProtectedGettable())                 sl.emplace_back("protected get");
         if      (isSettable())                          sl.emplace_back("set");
         if      (isProtectedSettable())                 sl.emplace_back("protected set");
+        if      (isProperty() && isInitonly())          sl.emplace_back("init");
         if (extractPrivate)
         {
           if    (isPrivateGettable())                   sl.emplace_back("private get");
@@ -2831,7 +2832,7 @@ StringVector MemberDefImpl::getLabels(const Definition *container) const
         if      (isFinal())                             sl.emplace_back("final");
         if      (isAbstract())                          sl.emplace_back("abstract");
         if      (isOverride())                          sl.emplace_back("override");
-        if      (isInitonly())                          sl.emplace_back("initonly");
+        if      (!isProperty() && isInitonly())         sl.emplace_back("initonly");
         if      (isSealed())                            sl.emplace_back("sealed");
         if      (isNew())                               sl.emplace_back("new");
         if      (isOptional())                          sl.emplace_back("optional");
