@@ -1784,6 +1784,10 @@ void PerlModGenerator::generatePerlModForClass(const ClassDef *cd)
     .addFieldQuotedString("name", cd->name());
   /* DGA: fix # #7547 Perlmod does not generate "kind" information to discriminate struct/union */
   m_output.addFieldQuotedString("kind", cd->compoundTypeString());
+  m_output.addFieldBoolean("final", cd->isFinal())
+          .addFieldBoolean("sealed", cd->isSealed())
+          .addFieldBoolean("abstract", cd->isAbstract())
+          .addFieldBoolean("ref", cd->isRef());
 
   if (!cd->baseClasses().empty())
   {

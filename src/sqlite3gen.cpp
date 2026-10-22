@@ -252,6 +252,10 @@ const char * table_schema[][2] = {
       "\tline                 INTEGER NOT NULL,\n"
       "\tcolumn               INTEGER NOT NULL,\n"
       "\theader_id            INTEGER REFERENCES path,\n"
+      "\tfinal                INTEGER, -- 0:no 1:yes\n"
+      "\tsealed               INTEGER, -- 0:no 1:yes\n"
+      "\tabstract             INTEGER, -- 0:no 1:yes\n"
+      "\tref                  INTEGER, -- 0:no 1:yes\n"
       "\tdetaileddescription  TEXT,\n"
       "\tbriefdescription     TEXT,\n"
       "\tFOREIGN KEY (rowid) REFERENCES refid (rowid)\n"
@@ -766,6 +770,10 @@ SqlStmt compounddef_insert={
     "line,"
     "column,"
     "header_id,"
+    "final,"
+    "sealed,"
+    "abstract,"
+    "ref,"
     "briefdescription,"
     "detaileddescription"
   ")"
@@ -780,6 +788,10 @@ SqlStmt compounddef_insert={
     ":line,"
     ":column,"
     ":header_id,"
+    ":final,"
+    ":sealed,"
+    ":abstract,"
+    ":ref,"
     ":briefdescription,"
     ":detaileddescription"
   ")"
@@ -1958,6 +1970,10 @@ static void generateSqlite3ForClass(const ClassDef *cd)
   bindTextParameter(compounddef_insert,":title",cd->title());
   bindTextParameter(compounddef_insert,":kind",cd->compoundTypeString());
   bindIntParameter(compounddef_insert,":prot",static_cast<int>(cd->protection()));
+  bindIntParameter(compounddef_insert,":final",cd->isFinal());
+  bindIntParameter(compounddef_insert,":sealed",cd->isSealed());
+  bindIntParameter(compounddef_insert,":abstract",cd->isAbstract());
+  bindIntParameter(compounddef_insert,":ref",cd->isRef());
 
   int file_id = insertPath(cd->getDefFileName());
   bindIntParameter(compounddef_insert,":file_id",file_id);
