@@ -1684,6 +1684,7 @@ bool ClassDefImpl::hasDetailedDescription() const
   bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
   return ((!briefDescription().empty() && repeatBrief) ||
           (!documentation().empty() || m_tempArgs.hasTemplateDocumentation()) ||
+          !typeConstraints().empty() ||
           (sourceBrowser && getStartBodyLine()!=-1 && getBodyDef()) ||
           hasRequirementRefs());
 }
