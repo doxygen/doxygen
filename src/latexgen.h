@@ -354,8 +354,7 @@ void latexWriteIndexItem(TextStream &t,const DString &r1,const DString &s2 = "")
 /** LaTeX sectioning commands of doxygen.sty, indexed by nesting level. */
 namespace LatexSections
 {
-  constexpr int maxLevels = 7;
-  inline constexpr std::array<const char *,maxLevels> labels =
+  inline constexpr std::array labels =
   { "doxysection",
     "doxysubsection",
     "doxysubsubsection",
@@ -364,6 +363,7 @@ namespace LatexSections
     "doxysubsubsubsubsubsection",
     "doxysubsubsubsubsubsubsection"
   };
+  constexpr int maxLevels = static_cast<int>(labels.size());
 
   inline const char *name(int level)
   {
