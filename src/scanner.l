@@ -7432,10 +7432,12 @@ NONLopt [^\n]*
 <CSAccessorDecl>"protected "{BN}*"get"  { if (yyextra->curlyCount==0) yyextra->current->spec.setProtectedGettable(true); }
 <CSAccessorDecl>"set"                   { if (yyextra->curlyCount==0) yyextra->current->spec.setSettable(true);          }
 <CSAccessorDecl>"get"                   { if (yyextra->curlyCount==0) yyextra->current->spec.setGettable(true);          }
+<CSAccessorDecl>"init"                  { if (yyextra->curlyCount==0) yyextra->current->spec.setInitonly(true);          }
 <CSAccessorDecl>"add"                   { if (yyextra->curlyCount==0) yyextra->current->spec.setAddable(true);           }
 <CSAccessorDecl>"remove"                { if (yyextra->curlyCount==0) yyextra->current->spec.setRemovable(true);         }
 <CSAccessorDecl>"raise"                 { if (yyextra->curlyCount==0) yyextra->current->spec.setRaisable(true);          }
 <CSAccessorDecl>{CHARLIT}               {}
+<CSAccessorDecl>{ID}                    {} // skip identifiers that contain a keyword, such as offset
 <CSAccessorDecl>"\""                    { BEGIN(CSString);}
 <CSAccessorDecl>"."                     {}
 <CSAccessorDecl>\n                      { lineCount(yyscanner); }
