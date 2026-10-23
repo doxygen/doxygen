@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_unchanged" kind="class" language="C++" prot="public">
+    <compoundname>Unchanged</compoundname>
+    <sectiondef kind="user-defined">
+      <header>Accessors</header>
+      <memberdef kind="function" id="class_unchanged_1a0a909c5df0011a395adcbf14fa665df4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Unchanged::getA</definition>
+        <argsstring>()</argsstring>
+        <name>getA</name>
+        <qualifiedname>Unchanged::getA</qualifiedname>
+        <briefdescription>
+          <para>Brief description of getA. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="128_member_comment_alignment.cpp" line="85" column="13"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="class_unchanged_1a8b30fcd63c1750701e3a905fb3cf83a6" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Unchanged::b1</definition>
+        <argsstring/>
+        <name>b1</name>
+        <qualifiedname>Unchanged::b1</qualifiedname>
+        <briefdescription>
+          <para>Brief description of b1. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>Detailed description of b1. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="128_member_comment_alignment.cpp" line="78" column="9" bodyfile="128_member_comment_alignment.cpp" bodystart="78" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>Cases that must not change. </para>
+    </detaileddescription>
+    <location file="128_member_comment_alignment.cpp" line="73" column="1" bodyfile="128_member_comment_alignment.cpp" bodystart="74" bodyend="87"/>
+    <listofallmembers>
+      <member refid="class_unchanged_1a8b30fcd63c1750701e3a905fb3cf83a6" prot="public" virt="non-virtual">
+        <scope>Unchanged</scope>
+        <name>b1</name>
+      </member>
+      <member refid="class_unchanged_1a0a909c5df0011a395adcbf14fa665df4" prot="public" virt="non-virtual">
+        <scope>Unchanged</scope>
+        <name>getA</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
