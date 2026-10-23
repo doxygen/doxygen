@@ -16,6 +16,9 @@
 #ifndef LATEXGEN_H
 #define LATEXGEN_H
 
+#include <algorithm>
+#include <array>
+
 #include "outputgen.h"
 
 #define LATEX_STYLE_EXTENSION ".sty"
@@ -347,6 +350,26 @@ DString latexEscapeIndexChars(const DString &s);
 DString latexEscapePDFString(const DString &s);
 DString latexFilterURL(const DString &s);
 void latexWriteIndexItem(TextStream &t,const DString &r1,const DString &s2 = "");
+
+/** LaTeX sectioning commands of doxygen.sty, indexed by nesting level. */
+namespace LatexSections
+{
+  constexpr int maxLevels = 7;
+  inline constexpr std::array<const char *,maxLevels> labels =
+  { "doxysection",
+    "doxysubsection",
+    "doxysubsubsection",
+    "doxysubsubsubsection",
+    "doxysubsubsubsubsection",
+    "doxysubsubsubsubsubsection",
+    "doxysubsubsubsubsubsubsection"
+  };
+
+  inline const char *name(int level)
+  {
+    return labels[std::clamp(level,0,maxLevels-1)];
+  }
+}
 
 
 #endif

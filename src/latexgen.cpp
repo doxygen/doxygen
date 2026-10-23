@@ -1480,7 +1480,7 @@ void LatexGenerator::startTitleHead(const DString &fileName)
   if (hierarchyLevel < 0)
     m_t << "\\chapter{";
   else
-    m_t << "\\doxy" << DString("sub").repeat(hierarchyLevel) << "section{";
+    m_t << "\\" << LatexSections::name(hierarchyLevel) << "{";
 }
 
 void LatexGenerator::endTitleHead(const DString &fileName,const DString &name)
@@ -1523,7 +1523,7 @@ void LatexGenerator::startGroupHeader(const DString &,int extraIndentLevel)
   else
   {
     extraIndentLevel += m_hierarchyLevel + 1;
-    m_t << "\\doxy" << DString("sub").repeat(extraIndentLevel) << "section{";
+    m_t << "\\" << LatexSections::name(extraIndentLevel) << "{";
   }
   m_disableLinks=true;
 }
@@ -1542,7 +1542,7 @@ void LatexGenerator::startMemberHeader(const DString &,int)
     ++l;
   }
 
-  m_t << "\\doxysub" << DString("sub").repeat(l) << "section*{";
+  m_t << "\\" << LatexSections::name(l+1) << "*{";
   m_disableLinks=true;
 }
 
@@ -1577,7 +1577,7 @@ void LatexGenerator::startMemberDoc(const DString &clname,
   }
   else
   {
-    m_t << "\\doxy" << DString("sub").repeat(m_hierarchyLevel + 2) << "section";
+    m_t << "\\" << LatexSections::name(m_hierarchyLevel + 2);
   }
 
   m_t << "{";
@@ -2164,7 +2164,7 @@ void LatexGenerator::startInlineHeader()
   }
   else
   {
-    m_t << "\\doxy" << DString("sub").repeat(m_hierarchyLevel + 1) << "section*{";
+    m_t << "\\" << LatexSections::name(m_hierarchyLevel + 1) << "*{";
   }
 }
 
@@ -2273,7 +2273,7 @@ void LatexGenerator::writeInheritedSectionTitle(
   }
   else
   {
-    m_t << "\\doxy" << DString("sub").repeat(m_hierarchyLevel + 1) << "section*{";
+    m_t << "\\" << LatexSections::name(m_hierarchyLevel + 1) << "*{";
   }
   m_t << theTranslator->trInheritedFrom(convertToLaTeX(title,m_codeGen->insideTabbing()),
                                         objectLinkToString(ref, file, anchor, name, m_codeGen->insideTabbing(), m_disableLinks));

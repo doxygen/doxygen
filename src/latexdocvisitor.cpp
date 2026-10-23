@@ -18,7 +18,6 @@
 
 // standard includes
 #include <algorithm>
-#include <array>
 
 // other includes
 #include "cite.h"
@@ -45,17 +44,6 @@
 #include "regex.h"
 #include "util.h"
 
-static const int g_maxLevels = 7;
-static const std::array<const char *,g_maxLevels> g_secLabels =
-{ "doxysection",
-  "doxysubsection",
-  "doxysubsubsection",
-  "doxysubsubsubsection",
-  "doxysubsubsubsubsection",
-  "doxysubsubsubsubsubsection",
-  "doxysubsubsubsubsubsubsection"
-};
-
 static const char *g_paragraphLabel = "doxyparagraph";
 static const char *g_subparagraphLabel = "doxysubparagraph";
 
@@ -65,22 +53,13 @@ const char *LatexDocVisitor::getSectionName(int level) const
   int l = level;
   if (compactLatex) l++;
 
-  if (l < g_maxLevels)
+  if (l < LatexSections::maxLevels)
   {
     l += m_hierarchyLevel; /* May be -1 if generating main page */
     // Sections get special treatment because they inherit the parent's level
-    if (l >= g_maxLevels)
-    {
-      l = g_maxLevels - 1;
-    }
-    else if (l < 0)
-    {
-      /* Should not happen; level is always >= 1 and hierarchyLevel >= -1 */
-      l = 0;
-    }
-    return g_secLabels[l];
+    return LatexSections::name(l);
   }
-  else if (l == 7)
+  else if (l == LatexSections::maxLevels)
   {
     return g_paragraphLabel;
   }
