@@ -6223,6 +6223,26 @@ static void transferArgumentDocumentation(ArgumentList &decAl,ArgumentList &defA
   }
 }
 
+// returns true if the documentation has a \param or @param command or a <param> tag
+static bool hasParamCommand(const DString &doc)
+{
+  size_t i=0;
+  while ((i=doc.find("param",i))!=DString::npos)
+  {
+    if (i>0 && (i+5>=doc.length() || !isId(doc[i+5])))
+    {
+      char c = doc[i-1];
+      // a command needs whitespace before it, so that e.g. an e-mail address does not count
+      if (c=='<' || ((c=='\\' || c=='@') && (i==1 || disspace(doc[i-2]))))
+      {
+        return true;
+      }
+    }
+    i+=5;
+  }
+  return false;
+}
+
 void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *mdef)
 {
   AUTO_TRACE("mdec='{}' mdef='{}' mdec.isPrototype={} mdef.isPrototype={}",
@@ -6253,8 +6273,26 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
         mdec->resolveUnnamedParameters(mdef);
       }
 
+      // check if the definition documents its own parameters, before the documentation is merged
+      bool mdefHasParamDocs = hasParamCommand(mdef->documentation());
+      for (const Argument &a : mdefAl)
+      {
+        if (!a.docs.empty()) mdefHasParamDocs = true; // e.g. with ///< comments
+      }
+
       // first merge argument documentation
       transferArgumentDocumentation(mdecAl,mdefAl);
+
+      // get the detailed descriptions before the brief descriptions are copied, since a brief
+      // description copied to a member that already has one is added to its detailed description
+      DString mdefDocs   = mdef->documentation();
+      DString mdecDocs   = mdec->documentation();
+      DString mdefFile   = mdef->docFile();
+      DString mdecFile   = mdec->docFile();
+      int mdefLine        = mdef->docLine();
+      int mdecLine        = mdec->docLine();
+      bool mdefDocsForDef = mdef->isDocsForDefinition();
+      bool mdecDocsForDef = mdec->isDocsForDefinition();
 
       // copy brief description between definition and declaration
       DString mdefBrief     = mdef->briefDescription();
@@ -6273,14 +6311,6 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
       }
 
       // copy detailed description between definition and declaration
-      DString mdefDocs   = mdef->documentation();
-      DString mdecDocs   = mdec->documentation();
-      DString mdefFile   = mdef->docFile();
-      DString mdecFile   = mdec->docFile();
-      int mdefLine        = mdef->docLine();
-      int mdecLine        = mdec->docLine();
-      bool mdefDocsForDef = mdef->isDocsForDefinition();
-      bool mdecDocsForDef = mdec->isDocsForDefinition();
       if (!mdec->isDocTransferDone() && !mdefDocs.empty())
       {
         //printf("transferring docs mdef->mdec (%s->%s)\n",mdef->argsString(),mdec->argsString());
@@ -6297,12 +6327,16 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
       {
         //printf("transferring docs mdec->mdef (%s->%s)\n",mdec->argsString(),mdef->argsString());
         mdef->setDocumentation(mdecDocs,mdecFile,mdecLine);
-        mdef->setDocsForDefinition(mdecDocsForDef);
-        if (mdecAl.hasParameters())
+        // only use the parameters of the declaration if the definition does not document its own
+        if (!mdefHasParamDocs)
         {
-          auto mdecAlComb = stringToArgumentList(mdec->getLanguage(),mdec->argsString());
-          transferArgumentDocumentation(mdecAl,*mdecAlComb);
-          mdef->moveDeclArgumentList(std::move(mdecAlComb));
+          mdef->setDocsForDefinition(mdecDocsForDef);
+          if (mdecAl.hasParameters())
+          {
+            auto mdecAlComb = stringToArgumentList(mdec->getLanguage(),mdec->argsString());
+            transferArgumentDocumentation(mdecAl,*mdecAlComb);
+            mdef->moveDeclArgumentList(std::move(mdecAlComb));
+          }
         }
       }
 
