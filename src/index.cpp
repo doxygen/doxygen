@@ -5569,7 +5569,8 @@ static void writeIndexHierarchyEntries(OutputList &ol,const LayoutNavEntryList &
               url.prepend("^"); // prepend ^ to absolute URL
             }
             Doxygen::indexList->addContentsItem(true,lne->title(),DString(),
-                                                url,DString(),false,isRef(lne->baseFile()) || isRelative);
+                                                url,DString(),false,isRef(lne->baseFile()) || isRelative,
+                                                nullptr,lne->titleAsHtml());
           }
           break;
         case LayoutNavEntry::UserGroup:
@@ -5762,7 +5763,7 @@ static bool renderQuickLinksAsJs(std::ostream &t,LayoutNavEntry *root,bool first
         firstChild=false;
         DString url = entry->url();
         if (isURL(url)) url = "^" + url;
-        t << "{text:\"" << convertToJSString(entry->title()) << "\",url:\""
+        t << "{text:\"" << convertToJSString(entry->titleAsHtml(),true) << "\",url:\""
           << convertToJSString(url) << "\"";
         bool hasChildren=false;
         if (entry->kind()==LayoutNavEntry::ModuleMembers)
