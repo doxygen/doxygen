@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_tuple_property" kind="class" language="C#" prot="public">
+    <compoundname>TupleProperty</compoundname>
+    <derivedcompoundref refid="class_derived_tuple_property" prot="public" virt="non-virtual">DerivedTupleProperty</derivedcompoundref>
+    <sectiondef kind="property">
+      <memberdef kind="property" id="class_tuple_property_1a76ddac76128114e9144ca032e301cf11" prot="public" static="no" readable="no" writable="no" gettable="yes" privategettable="no" protectedgettable="no" settable="no" privatesettable="no" protectedsettable="no">
+        <type>(int, int)</type>
+        <definition>(int, int) TupleProperty.Tuple</definition>
+        <argsstring/>
+        <name>Tuple</name>
+        <qualifiedname>TupleProperty.Tuple</qualifiedname>
+        <briefdescription>
+          <para>The tuple property documentation. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="128_csharp_tuple_property.cs" line="9" column="11" bodyfile="128_csharp_tuple_property.cs" bodystart="9" bodyend="9"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>A class containing a tuple property. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>DerivedTupleProperty</label>
+        <link refid="class_derived_tuple_property"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>TupleProperty</label>
+        <link refid="class_tuple_property"/>
+      </node>
+    </inheritancegraph>
+    <location file="128_csharp_tuple_property.cs" line="6" column="7" bodyfile="128_csharp_tuple_property.cs" bodystart="7" bodyend="10"/>
+    <listofallmembers>
+      <member refid="class_tuple_property_1a76ddac76128114e9144ca032e301cf11" prot="public" virt="non-virtual">
+        <scope>TupleProperty</scope>
+        <name>Tuple</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
