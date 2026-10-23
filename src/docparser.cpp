@@ -2023,8 +2023,10 @@ static DString extractCopyDocId(const char *data, size_t &j, size_t len)
 // note that data[i] should point to the start of the command (\ or @ character)
 // and the sizeof(str) returns the size of str including the '\0' terminator;
 // a fact we abuse to skip over the start of the command character.
+// The command name must not continue with more identifier characters,
+// so that e.g. \dotfile is not mistaken for \dot.
 #define CHECK_FOR_COMMAND(str,action) \
-   do if ((i+sizeof(str)<len) && literal_at(data+i+1,str)) \
+   do if ((i+sizeof(str)<len) && literal_at(data+i+1,str) && !isId(data[i+sizeof(str)])) \
    { j=i+sizeof(str); action; } while(0)
 
 static size_t isCopyBriefOrDetailsCmd(const char *data, size_t i,size_t len,bool &brief)
