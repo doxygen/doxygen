@@ -5338,13 +5338,31 @@ int computeQualifiedIndex(const DString &name)
 // A      -> A
 // A<T>   -> A-1-g
 // A<T,S> -> A-2-g
+// A<T>::B -> A-1-g::B
 DString mangleCSharpGenericName(const DString &name)
 {
-  if (size_t idx = name.find('<'); idx!=DString::npos)
+  DString result;
+  size_t p=0;
+  size_t idx;
+  while ((idx=name.find('<',p))!=DString::npos)
   {
-    return name.left(idx)+"-"+DString().setNum(name.contains(",")+1)+"-g";
+    result+=name.mid(p,idx-p);
+    // count the top level arguments of the balanced <...> group
+    int depth=0;
+    int count=1;
+    size_t i=idx;
+    for (; i<name.length(); i++)
+    {
+      char c=name[i];
+      if      (c=='<')               depth++;
+      else if (c=='>' && --depth==0) break;
+      else if (c==',' && depth==1)   count++;
+    }
+    result+="-"+DString().setNum(count)+"-g";
+    p=i+1;
   }
-  return name;
+  if (p<name.length()) result+=name.mid(p);
+  return result;
 }
 
 DString demangleCSharpGenericName(const DString &name,const DString &templArgs)
