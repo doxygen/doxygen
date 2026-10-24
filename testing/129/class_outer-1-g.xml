@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_outer-1-g" kind="class" language="C#" prot="public">
+    <compoundname>Outer-1-g</compoundname>
+    <innerclass refid="class_outer-1-g_1_1_inner" prot="public">Outer-1-g::Inner</innerclass>
+    <templateparamlist>
+      <param>
+        <type>T</type>
+      </param>
+    </templateparamlist>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="class_outer-1-g_1af592445aa3b3d22c8c147522fbf7f99b" prot="public" static="no" mutable="no">
+        <type>T</type>
+        <definition>T Outer&lt; T &gt;.OuterField</definition>
+        <argsstring/>
+        <name>OuterField</name>
+        <qualifiedname>Outer-1-g.OuterField</qualifiedname>
+        <briefdescription>
+          <para>Field of the outer class. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="129_cs_nested_generic.cs" line="8" column="14" bodyfile="129_cs_nested_generic.cs" bodystart="8" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>A generic class. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="129_cs_nested_generic.cs" line="5" column="7" bodyfile="129_cs_nested_generic.cs" bodystart="6" bodyend="17"/>
+    <listofallmembers>
+      <member refid="class_outer-1-g_1af592445aa3b3d22c8c147522fbf7f99b" prot="public" virt="non-virtual">
+        <scope>Outer-1-g</scope>
+        <name>OuterField</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
