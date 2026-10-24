@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_namespace_1_1_class" kind="class" language="C++" prot="public">
+    <compoundname>Namespace::Class</compoundname>
+    <sectiondef kind="public-static-func">
+      <memberdef kind="function" id="class_namespace_1_1_class_1afd588b2b5add87330150b5635a5f74ef" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>
+          <ref refid="class_namespace_1_1_class" kindref="compound">Class</ref>
+        </type>
+        <definition>Namespace::Class Namespace::Class::function</definition>
+        <argsstring>(T par)</argsstring>
+        <name>function</name>
+        <qualifiedname>Namespace::Class::function</qualifiedname>
+        <param>
+          <type>T</type>
+          <declname>par</declname>
+        </param>
+        <briefdescription>
+          <para>A brief for the function. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername>par</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>A parameter. </para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+            <simplesect kind="return">
+              <para>A returned value. </para>
+            </simplesect>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="128_member_template_outside_namespace.cpp" line="15" column="16" bodyfile="128_member_template_outside_namespace.cpp" bodystart="20" bodyend="23"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>A class. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="128_member_template_outside_namespace.cpp" line="7" column="1" bodyfile="128_member_template_outside_namespace.cpp" bodystart="8" bodyend="16"/>
+    <listofallmembers>
+      <member refid="class_namespace_1_1_class_1afd588b2b5add87330150b5635a5f74ef" prot="public" virt="non-virtual">
+        <scope>Namespace::Class</scope>
+        <name>function</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
