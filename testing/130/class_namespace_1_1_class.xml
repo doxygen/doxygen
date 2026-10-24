@@ -42,7 +42,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="128_member_template_outside_namespace.cpp" line="15" column="16" bodyfile="128_member_template_outside_namespace.cpp" bodystart="20" bodyend="23"/>
+        <location file="130_member_template_outside_namespace.cpp" line="15" column="16" bodyfile="130_member_template_outside_namespace.cpp" bodystart="20" bodyend="23"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -50,7 +50,7 @@
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="128_member_template_outside_namespace.cpp" line="7" column="1" bodyfile="128_member_template_outside_namespace.cpp" bodystart="8" bodyend="16"/>
+    <location file="130_member_template_outside_namespace.cpp" line="7" column="1" bodyfile="130_member_template_outside_namespace.cpp" bodystart="8" bodyend="16"/>
     <listofallmembers>
       <member refid="class_namespace_1_1_class_1afd588b2b5add87330150b5635a5f74ef" prot="public" virt="non-virtual">
         <scope>Namespace::Class</scope>
