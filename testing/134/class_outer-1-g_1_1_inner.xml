@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_outer-1-g_1_1_inner" kind="class" language="C#" prot="public">
+    <compoundname>Outer-1-g::Inner</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="class_outer-1-g_1_1_inner_1ad779c3984c271c028d459bc609d3af99" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Outer&lt; T &gt;.Inner.InnerField</definition>
+        <argsstring/>
+        <name>InnerField</name>
+        <qualifiedname>Outer-1-g.Inner.InnerField</qualifiedname>
+        <briefdescription>
+          <para>Field of the nested class. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="134_cs_nested_generic.cs" line="13" column="20" bodyfile="134_cs_nested_generic.cs" bodystart="13" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_outer-1-g_1_1_inner_1adaac41cffee05ebf75e1c1862e448a0d" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void Outer&lt; T &gt;.Inner.InnerMethod</definition>
+        <argsstring>()</argsstring>
+        <name>InnerMethod</name>
+        <qualifiedname>Outer-1-g.Inner.InnerMethod</qualifiedname>
+        <briefdescription>
+          <para>Method of the nested class. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="134_cs_nested_generic.cs" line="15" column="21" bodyfile="134_cs_nested_generic.cs" bodystart="15" bodyend="15"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>A nested class. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="134_cs_nested_generic.cs" line="10" column="11" bodyfile="134_cs_nested_generic.cs" bodystart="11" bodyend="16"/>
+    <listofallmembers>
+      <member refid="class_outer-1-g_1_1_inner_1ad779c3984c271c028d459bc609d3af99" prot="public" virt="non-virtual">
+        <scope>Outer-1-g::Inner</scope>
+        <name>InnerField</name>
+      </member>
+      <member refid="class_outer-1-g_1_1_inner_1adaac41cffee05ebf75e1c1862e448a0d" prot="public" virt="non-virtual">
+        <scope>Outer-1-g::Inner</scope>
+        <name>InnerMethod</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
