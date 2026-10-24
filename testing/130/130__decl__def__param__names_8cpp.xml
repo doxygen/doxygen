@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="130__decl__def__param__names_8cpp" kind="file" language="C++">
+    <compoundname>130_decl_def_param_names.cpp</compoundname>
+    <includes refid="more__130__b_8h" local="yes">more_130_b.h</includes>
+    <incdepgraph>
+      <node id="1">
+        <label>130_decl_def_param_names.cpp</label>
+        <link refid="130__decl__def__param__names_8cpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>more_130_b.h</label>
+        <link refid="more__130__b_8h"/>
+      </node>
+    </incdepgraph>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="130__decl__def__param__names_8cpp_1aea302c4b376f033bf122ece00816b69e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void test1</definition>
+        <argsstring>(int a, int b)</argsstring>
+        <name>test1</name>
+        <param>
+          <type>int</type>
+          <declname>a</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>b</declname>
+        </param>
+        <briefdescription>
+          <para>Test func. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>Just a test.</para>
+          <para><parameterlist kind="param"><parameteritem><parameternamelist><parametername>a</parametername></parameternamelist><parameterdescription><para>a param. </para></parameterdescription></parameteritem><parameteritem><parameternamelist><parametername>b</parametername></parameternamelist><parameterdescription><para>another param.</para></parameterdescription></parameteritem></parameterlist>
+More about the test. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="130_decl_def_param_names.cpp" line="14" column="6" bodyfile="130_decl_def_param_names.cpp" bodystart="14" bodyend="17"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="130_decl_def_param_names.cpp"/>
+  </compounddef>
+</doxygen>
