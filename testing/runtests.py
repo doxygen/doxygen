@@ -63,6 +63,15 @@ def clean_header(errmsg):
 
 
 class Tester:
+    def latex_failure_msg(self,latex_output,nr):
+        log = ''
+        try:
+            log = xopen(latex_output + "/refman.log",'r',encoding='ISO-8859-1').read()
+        except Exception:
+            pass
+        return ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test (%d)\n"
+                "  Contents of refman.log:\n%s" % (nr,log))
+
     def __init__(self,args,test):
         test_id = test.split('_')[0]
         if args.updateref:
@@ -552,16 +561,16 @@ class Tester:
             latex_out = xpopen(exe_string,exe_string1,get_stderr=outType)
             os.chdir(cur_directory)
             if (outType and latex_out.find("Error")!=-1):
-                msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
+                msg += (self.latex_failure_msg(latex_output,1),)
                 failed_latex=True
             elif (not outType and xopen(latex_output + "/temp",'r').read().find("Error")!= -1):
-                msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
+                msg += (self.latex_failure_msg(latex_output,2),)
                 failed_latex=True
             elif xopen(latex_output + "/refman.log",'r',encoding='ISO-8859-1').read().find("Error")!= -1:
-                msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
+                msg += (self.latex_failure_msg(latex_output,3),)
                 failed_latex=True
             elif xopen(latex_output + "/refman.log",'r',encoding='ISO-8859-1').read().find("Emergency stop")!= -1:
-                msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
+                msg += (self.latex_failure_msg(latex_output,4),)
                 failed_latex=True
             elif not self.args.keep:
                 shutil.rmtree(latex_output,ignore_errors=True)
