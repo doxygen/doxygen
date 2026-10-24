@@ -672,6 +672,12 @@ NONLopt [^\n]*
 <FindMembers>{B}*"private"{BN}*":"{BN}* {
                                           initMethodProtection(yyscanner,Protection::Private);
                                         }
+<FindMembers>{B}*("private"{BN}+"protected"|"protected"{BN}+"private")/{BN} { // C# "private protected" is only visible to derived classes in the same assembly
+                                          if (!yyextra->insideCS) REJECT;
+                                          lineCount(yyscanner);
+                                          addType(yyscanner);
+                                          yyextra->current->protection = Protection::Package;
+                                        }
 <FindMembers>{B}*"public"/({BN}|{CCS}|{CPPC}) {
                                           if (!yyextra->insideCpp) REJECT;
                                           initMethodProtection(yyscanner,Protection::Public);
@@ -2607,7 +2613,11 @@ NONLopt [^\n]*
                                             }
                                             else if ((yyextra->insideCS || yyextra->insideD || yyextra->insidePHP || yyextra->insideJS) && dstrcmp(yytext,"internal")==0)
                                             {
-                                              yyextra->current->protection = Protection::Package;
+                                              // C# "protected internal" is also visible to derived classes in other assemblies
+                                              if (!(yyextra->insideCS && yyextra->current->protection==Protection::Protected))
+                                              {
+                                                yyextra->current->protection = Protection::Package;
+                                              }
                                             }
                                             else if (javaLike && dstrcmp(yytext,"private")==0)
                                             {
