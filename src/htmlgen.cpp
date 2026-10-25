@@ -1656,7 +1656,26 @@ void HtmlGenerator::startFile(const DString &name,bool isSource,const DString &,
 
   m_t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
       << getDoxygenVersion() << " -->\n";
-  bool searchEngine = Config_getBool(SEARCHENGINE);
+
+  bool generateTreeView  = Config_getBool(GENERATE_TREEVIEW);
+  bool searchEngine      = Config_getBool(SEARCHENGINE);
+  bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
+  bool disableIndex      = Config_getBool(DISABLE_INDEX);
+  bool dynamicMenus      = Config_getBool(HTML_DYNAMIC_MENUS);
+  bool fullSidebar       = Config_getBool(FULL_SIDEBAR);
+
+  m_t << "<script type=\"application/json\" id=\"doxygen-config\">\n";
+  m_t << "{\n";
+  m_t << "  \"relPath\": \"" << m_relPath << "\",\n";
+  m_t << "  \"generateTreeView\": " << (generateTreeView?"true":"false") << ",\n";
+  m_t << "  \"searchEngine\": " << (searchEngine?"true":"false") << ",\n";
+  m_t << "  \"serverBasedSearch\": " << (serverBasedSearch?"true":"false") << ",\n";
+  m_t << "  \"disableIndex\": " << (disableIndex?"true":"false") << ",\n";
+  m_t << "  \"dynamicMenus\": " << (dynamicMenus?"true":"false") << ",\n";
+  m_t << "  \"fullSidebar\": " << (fullSidebar?"true":"false") << "\n";
+  m_t << "}\n";
+  m_t << "</script>\n";
+
   if (searchEngine /*&& !generateTreeView*/)
   {
     m_t << "<script type=\"text/javascript\">\n";
@@ -3102,18 +3121,6 @@ static void writeDefaultQuickLinks(TextStream &t,
     case HighlightedItem::None:   break;
     case HighlightedItem::Search: break;
   }
-
-  t << "<script type=\"application/json\" id=\"doxygen-config\">\n";
-  t << "{\n";
-  t << "  \"relPath\": \"" << relPath << "\",\n";
-  t << "  \"generateTreeView\": " << (generateTreeView?"true":"false") << ",\n";
-  t << "  \"searchEngine\": " << (searchEngine?"true":"false") << ",\n";
-  t << "  \"serverBasedSearch\": " << (serverBasedSearch?"true":"false") << ",\n";
-  t << "  \"disableIndex\": " << (disableIndex?"true":"false") << ",\n";
-  t << "  \"dynamicMenus\": " << (dynamicMenus?"true":"false") << ",\n";
-  t << "  \"fullSidebar\": " << (fullSidebar?"true":"false") << "\n";
-  t << "}\n";
-  t << "</script>\n";
 
   if (!disableIndex && dynamicMenus)
   {
