@@ -1820,7 +1820,7 @@ PATH=/Library/TeX/texbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 <![CDATA[
  The \c FILTER_SOURCE_PATTERNS tag can be used to specify source filters per
  file pattern. A pattern will override the setting
- for \ref cfg_filter_patterns "FILTER_PATTERN" (if any)
+ for \ref cfg_filter_patterns "FILTER_PATTERNS" (if any)
  and it is also possible to disable source filtering for a specific pattern
  using `*.ext=` (so without naming a filter).
 ]]>

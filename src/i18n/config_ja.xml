@@ -806,7 +806,7 @@ Doxygen を使用して、使用した設定ファイルをテンプレート設
     </option>
     <option type="list" id="FILTER_SOURCE_PATTERNS" format="string" depends="FILTER_SOURCE_FILES">
       <docs>
-<![CDATA[\c FILTER_SOURCE_PATTERNS タグを使用して、ファイルパターンごとにソースフィルタを指定できます。パターンは\ref cfg_filter_patterns "FILTER_PATTERN"の設定を上書きし（ある場合）、`*.ext=`を使用して特定のパターンのソースフィルタリングを無効にすることもできます（フィルタに名前を付けずに）。]]>
+<![CDATA[\c FILTER_SOURCE_PATTERNS タグを使用して、ファイルパターンごとにソースフィルタを指定できます。パターンは\ref cfg_filter_patterns "FILTER_PATTERNS"の設定を上書きし（ある場合）、`*.ext=`を使用して特定のパターンのソースフィルタリングを無効にすることもできます（フィルタに名前を付けずに）。]]>
       </docs>
     </option>
     <option type="string" id="USE_MDFILE_AS_MAINPAGE" format="string" defval="">
