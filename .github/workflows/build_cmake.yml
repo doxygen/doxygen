@@ -168,10 +168,18 @@ jobs:
       with:
         timeout_minutes: 15
         max_attempts: 5
-        retry_wait_seconds: 60
+        retry_wait_seconds: 120
+        shell: pwsh
         command: |
+          # remove state left over from a failed attempt
+          choco uninstall miktex miktex.install -y --force --no-progress 2>$null
+          Remove-Item -Recurse -Force "$env:ChocolateyInstall\lib-bad\miktex*" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "$env:ChocolateyInstall\lib\miktex*" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "$env:TEMP\chocolatey\MiKTeX-repository" -ErrorAction SilentlyContinue
+          # fail fast if the MiKTeX API is unreachable, so the retry wait kicks in
+          Invoke-WebRequest -Uri https://api2.miktex.org/hello -UseBasicParsing -TimeoutSec 30 | Out-Null
           choco install miktex --debug --verbose --no-progress --params "/Set:basic" -y
-          if ($?) { echo "C:\Program Files\MiKTeX\miktex\bin\x64" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 }
+          if ($LASTEXITCODE -eq 0) { echo "C:\Program Files\MiKTeX\miktex\bin\x64" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append } else { exit $LASTEXITCODE }
       if: matrix.config.os == 'windows-2022'
 
     - name: Configure MikTeX (Windows)
