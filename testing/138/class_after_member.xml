@@ -18,10 +18,9 @@
         <enumvalue id="class_after_member_1aaae89e35b2cf9bbaf48b03c0e2efdb67af7b6056a133b6a4c2602f37d0349755a" prot="public">
           <name>Misaligned</name>
           <briefdescription>
-            <para>Line 2. </para>
           </briefdescription>
           <detaileddescription>
-            <para>Line 1. </para>
+            <para>Line 1. Line 2. </para>
           </detaileddescription>
         </enumvalue>
         <briefdescription>
@@ -56,10 +55,9 @@
         <name>twoMisaligned</name>
         <qualifiedname>AfterMember::twoMisaligned</qualifiedname>
         <briefdescription>
-          <para>Line 2. </para>
         </briefdescription>
         <detaileddescription>
-          <para>Line 1. </para>
+          <para>Line 1. Line 2. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -72,10 +70,9 @@
         <name>threeLastOut</name>
         <qualifiedname>AfterMember::threeLastOut</qualifiedname>
         <briefdescription>
-          <para>Line 3. </para>
         </briefdescription>
         <detaileddescription>
-          <para>Line 1. Line 2. </para>
+          <para>Line 1. Line 2. Line 3. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -103,10 +100,9 @@
         <name>jdMisaligned</name>
         <qualifiedname>AfterMember::jdMisaligned</qualifiedname>
         <briefdescription>
-          <para>Line 2. </para>
         </briefdescription>
         <detaileddescription>
-          <para>Line 1. </para>
+          <para>Line 1. Line 2. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -119,10 +115,9 @@
         <name>tabMisaligned</name>
         <qualifiedname>AfterMember::tabMisaligned</qualifiedname>
         <briefdescription>
-          <para>Line 2. </para>
         </briefdescription>
         <detaileddescription>
-          <para>Line 1. </para>
+          <para>Line 1. Line 2. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -135,10 +130,9 @@
         <name>rightShifted</name>
         <qualifiedname>AfterMember::rightShifted</qualifiedname>
         <briefdescription>
-          <para>Line 2. </para>
         </briefdescription>
         <detaileddescription>
-          <para>Line 1. </para>
+          <para>Line 1. Line 2. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -153,7 +147,8 @@
         <briefdescription>
         </briefdescription>
         <detaileddescription>
-          <para>Line 1- item </para>
+          <para>Line 1<itemizedlist><listitem><para>item </para></listitem></itemizedlist>
+</para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>

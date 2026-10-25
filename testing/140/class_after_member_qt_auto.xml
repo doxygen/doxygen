@@ -10,10 +10,9 @@
         <name>qtDetailsFirst</name>
         <qualifiedname>AfterMemberQtAuto::qtDetailsFirst</qualifiedname>
         <briefdescription>
-          <para>Line 2. </para>
         </briefdescription>
         <detaileddescription>
-          <para>Line 1. More. </para>
+          <para>Line 1. Line 2. More. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>

@@ -10,10 +10,9 @@
         <name>qtMisaligned</name>
         <qualifiedname>AfterMemberAuto::qtMisaligned</qualifiedname>
         <briefdescription>
-          <para>Line 2. </para>
         </briefdescription>
         <detaileddescription>
-          <para>Line 1. </para>
+          <para>Line 1. Line 2. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -26,10 +25,9 @@
         <name>jdDetailsFirst</name>
         <qualifiedname>AfterMemberAuto::jdDetailsFirst</qualifiedname>
         <briefdescription>
-          <para>Line 2. More. </para>
         </briefdescription>
         <detaileddescription>
-          <para>Line 1. </para>
+          <para>Line 1. Line 2. More. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -42,13 +40,12 @@
         <name>jdListFirst</name>
         <qualifiedname>AfterMemberAuto::jdListFirst</qualifiedname>
         <briefdescription>
-          <para>Line 2. More. </para>
         </briefdescription>
         <detaileddescription>
           <para>
             <itemizedlist>
               <listitem>
-                <para>item </para>
+                <para>item Line 2. More. </para>
               </listitem>
             </itemizedlist>
           </para>
