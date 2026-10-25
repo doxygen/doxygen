@@ -6016,7 +6016,6 @@ static bool findGlobalMember(const Entry *root,
                            TypeSpecifier /* spec */)
 {
   AUTO_TRACE("namespace='{}' type='{}' name='{}' tempArg='{}' decl='{}'",namespaceName,type,name,tempArg,decl);
-  printf("==> %d '%s' '%s' '%s' '%s' '%s'\n",__LINE__,qPrint(name),qPrint(type),qPrint(decl),qPrint(namespaceName),qPrint(tempArg));
   DString n=name;
   if (n.empty()) return false;
   if (n.find("::")!=DString::npos) return false; // skip undefined class members
