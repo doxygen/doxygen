@@ -10,13 +10,14 @@
         <name>qtMisaligned</name>
         <qualifiedname>AfterMemberAuto::qtMisaligned</qualifiedname>
         <briefdescription>
+          <para>Line 2. </para>
         </briefdescription>
         <detaileddescription>
-          <para>Line 1. Line 2. </para>
+          <para>Line 1. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="129_member_comment_autobrief.cpp" line="17" column="9" bodyfile="129_member_comment_autobrief.cpp" bodystart="17" bodyend="-1"/>
+        <location file="139_member_comment_autobrief.cpp" line="17" column="9" bodyfile="139_member_comment_autobrief.cpp" bodystart="17" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="class_after_member_auto_1a2164e4b10a97065ec6798cc094469064" prot="public" static="no" mutable="no">
         <type>int</type>
@@ -25,13 +26,14 @@
         <name>jdDetailsFirst</name>
         <qualifiedname>AfterMemberAuto::jdDetailsFirst</qualifiedname>
         <briefdescription>
+          <para>Line 2. More. </para>
         </briefdescription>
         <detaileddescription>
-          <para>Line 1. Line 2. More. </para>
+          <para>Line 1. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="129_member_comment_autobrief.cpp" line="20" column="9" bodyfile="129_member_comment_autobrief.cpp" bodystart="20" bodyend="-1"/>
+        <location file="139_member_comment_autobrief.cpp" line="20" column="9" bodyfile="139_member_comment_autobrief.cpp" bodystart="20" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="class_after_member_auto_1a1979f4a5d016f76ffcaa2393097c100d" prot="public" static="no" mutable="no">
         <type>int</type>
@@ -40,19 +42,20 @@
         <name>jdListFirst</name>
         <qualifiedname>AfterMemberAuto::jdListFirst</qualifiedname>
         <briefdescription>
+          <para>Line 2. More. </para>
         </briefdescription>
         <detaileddescription>
           <para>
             <itemizedlist>
               <listitem>
-                <para>item Line 2. More. </para>
+                <para>item </para>
               </listitem>
             </itemizedlist>
           </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="129_member_comment_autobrief.cpp" line="23" column="9" bodyfile="129_member_comment_autobrief.cpp" bodystart="23" bodyend="-1"/>
+        <location file="139_member_comment_autobrief.cpp" line="23" column="9" bodyfile="139_member_comment_autobrief.cpp" bodystart="23" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="class_after_member_auto_1ab9d4c1cf39904e1f52829f047cc34f9a" prot="public" static="no" mutable="no">
         <type>int</type>
@@ -68,7 +71,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="129_member_comment_autobrief.cpp" line="26" column="9" bodyfile="129_member_comment_autobrief.cpp" bodystart="26" bodyend="-1"/>
+        <location file="139_member_comment_autobrief.cpp" line="26" column="9" bodyfile="139_member_comment_autobrief.cpp" bodystart="26" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="class_after_member_auto_1a330e9b512896765236e1c78944c8723a" prot="public" static="no" mutable="no">
         <type>int</type>
@@ -84,7 +87,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="129_member_comment_autobrief.cpp" line="31" column="9" bodyfile="129_member_comment_autobrief.cpp" bodystart="31" bodyend="-1"/>
+        <location file="139_member_comment_autobrief.cpp" line="31" column="9" bodyfile="139_member_comment_autobrief.cpp" bodystart="31" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -92,7 +95,7 @@
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="129_member_comment_autobrief.cpp" line="14" column="1" bodyfile="129_member_comment_autobrief.cpp" bodystart="15" bodyend="33"/>
+    <location file="139_member_comment_autobrief.cpp" line="14" column="1" bodyfile="139_member_comment_autobrief.cpp" bodystart="15" bodyend="33"/>
     <listofallmembers>
       <member refid="class_after_member_auto_1a2164e4b10a97065ec6798cc094469064" prot="public" virt="non-virtual">
         <scope>AfterMemberAuto</scope>

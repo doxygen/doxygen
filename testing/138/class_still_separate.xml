@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="128_member_comment_alignment.cpp" line="59" column="9" bodyfile="128_member_comment_alignment.cpp" bodystart="59" bodyend="-1"/>
+        <location file="138_member_comment_alignment.cpp" line="59" column="9" bodyfile="138_member_comment_alignment.cpp" bodystart="59" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="class_still_separate_1a1fb625ad7e0b78f7b2ca3af7e2e6b764" prot="public" static="no" mutable="no">
         <type>int</type>
@@ -31,7 +31,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="128_member_comment_alignment.cpp" line="62" column="9" bodyfile="128_member_comment_alignment.cpp" bodystart="62" bodyend="-1"/>
+        <location file="138_member_comment_alignment.cpp" line="62" column="9" bodyfile="138_member_comment_alignment.cpp" bodystart="62" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="class_still_separate_1a5e8dbb494d73aa3af4f256ef6c31ef86" prot="public" static="no" mutable="no">
         <type>int</type>
@@ -46,7 +46,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="128_member_comment_alignment.cpp" line="65" column="9" bodyfile="128_member_comment_alignment.cpp" bodystart="65" bodyend="-1"/>
+        <location file="138_member_comment_alignment.cpp" line="65" column="9" bodyfile="138_member_comment_alignment.cpp" bodystart="65" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="class_still_separate_1a9771f33efc66c76aa950326d62ddf708" prot="public" static="no" mutable="no">
         <type>int</type>
@@ -61,7 +61,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="128_member_comment_alignment.cpp" line="69" column="9" bodyfile="128_member_comment_alignment.cpp" bodystart="69" bodyend="-1"/>
+        <location file="138_member_comment_alignment.cpp" line="69" column="9" bodyfile="138_member_comment_alignment.cpp" bodystart="69" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -69,7 +69,7 @@
     <detaileddescription>
       <para>A line without '&lt;' that is not aligned still starts a block of its own. </para>
     </detaileddescription>
-    <location file="128_member_comment_alignment.cpp" line="55" column="1" bodyfile="128_member_comment_alignment.cpp" bodystart="56" bodyend="70"/>
+    <location file="138_member_comment_alignment.cpp" line="55" column="1" bodyfile="138_member_comment_alignment.cpp" bodystart="56" bodyend="70"/>
     <listofallmembers>
       <member refid="class_still_separate_1a66a7f82c32904aeb9cb2d000b2a97d4c" prot="public" virt="non-virtual">
         <scope>StillSeparate</scope>

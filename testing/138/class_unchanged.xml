@@ -17,7 +17,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="128_member_comment_alignment.cpp" line="85" column="13"/>
+        <location file="138_member_comment_alignment.cpp" line="85" column="13"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="public-attrib">
@@ -35,7 +35,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="128_member_comment_alignment.cpp" line="78" column="9" bodyfile="128_member_comment_alignment.cpp" bodystart="78" bodyend="-1"/>
+        <location file="138_member_comment_alignment.cpp" line="78" column="9" bodyfile="138_member_comment_alignment.cpp" bodystart="78" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -43,7 +43,7 @@
     <detaileddescription>
       <para>Cases that must not change. </para>
     </detaileddescription>
-    <location file="128_member_comment_alignment.cpp" line="73" column="1" bodyfile="128_member_comment_alignment.cpp" bodystart="74" bodyend="87"/>
+    <location file="138_member_comment_alignment.cpp" line="73" column="1" bodyfile="138_member_comment_alignment.cpp" bodystart="74" bodyend="87"/>
     <listofallmembers>
       <member refid="class_unchanged_1a8b30fcd63c1750701e3a905fb3cf83a6" prot="public" virt="non-virtual">
         <scope>Unchanged</scope>

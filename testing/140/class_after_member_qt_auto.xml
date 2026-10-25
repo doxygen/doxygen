@@ -10,13 +10,14 @@
         <name>qtDetailsFirst</name>
         <qualifiedname>AfterMemberQtAuto::qtDetailsFirst</qualifiedname>
         <briefdescription>
+          <para>Line 2. </para>
         </briefdescription>
         <detaileddescription>
-          <para>Line 1. Line 2. More. </para>
+          <para>Line 1. More. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="130_member_comment_qt_autobrief.cpp" line="16" column="9" bodyfile="130_member_comment_qt_autobrief.cpp" bodystart="16" bodyend="-1"/>
+        <location file="140_member_comment_qt_autobrief.cpp" line="16" column="9" bodyfile="140_member_comment_qt_autobrief.cpp" bodystart="16" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="class_after_member_qt_auto_1af13cbf643a77bff6ce8cc4ab7f3cb0af" prot="public" static="no" mutable="no">
         <type>int</type>
@@ -32,7 +33,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="130_member_comment_qt_autobrief.cpp" line="19" column="9" bodyfile="130_member_comment_qt_autobrief.cpp" bodystart="19" bodyend="-1"/>
+        <location file="140_member_comment_qt_autobrief.cpp" line="19" column="9" bodyfile="140_member_comment_qt_autobrief.cpp" bodystart="19" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -40,7 +41,7 @@
     <detaileddescription>
       <para>Blocks written after the member. </para>
     </detaileddescription>
-    <location file="130_member_comment_qt_autobrief.cpp" line="13" column="1" bodyfile="130_member_comment_qt_autobrief.cpp" bodystart="14" bodyend="21"/>
+    <location file="140_member_comment_qt_autobrief.cpp" line="13" column="1" bodyfile="140_member_comment_qt_autobrief.cpp" bodystart="14" bodyend="21"/>
     <listofallmembers>
       <member refid="class_after_member_qt_auto_1a0cb13b08538cc83bb75459defb7acbd5" prot="public" virt="non-virtual">
         <scope>AfterMemberQtAuto</scope>
