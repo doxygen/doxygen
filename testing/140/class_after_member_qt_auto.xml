@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_after_member_qt_auto" kind="class" language="C++" prot="public">
+    <compoundname>AfterMemberQtAuto</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="class_after_member_qt_auto_1a0cb13b08538cc83bb75459defb7acbd5" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int AfterMemberQtAuto::qtDetailsFirst</definition>
+        <argsstring/>
+        <name>qtDetailsFirst</name>
+        <qualifiedname>AfterMemberQtAuto::qtDetailsFirst</qualifiedname>
+        <briefdescription>
+          <para>Line 2. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>Line 1. More. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="140_member_comment_qt_autobrief.cpp" line="16" column="9" bodyfile="140_member_comment_qt_autobrief.cpp" bodystart="16" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_after_member_qt_auto_1af13cbf643a77bff6ce8cc4ab7f3cb0af" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int AfterMemberQtAuto::qtMisaligned</definition>
+        <argsstring/>
+        <name>qtMisaligned</name>
+        <qualifiedname>AfterMemberQtAuto::qtMisaligned</qualifiedname>
+        <briefdescription>
+          <para>Line 1. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>Line 2. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="140_member_comment_qt_autobrief.cpp" line="19" column="9" bodyfile="140_member_comment_qt_autobrief.cpp" bodystart="19" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>Blocks written after the member. </para>
+    </detaileddescription>
+    <location file="140_member_comment_qt_autobrief.cpp" line="13" column="1" bodyfile="140_member_comment_qt_autobrief.cpp" bodystart="14" bodyend="21"/>
+    <listofallmembers>
+      <member refid="class_after_member_qt_auto_1a0cb13b08538cc83bb75459defb7acbd5" prot="public" virt="non-virtual">
+        <scope>AfterMemberQtAuto</scope>
+        <name>qtDetailsFirst</name>
+      </member>
+      <member refid="class_after_member_qt_auto_1af13cbf643a77bff6ce8cc4ab7f3cb0af" prot="public" virt="non-virtual">
+        <scope>AfterMemberQtAuto</scope>
+        <name>qtMisaligned</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
