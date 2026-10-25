@@ -3,9 +3,9 @@
   <compounddef id="union_t_8s_8u" kind="union" language="C++" prot="public">
     <compoundname>T.s.u</compoundname>
     <sectiondef kind="public-attrib">
-      <memberdef kind="variable" id="union_t_8s_8u_1a67f1e2aab0048ab3faa1a17980a5a7cb" prot="public" static="no" mutable="no">
+      <memberdef kind="variable" id="union_t_8s_8u_1ac199d490c32c462e6f3b91d0d915d848" prot="public" static="no" mutable="no">
         <type>int</type>
-        <definition>int T::@217046361133342005364320205312064316372244231314::@224157020275312302237073046026232337221243165122::ui</definition>
+        <definition>int T::@362130134130247353260151260237064233147321127131::@215162175106031022270012233210250236256014100234::ui</definition>
         <argsstring/>
         <name>ui</name>
         <qualifiedname>T::T.s::T.s.u::ui</qualifiedname>
@@ -16,11 +16,11 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="123_anonymous_flat.cpp" line="24" column="11"/>
+        <location file="137_anonymous_flat.cpp" line="24" column="11"/>
       </memberdef>
-      <memberdef kind="variable" id="union_t_8s_8u_1a37a102de19ca2083b6ddb29637766305" prot="public" static="no" mutable="no">
+      <memberdef kind="variable" id="union_t_8s_8u_1a0a15127560fd45cbcf2a7ce9e1421caa" prot="public" static="no" mutable="no">
         <type>char</type>
-        <definition>char T::@217046361133342005364320205312064316372244231314::@224157020275312302237073046026232337221243165122::uc</definition>
+        <definition>char T::@362130134130247353260151260237064233147321127131::@215162175106031022270012233210250236256014100234::uc</definition>
         <argsstring/>
         <name>uc</name>
         <qualifiedname>T::T.s::T.s.u::uc</qualifiedname>
@@ -31,20 +31,20 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="123_anonymous_flat.cpp" line="25" column="12"/>
+        <location file="137_anonymous_flat.cpp" line="25" column="12"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="123_anonymous_flat.cpp" line="22" column="5" bodyfile="123_anonymous_flat.cpp" bodystart="23" bodyend="26"/>
+    <location file="137_anonymous_flat.cpp" line="22" column="5" bodyfile="137_anonymous_flat.cpp" bodystart="23" bodyend="26"/>
     <listofallmembers>
-      <member refid="union_t_8s_8u_1a37a102de19ca2083b6ddb29637766305" prot="public" virt="non-virtual">
+      <member refid="union_t_8s_8u_1a0a15127560fd45cbcf2a7ce9e1421caa" prot="public" virt="non-virtual">
         <scope>T.s.u</scope>
         <name>uc</name>
       </member>
-      <member refid="union_t_8s_8u_1a67f1e2aab0048ab3faa1a17980a5a7cb" prot="public" virt="non-virtual">
+      <member refid="union_t_8s_8u_1ac199d490c32c462e6f3b91d0d915d848" prot="public" virt="non-virtual">
         <scope>T.s.u</scope>
         <name>ui</name>
       </member>
