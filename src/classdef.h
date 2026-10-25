@@ -261,6 +261,9 @@ class ClassDef : public Definition
     /** Returns true if this class is marked as sealed */
     virtual bool isSealed() const = 0;
 
+    /** Returns true if this class is a C# ref struct or a C++/CLI ref class */
+    virtual bool isRef() const = 0;
+
     /** Returns true if this class is marked as published */
     virtual bool isPublished() const = 0;
 
