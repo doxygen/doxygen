@@ -806,7 +806,7 @@ Para un ejemplo, vea la documentación.
     </option>
     <option type="list" id="FILTER_SOURCE_PATTERNS" format="string" depends="FILTER_SOURCE_FILES">
       <docs>
-<![CDATA[La etiqueta \c FILTER_SOURCE_PATTERNS se puede usar para especificar filtros de fuente por patrón de archivo. Un patrón anula la configuración de \ref cfg_filter_patterns "FILTER_PATTERN" (si existe) y también es posible deshabilitar el filtrado de fuente para un patrón particular con `*.ext=` (es decir, sin nombrar un filtro).]]>
+<![CDATA[La etiqueta \c FILTER_SOURCE_PATTERNS se puede usar para especificar filtros de fuente por patrón de archivo. Un patrón anula la configuración de \ref cfg_filter_patterns "FILTER_PATTERNS" (si existe) y también es posible deshabilitar el filtrado de fuente para un patrón particular con `*.ext=` (es decir, sin nombrar un filtro).]]>
       </docs>
     </option>
     <option type="string" id="USE_MDFILE_AS_MAINPAGE" format="string" defval="">

@@ -806,7 +806,7 @@ Doxygen (www.doxygen.org) 所使用的設定。
     </option>
     <option type="list" id="FILTER_SOURCE_PATTERNS" format="string" depends="FILTER_SOURCE_FILES">
       <docs>
-<![CDATA[\c FILTER_SOURCE_PATTERNS 標籤可用於基於每個檔案模式指定原始碼過濾器。模式將覆寫 \ref cfg_filter_patterns "FILTER_PATTERN" 的設定（如果有），也可以使用 `*.ext=` 停用特定模式的原始碼過濾器（因此不命名過濾器）。]]>
+<![CDATA[\c FILTER_SOURCE_PATTERNS 標籤可用於基於每個檔案模式指定原始碼過濾器。模式將覆寫 \ref cfg_filter_patterns "FILTER_PATTERNS" 的設定（如果有），也可以使用 `*.ext=` 停用特定模式的原始碼過濾器（因此不命名過濾器）。]]>
       </docs>
     </option>
     <option type="string" id="USE_MDFILE_AS_MAINPAGE" format="string" defval="">

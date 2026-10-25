@@ -807,7 +807,7 @@ eine doppelte Maskierung (\c \\\\{ und \c \\\\}) zu verwenden.]]>
     </option>
     <option type="list" id="FILTER_SOURCE_PATTERNS" format="string" depends="FILTER_SOURCE_FILES">
       <docs>
-<![CDATA[Das \c FILTER_SOURCE_PATTERNS-Tag kann verwendet werden, um Quellfilter pro Dateimuster anzugeben. Ein Muster überschreibt die Einstellung für \ref cfg_filter_patterns "FILTER_PATTERN" (falls vorhanden) und es ist auch möglich, die Quellfilterung für ein bestimmtes Muster mit `*.ext=` zu deaktivieren (also ohne einen Filter zu nennen).]]>
+<![CDATA[Das \c FILTER_SOURCE_PATTERNS-Tag kann verwendet werden, um Quellfilter pro Dateimuster anzugeben. Ein Muster überschreibt die Einstellung für \ref cfg_filter_patterns "FILTER_PATTERNS" (falls vorhanden) und es ist auch möglich, die Quellfilterung für ein bestimmtes Muster mit `*.ext=` zu deaktivieren (also ohne einen Filter zu nennen).]]>
       </docs>
     </option>
     <option type="string" id="USE_MDFILE_AS_MAINPAGE" format="string" defval="">

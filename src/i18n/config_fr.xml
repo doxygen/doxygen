@@ -809,7 +809,7 @@ Pour un exemple, consultez la documentation.
     </option>
     <option type="list" id="FILTER_SOURCE_PATTERNS" format="string" depends="FILTER_SOURCE_FILES">
       <docs>
-<![CDATA[La balise \c FILTER_SOURCE_PATTERNS peut être utilisée pour spécifier des filtres sources par modèle de fichier. Un modèle remplacera le paramètre pour \ref cfg_filter_patterns "FILTER_PATTERN" (s'il y en a) et il est également possible de désactiver le filtrage source pour un modèle spécifique en utilisant `*.ext=` (donc sans nommer de filtre).]]>
+<![CDATA[La balise \c FILTER_SOURCE_PATTERNS peut être utilisée pour spécifier des filtres sources par modèle de fichier. Un modèle remplacera le paramètre pour \ref cfg_filter_patterns "FILTER_PATTERNS" (s'il y en a) et il est également possible de désactiver le filtrage source pour un modèle spécifique en utilisant `*.ext=` (donc sans nommer de filtre).]]>
       </docs>
     </option>
     <option type="string" id="USE_MDFILE_AS_MAINPAGE" format="string" defval="">
