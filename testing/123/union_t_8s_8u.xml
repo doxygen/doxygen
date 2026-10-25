@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="union_t_8s_8u" kind="union" language="C++" prot="public">
+    <compoundname>T.s.u</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="union_t_8s_8u_1a67f1e2aab0048ab3faa1a17980a5a7cb" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int T::@217046361133342005364320205312064316372244231314::@224157020275312302237073046026232337221243165122::ui</definition>
+        <argsstring/>
+        <name>ui</name>
+        <qualifiedname>T::T.s::T.s.u::ui</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>union member ui </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="123_anonymous_flat.cpp" line="24" column="11"/>
+      </memberdef>
+      <memberdef kind="variable" id="union_t_8s_8u_1a37a102de19ca2083b6ddb29637766305" prot="public" static="no" mutable="no">
+        <type>char</type>
+        <definition>char T::@217046361133342005364320205312064316372244231314::@224157020275312302237073046026232337221243165122::uc</definition>
+        <argsstring/>
+        <name>uc</name>
+        <qualifiedname>T::T.s::T.s.u::uc</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>union member uc </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="123_anonymous_flat.cpp" line="25" column="12"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="123_anonymous_flat.cpp" line="22" column="5" bodyfile="123_anonymous_flat.cpp" bodystart="23" bodyend="26"/>
+    <listofallmembers>
+      <member refid="union_t_8s_8u_1a37a102de19ca2083b6ddb29637766305" prot="public" virt="non-virtual">
+        <scope>T.s.u</scope>
+        <name>uc</name>
+      </member>
+      <member refid="union_t_8s_8u_1a67f1e2aab0048ab3faa1a17980a5a7cb" prot="public" virt="non-virtual">
+        <scope>T.s.u</scope>
+        <name>ui</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
