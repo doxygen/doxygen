@@ -258,6 +258,7 @@ class ClassDefImpl final : public DefinitionMixin<ClassDefMutable>
     bool isCSharp() const override;
     bool isFinal() const override;
     bool isSealed() const override;
+    bool isRef() const override;
     bool isPublished() const override;
     bool isExtension() const override;
     bool isForwardDeclared() const override;
@@ -700,6 +701,8 @@ class ClassDefAliasImpl final : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->isFinal(); }
     bool isSealed() const override
     { return getCdAlias()->isSealed(); }
+    bool isRef() const override
+    { return getCdAlias()->isRef(); }
     bool isPublished() const override
     { return getCdAlias()->isPublished(); }
     bool isExtension() const override
@@ -2759,6 +2762,7 @@ void ClassDefImpl::addClassAttributes(OutputList &ol) const
   if (isFinal())    sl.emplace_back("final");
   if (isSealed())   sl.emplace_back("sealed");
   if (isAbstract()) sl.emplace_back("abstract");
+  if (isRef())      sl.emplace_back("ref");
   if (isExported()) sl.emplace_back("export");
   if (getLanguage()==SrcLangExt::IDL && isPublished()) sl.emplace_back("published");
 
@@ -5163,6 +5167,11 @@ bool ClassDefImpl::isFinal() const
 bool ClassDefImpl::isSealed() const
 {
   return m_spec.isSealed();
+}
+
+bool ClassDefImpl::isRef() const
+{
+  return m_spec.isRef();
 }
 
 bool ClassDefImpl::isPublished() const

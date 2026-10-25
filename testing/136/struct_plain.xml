@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="struct_plain" kind="struct" language="C#" prot="public">
+    <compoundname>Plain</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="struct_plain_1a19a27ddc2b79e5e35eb127e6406e9f4c" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Plain.Position</definition>
+        <argsstring/>
+        <name>Position</name>
+        <qualifiedname>Plain.Position</qualifiedname>
+        <briefdescription>
+          <para>A field. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="136_cs_ref_struct.cs" line="14" column="16" bodyfile="136_cs_ref_struct.cs" bodystart="14" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>A plain struct. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="136_cs_ref_struct.cs" line="11" column="7" bodyfile="136_cs_ref_struct.cs" bodystart="12" bodyend="15"/>
+    <listofallmembers>
+      <member refid="struct_plain_1a19a27ddc2b79e5e35eb127e6406e9f4c" prot="public" virt="non-virtual">
+        <scope>Plain</scope>
+        <name>Position</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

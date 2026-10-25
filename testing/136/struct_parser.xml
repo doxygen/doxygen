@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="struct_parser" kind="struct" language="C#" prot="public" ref="yes">
+    <compoundname>Parser</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="struct_parser_1a068958f288a088fd45e2765eab072999" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Parser.Position</definition>
+        <argsstring/>
+        <name>Position</name>
+        <qualifiedname>Parser.Position</qualifiedname>
+        <briefdescription>
+          <para>A field. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="136_cs_ref_struct.cs" line="8" column="16" bodyfile="136_cs_ref_struct.cs" bodystart="8" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>A ref struct. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="136_cs_ref_struct.cs" line="5" column="7" bodyfile="136_cs_ref_struct.cs" bodystart="6" bodyend="9"/>
+    <listofallmembers>
+      <member refid="struct_parser_1a068958f288a088fd45e2765eab072999" prot="public" virt="non-virtual">
+        <scope>Parser</scope>
+        <name>Position</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

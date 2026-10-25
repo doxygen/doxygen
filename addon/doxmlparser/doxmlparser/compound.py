@@ -1385,7 +1385,7 @@ class compounddefType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, id=None, kind=None, language=None, prot=None, final=None, inline=None, sealed=None, abstract=None, compoundname=None, title=None, basecompoundref=None, derivedcompoundref=None, includes=None, includedby=None, incdepgraph=None, invincdepgraph=None, innermodule=None, innerdir=None, innerfile=None, innerclass=None, innerconcept=None, innernamespace=None, innerpage=None, innergroup=None, qualifier=None, templateparamlist=None, sectiondef=None, tableofcontents=None, requiresclause=None, initializer=None, conceptparts=None, briefdescription=None, detaileddescription=None, exports=None, inheritancegraph=None, collaborationgraph=None, programlisting=None, satisfies=None, verifies=None, location=None, listofallmembers=None, requirementslist=None, gds_collector_=None, **kwargs_):
+    def __init__(self, id=None, kind=None, language=None, prot=None, final=None, inline=None, sealed=None, abstract=None, ref=None, compoundname=None, title=None, basecompoundref=None, derivedcompoundref=None, includes=None, includedby=None, incdepgraph=None, invincdepgraph=None, innermodule=None, innerdir=None, innerfile=None, innerclass=None, innerconcept=None, innernamespace=None, innerpage=None, innergroup=None, qualifier=None, templateparamlist=None, sectiondef=None, tableofcontents=None, requiresclause=None, initializer=None, conceptparts=None, briefdescription=None, detaileddescription=None, exports=None, inheritancegraph=None, collaborationgraph=None, programlisting=None, satisfies=None, verifies=None, location=None, listofallmembers=None, requirementslist=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -1407,6 +1407,8 @@ class compounddefType(GeneratedsSuper):
         self.sealed_nsprefix_ = None
         self.abstract = _cast(None, abstract)
         self.abstract_nsprefix_ = None
+        self.ref = _cast(None, ref)
+        self.ref_nsprefix_ = None
         self.compoundname = compoundname
         self.compoundname_nsprefix_ = None
         self.title = title
@@ -1784,6 +1786,10 @@ class compounddefType(GeneratedsSuper):
         return self.abstract
     def set_abstract(self, abstract):
         self.abstract = abstract
+    def get_ref(self):
+        return self.ref
+    def set_ref(self, ref):
+        self.ref = ref
     def validate_DoxCompoundKind(self, value):
         # Validate type DoxCompoundKind, a restriction on xsd:string.
         if value is not None and Validate_simpletypes_ and self.gds_collector_ is not None:
@@ -1924,6 +1930,9 @@ class compounddefType(GeneratedsSuper):
         if self.abstract is not None and 'abstract' not in already_processed:
             already_processed.add('abstract')
             outfile.write(' abstract=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.abstract), input_name='abstract')), ))
+        if self.ref is not None and 'ref' not in already_processed:
+            already_processed.add('ref')
+            outfile.write(' ref=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.ref), input_name='ref')), ))
     def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='compounddefType', fromsubclass_=False, pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -2085,6 +2094,11 @@ class compounddefType(GeneratedsSuper):
             already_processed.add('abstract')
             self.abstract = value
             self.validate_DoxBool(self.abstract)    # validate type DoxBool
+        value = find_attr_value_('ref', node)
+        if value is not None and 'ref' not in already_processed:
+            already_processed.add('ref')
+            self.ref = value
+            self.validate_DoxBool(self.ref)    # validate type DoxBool
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
         if nodeName_ == 'compoundname':
             value_ = child_.text

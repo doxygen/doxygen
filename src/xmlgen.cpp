@@ -1541,6 +1541,7 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
   if (cd->isFinal()) t << "\" final=\"yes";
   if (cd->isSealed()) t << "\" sealed=\"yes";
   if (cd->isAbstract()) t << "\" abstract=\"yes";
+  if (cd->isRef()) t << "\" ref=\"yes";
   t << "\">\n";
   t << "    <compoundname>";
   DString nameStr = cd->name();
