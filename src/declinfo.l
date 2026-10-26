@@ -178,9 +178,17 @@ ID      ([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 <Start>{B}*")"                  {
                                   yyextra->type+=")";
                                 }
+<Start>{B}*"const"/{B}*         |
+<Start>{B}*"consteval"/{B}*     |
+<Start>{B}*"constinit"/{B}*     |
+<Start>{B}*"constexpr"/{B}*     {
+                                  if (!yyextra->type.empty()) yyextra->type+=" ";
+                                  yyextra->type+=yytext;
+                                }
 <Start>{B}*"decltype"/{B}*"("   {
                                   yyextra->roundCount=0;
-                                  yyextra->type="decltype";
+                                  if (!yyextra->type.empty()) yyextra->type+=" ";
+                                  yyextra->type+="decltype";
                                   BEGIN(DeclType);
                                 }
 <DeclType>{B}*"("               {
@@ -275,7 +283,10 @@ static void addType(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("addType() yyextra->type='%s' yyextra->scope='%s' yyextra->name='%s'\n",
   //       qPrint(yyextra->type),qPrint(yyextra->scope),qPrint(yyextra->name));
-  if (yyextra->name.empty() && yyextra->scope.empty()) return;
+  if (yyextra->name.empty() && yyextra->scope.empty())
+  {
+    return;
+  }
   if (!yyextra->type.empty()) yyextra->type+=" ";
   if (!yyextra->scope.empty()) yyextra->type+=yyextra->scope+"::";
   yyextra->type+=yyextra->name;
@@ -377,10 +388,36 @@ void parseFuncDecl(const DString &decl,const SrcLangExt lang,DString &cl,DString
   a=removeRedundantWhiteSpace(yyextra->args);
   exc=removeRedundantWhiteSpace(yyextra->exceptionString);
 
-  if (!t.empty() && !t.startsWith("decltype") && t.at(t.length()-1)==')') // for function pointers
+  size_t len = t.length();
+  if (!t.empty() && t.at(len-1)==')') // for function pointers
   {
-    a.prepend(")");
-    t=t.left(t.length()-1);
+    // check if `)` is from decltype(`
+    size_t pos = t.find("decltype(");
+    if (pos != DString::npos)
+    {
+      size_t cnt = 1;
+      for (size_t i = pos + 9; i < len; i++)
+      {
+        if (t.at(i) == '(') cnt++;
+        else if (t.at(i) == ')')
+        {
+          cnt--;
+          if (cnt == 0)
+          {
+            if (i != len-1)
+            {
+              a.prepend(")");
+              t=t.left(len-1);
+            }
+          }
+        }
+      }
+    }
+    else
+    {
+      a.prepend(")");
+      t=t.left(len-1);
+    }
   }
   //printf("yyextra->type='%s' class='%s' yyextra->name='%s' yyextra->args='%s'\n",
   //        qPrint(t),qPrint(cl),qPrint(n),qPrint(a));
