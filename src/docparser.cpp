@@ -544,7 +544,10 @@ bool DocParser::findDocsForMemberOrCompound(const DString &commandName,
       args);
   input.checkCV=true;
   // the file of the documentation block, so that a static in that file can be found
-  input.currentFile=Doxygen::inputNameLinkedMap->findFileDef(context.fileName,ambig);
+  if (input.currentFile==nullptr)
+  {
+    input.currentFile=Doxygen::inputNameLinkedMap->findFileDef(context.fileName,ambig);
+  }
   GetDefResult result = getDefs(input);
   //printf("found=%d context=%s name=%s\n",result.found,qPrint(context.context),qPrint(name));
   if (result.found && result.md)
