@@ -1254,6 +1254,7 @@ NONLopt [^\n]*
                                           yyextra->current->isStatic = true;
                                           lineCount(yyscanner);
                                         }
+
 <FindMembers>{B}*"extern"{BN}+          { if (yyextra->insideJava) REJECT;
                                           yyextra->current->isStatic = false;
                                           yyextra->current->explicitExternal = true;
@@ -2622,6 +2623,11 @@ NONLopt [^\n]*
                                             else if (javaLike && dstrcmp(yytext,"private")==0)
                                             {
                                               yyextra->current->protection = Protection::Private;
+                                            }
+                                            else if (yyextra->insideCS && YY_START==FindMembers && dstrcmp(yytext,"new")==0)
+                                            {
+                                              // C# new modifier hides an inherited member; it is not the member name.
+                                              yyextra->current->spec.setNew(true);
                                             }
                                             else if (javaLike && dstrcmp(yytext,"static")==0)
                                             {
@@ -5229,7 +5235,18 @@ NONLopt [^\n]*
                                           BEGIN( FuncPtr );
                                         }
 <FindMembers>"("                        {
-                                          if (!yyextra->current->name.empty())
+                                          if (yyextra->insideCS && yyextra->current->name.empty())
+                                          {
+                                            // A parenthesized type in C# is a tuple type,
+                                            // not the start of a function argument list.
+                                            addType(yyscanner);
+                                            yyextra->current->type += *yytext;
+                                            yyextra->lastRoundContext = FindMembers;
+                                            yyextra->pCopyRoundString = &yyextra->current->type;
+                                            yyextra->roundCount = 0;
+                                            BEGIN(CopyRound);
+                                          }
+                                          else if (!yyextra->current->name.empty())
                                           {
                                             yyextra->current->args = yytext;
                                             yyextra->current->bodyLine = yyextra->yyLineNr;
@@ -5943,6 +5960,14 @@ NONLopt [^\n]*
 <SFunction>[=;{,]                       {
                                           yyextra->current->name=removeRedundantWhiteSpace(yyextra->current->name);
                                           yyextra->current->type=removeRedundantWhiteSpace(yyextra->current->type);
+                                          if (yyextra->insideCS && yyextra->current->isStatic)
+                                          {
+                                             size_t staticPos = yyextra->current->type.find("static(");
+                                             if (staticPos == 0 || (staticPos != DString::npos && yyextra->current->type[staticPos-1] == ' '))
+                                             {
+                                               yyextra->current->type = yyextra->current->type.replace(staticPos,7,"static (");
+                                             }
+                                          }
                                           yyextra->current->args=removeRedundantWhiteSpace(yyextra->current->args);
                                           yyextra->current->fileName = yyextra->fileName;
                                           yyextra->current->startLine = yyextra->yyBegLineNr;
