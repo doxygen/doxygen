@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="128_csharp_tuple_property.cs" line="27" column="18" bodyfile="128_csharp_tuple_property.cs" bodystart="28" bodyend="30"/>
+        <location file="141_csharp_tuple_property.cs" line="27" column="18" bodyfile="141_csharp_tuple_property.cs" bodystart="28" bodyend="30"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -24,7 +24,7 @@
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="128_csharp_tuple_property.cs" line="24" column="7" bodyfile="128_csharp_tuple_property.cs" bodystart="25" bodyend="31"/>
+    <location file="141_csharp_tuple_property.cs" line="24" column="7" bodyfile="141_csharp_tuple_property.cs" bodystart="25" bodyend="31"/>
     <listofallmembers>
       <member refid="class_static_tuple_property_1a516fc78894196acdea64c6d6adc5e125" prot="public" virt="non-virtual">
         <scope>StaticTupleProperty</scope>

@@ -17,7 +17,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="128_csharp_tuple_property.cs" line="17" column="15" bodyfile="128_csharp_tuple_property.cs" bodystart="18" bodyend="20"/>
+        <location file="141_csharp_tuple_property.cs" line="17" column="15" bodyfile="141_csharp_tuple_property.cs" bodystart="18" bodyend="20"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -49,7 +49,7 @@
         <link refid="class_tuple_property"/>
       </node>
     </collaborationgraph>
-    <location file="128_csharp_tuple_property.cs" line="14" column="7" bodyfile="128_csharp_tuple_property.cs" bodystart="15" bodyend="21"/>
+    <location file="141_csharp_tuple_property.cs" line="14" column="7" bodyfile="141_csharp_tuple_property.cs" bodystart="15" bodyend="21"/>
     <listofallmembers>
       <member refid="class_derived_tuple_property_1ad418b933fbd09c0cf9d3c061e44a4775" prot="public" virt="non-virtual">
         <scope>DerivedTupleProperty</scope>
