@@ -1387,15 +1387,6 @@ void MemberDefImpl::init(Definition *d,
   //  type.stripPrefix("class " );
   //  type.stripPrefix("union " );
   m_type=removeRedundantWhiteSpace(m_type);
-  if (s)
-
-  {
-    size_t staticPos = m_type.find("static(");
-    if (staticPos == 0 || (staticPos != DString::npos && m_type[staticPos-1] == ' '))
-    {
-      m_type = m_type.replace(staticPos,7,"static (");
-    }
-  }
   m_args=a;
   m_args=removeRedundantWhiteSpace(m_args);
   if (m_type.empty()) m_decl=d->name()+m_args; else m_decl=m_type+" "+d->name()+m_args;

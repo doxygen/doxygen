@@ -1254,7 +1254,6 @@ NONLopt [^\n]*
                                           yyextra->current->isStatic = true;
                                           lineCount(yyscanner);
                                         }
-
 <FindMembers>{B}*"extern"{BN}+          { if (yyextra->insideJava) REJECT;
                                           yyextra->current->isStatic = false;
                                           yyextra->current->explicitExternal = true;
@@ -5960,14 +5959,6 @@ NONLopt [^\n]*
 <SFunction>[=;{,]                       {
                                           yyextra->current->name=removeRedundantWhiteSpace(yyextra->current->name);
                                           yyextra->current->type=removeRedundantWhiteSpace(yyextra->current->type);
-                                          if (yyextra->insideCS && yyextra->current->isStatic)
-                                          {
-                                             size_t staticPos = yyextra->current->type.find("static(");
-                                             if (staticPos == 0 || (staticPos != DString::npos && yyextra->current->type[staticPos-1] == ' '))
-                                             {
-                                               yyextra->current->type = yyextra->current->type.replace(staticPos,7,"static (");
-                                             }
-                                          }
                                           yyextra->current->args=removeRedundantWhiteSpace(yyextra->current->args);
                                           yyextra->current->fileName = yyextra->fileName;
                                           yyextra->current->startLine = yyextra->yyBegLineNr;

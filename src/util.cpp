@@ -380,6 +380,7 @@ static const char constScope[]    = { 'c', 'o', 'n', 's', 't', ':' };
 static const char volatileScope[] = { 'v', 'o', 'l', 'a', 't', 'i', 'l', 'e', ':' };
 static const char virtualScope[]  = { 'v', 'i', 'r', 't', 'u', 'a', 'l', ':' };
 static const char operatorScope[] = { 'o', 'p', 'e', 'r', 'a', 't', 'o', 'r', '?', '?', '?' };
+static const char staticScope[]   = { 's', 't', 'a', 't', 'i', 'c', ' ' };
 
 struct CharAroundSpace
 {
@@ -451,6 +452,7 @@ DString removeRedundantWhiteSpace(const DString &s)
   size_t vosp=0;
   size_t vsp=0;
   size_t osp=0;
+  size_t ssp=0;
   char pc=0;
   // skip leading whitespace
   while (i<l && isspace(static_cast<uint8_t>(src[i])))
@@ -477,6 +479,7 @@ DString removeRedundantWhiteSpace(const DString &s)
     searchForKeyword(constScope,    csp,  5); // keyword: const
     searchForKeyword(volatileScope, vosp, 8); // keyword: volatile
     searchForKeyword(virtualScope,  vsp,  7); // keyword: virtual
+    searchForKeyword(staticScope,   ssp,  6); // keyword: static
 
     // search for "operator"
     if (osp<11 && (osp>=8 || c==operatorScope[osp]) && // character matches substring "operator" followed by 3 arbitrary characters
@@ -634,6 +637,11 @@ DString removeRedundantWhiteSpace(const DString &s)
              )
           { // keep space
             *dst++=' ';
+          }
+          else if (ssp==7 && nc=='(') // keep space for 'static ('
+          {
+            *dst++=' ';
+            ssp=0;
           }
           else if ((pc=='*' || pc=='&' || pc=='.') && nc=='>')
           {
