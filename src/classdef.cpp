@@ -1369,7 +1369,7 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
   {
     AUTO_TRACE_ADD("member {} of class {} with template instance {}\n",md->name(),name(),ti.templSpec);
     ClassDefMutable *cdm = toClassDefMutable(ti.classDef);
-    if (cdm)
+    if (cdm && cdm->isImplicitTemplateInstance()) // (partial) specializations have their own members
     {
       cdm->addMemberToTemplateInstance(md,templateArguments(),ti.templSpec);
     }
@@ -1435,7 +1435,11 @@ void ClassDefImpl::insertUsedFile(const FileDef *fd)
 
   for (const auto &ti : m_templateInstances)
   {
-    if (ClassDefMutable *cdm = toClassDefMutable(ti.classDef)) cdm->insertUsedFile(fd);
+    ClassDefMutable *cdm = toClassDefMutable(ti.classDef);
+    if (cdm && cdm->isImplicitTemplateInstance()) // (partial) specializations have their own files
+    {
+      cdm->insertUsedFile(fd);
+    }
   }
 }
 

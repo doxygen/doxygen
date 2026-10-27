@@ -5656,7 +5656,7 @@ static void computeTemplateClassRelations()
       for (const auto &ti : cd->getTemplateInstances()) // for each template instance
       {
         ClassDefMutable *tcd=toClassDefMutable(ti.classDef);
-        if (tcd)
+        if (tcd && tcd->isImplicitTemplateInstance()) // (partial) specializations have their own base classes
         {
           AUTO_TRACE_ADD("Template instance '{}'",tcd->name());
           DString templSpec = ti.templSpec;
@@ -8786,7 +8786,7 @@ static void createTemplateInstanceMembers()
     for (const auto &ti : cd->getTemplateInstances())
     {
       ClassDefMutable *tcdm = toClassDefMutable(ti.classDef);
-      if (tcdm)
+      if (tcdm && tcdm->isImplicitTemplateInstance()) // (partial) specializations have their own members
       {
         tcdm->addMembersToTemplateInstance(cd.get(),cd->templateArguments(),ti.templSpec);
       }
