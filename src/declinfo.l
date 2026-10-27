@@ -178,10 +178,10 @@ ID      ([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 <Start>{B}*")"                  {
                                   yyextra->type+=")";
                                 }
-<Start>{B}*"const"/{B}*         |
-<Start>{B}*"consteval"/{B}*     |
-<Start>{B}*"constinit"/{B}*     |
-<Start>{B}*"constexpr"/{B}*     {
+<Start>{B}*"const"/{B}+         |
+<Start>{B}*"consteval"/{B}+     |
+<Start>{B}*"constinit"/{B}+     |
+<Start>{B}*"constexpr"/{B}+     {
                                   if (!yyextra->type.empty()) yyextra->type+=" ";
                                   yyextra->type+=yytext;
                                 }
