@@ -2623,6 +2623,11 @@ NONLopt [^\n]*
                                             {
                                               yyextra->current->protection = Protection::Private;
                                             }
+                                            else if (yyextra->insideCS && YY_START==FindMembers && dstrcmp(yytext,"new")==0)
+                                            {
+                                              // C# new modifier hides an inherited member; it is not the member name.
+                                              yyextra->current->spec.setNew(true);
+                                            }
                                             else if (javaLike && dstrcmp(yytext,"static")==0)
                                             {
                                               if (YY_START==FindMembers)
@@ -5229,7 +5234,18 @@ NONLopt [^\n]*
                                           BEGIN( FuncPtr );
                                         }
 <FindMembers>"("                        {
-                                          if (!yyextra->current->name.empty())
+                                          if (yyextra->insideCS && yyextra->current->name.empty())
+                                          {
+                                            // A parenthesized type in C# is a tuple type,
+                                            // not the start of a function argument list.
+                                            addType(yyscanner);
+                                            yyextra->current->type += *yytext;
+                                            yyextra->lastRoundContext = FindMembers;
+                                            yyextra->pCopyRoundString = &yyextra->current->type;
+                                            yyextra->roundCount = 0;
+                                            BEGIN(CopyRound);
+                                          }
+                                          else if (!yyextra->current->name.empty())
                                           {
                                             yyextra->current->args = yytext;
                                             yyextra->current->bodyLine = yyextra->yyLineNr;
