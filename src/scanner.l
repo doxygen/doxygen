@@ -4015,6 +4015,14 @@ NONLopt [^\n]*
                                           *yyextra->pCopyCurlyGString << *yytext;
                                           yyextra->curlyCount++;
                                         }
+<GCopyCurly>"}"/{BN}*("||"|"&&")         { // requires { ... } || or requires { ... } &&
+                                          *yyextra->pCopyCurlyGString << *yytext;
+                                          if (--yyextra->curlyCount<0)
+                                          {
+                                            yyextra->current->endBodyLine = yyextra->yyLineNr;
+                                            BEGIN(yyextra->lastCurlyContext);
+                                          }
+                                        }
 <GCopyCurly>"}"                         {
                                           *yyextra->pCopyCurlyGString << *yytext;
                                           if (--yyextra->curlyCount<0)
