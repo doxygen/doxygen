@@ -153,6 +153,10 @@ set(DOC_FILES_IMAGES
         refresh.svg
 )
 
+set(DOC_FILES_SNIPPETS
+        regex.h
+)
+
 if (build_doc_chm)
     set(DOC_FILES_CHM
         Doxyfile_chm
@@ -181,6 +185,15 @@ add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/doc/images/${f}
     )
 set_source_files_properties(${PROJECT_BINARY_DIR}/doc/images/${f} PROPERTIES GENERATED 1)
 list(APPEND OUT_DOC_FILES "${PROJECT_BINARY_DIR}/doc/images/${f}")
+endforeach()
+
+foreach (f  ${DOC_FILES_SNIPPETS})
+add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/doc/${f}
+    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/src/${f} ${PROJECT_BINARY_DIR}/doc/
+    DEPENDS ${PROJECT_SOURCE_DIR}/src/${f}
+    )
+set_source_files_properties(${PROJECT_BINARY_DIR}/doc/${f} PROPERTIES GENERATED 1)
+list(APPEND OUT_DOC_FILES "${PROJECT_BINARY_DIR}/doc/${f}")
 endforeach()
 
 foreach (f  ${DOC_FILES_CHM})
