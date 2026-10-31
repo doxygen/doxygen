@@ -8681,7 +8681,7 @@ static void vhdlCorrectMemberProperties()
 
 // recursive helper function looking for reimplements/implemented
 // by relations between class cd and direct or indirect base class bcd
-static void computeMemberRelationsForBaseClass(const ClassDef *cd,const BaseClassDef *bcd)
+static void computeMemberRelationsForBaseClass(const ClassDef *cd,const BaseClassDef *bcd,const ArgumentList *actualArgs)
 {
   for (const auto &mn : cd->memberNameInfoLinkedMap()) // for each member in class cd with a unique name
   {
@@ -8713,13 +8713,44 @@ static void computeMemberRelationsForBaseClass(const ClassDef *cd,const BaseClas
                 {
                   const ArgumentList &bmdAl = bmd->argumentList();
                   const ArgumentList &mdAl =  md->argumentList();
+                  const ClassDef *baseClass = bcd->classDef;
+                  const ClassDef *baseTemplate = baseClass->templateMaster() ? baseClass->templateMaster() : baseClass;
+                  const ClassDef *memberClass = bmd->getClassDef();
+                  bool instantiateBaseMember = actualArgs &&
+                                               (memberClass==baseClass || memberClass==baseTemplate) &&
+                                               !baseTemplate->templateArguments().empty();
+                  bool useDerivedScope = false;
+                  ArgumentList instantiatedBmdAl;
+                  DString instantiatedBmdType = bmd->typeString();
+                  if (instantiateBaseMember)
+                  {
+                    instantiatedBmdAl = bmdAl;
+                    for (Argument &arg : instantiatedBmdAl)
+                    {
+                      DString substitutedType = substituteTemplateArgumentsInString(
+                          arg.type,baseTemplate->templateArguments(),actualArgs);
+                      useDerivedScope = useDerivedScope || substitutedType!=arg.type;
+                      arg.type = substitutedType;
+                    }
+                    DString substitutedTrailingReturnType = substituteTemplateArgumentsInString(
+                        instantiatedBmdAl.trailingReturnType(),baseTemplate->templateArguments(),actualArgs);
+                    useDerivedScope = useDerivedScope ||
+                                      substitutedTrailingReturnType!=instantiatedBmdAl.trailingReturnType();
+                    instantiatedBmdAl.setTrailingReturnType(substitutedTrailingReturnType);
+                    DString substitutedType = substituteTemplateArgumentsInString(
+                        instantiatedBmdType,baseTemplate->templateArguments(),actualArgs);
+                    useDerivedScope = useDerivedScope || substitutedType!=instantiatedBmdType;
+                    instantiatedBmdType = substitutedType;
+                  }
                   //printf(" Base argList='%s'\n Super argList='%s'\n",
                   //        qPrint(argListToString(bmdAl)),
                   //        qPrint(argListToString(mdAl))
                   //      );
                   if (
                       lang==SrcLangExt::Python ||
-                      matchArguments2(bmd->getOuterScope(),bmd->getFileDef(),bmd->typeString(),&bmdAl,
+                      matchArguments2(useDerivedScope ? cd : bmd->getOuterScope(),
+                        useDerivedScope ? cd->getFileDef() : bmd->getFileDef(),
+                        instantiatedBmdType,instantiateBaseMember ? &instantiatedBmdAl : &bmdAl,
                         md->getOuterScope(), md->getFileDef(), md->typeString(),&mdAl,
                         true,lang
                         )
@@ -8752,7 +8783,15 @@ static void computeMemberRelationsForBaseClass(const ClassDef *cd,const BaseClas
   // do also for indirect base classes
   for (const auto &bbcd : bcd->classDef->baseClasses())
   {
-    computeMemberRelationsForBaseClass(cd,&bbcd);
+    DString templSpec = bbcd.templSpecifiers;
+    const ClassDef *baseClass = bcd->classDef;
+    const ClassDef *baseTemplate = baseClass->templateMaster() ? baseClass->templateMaster() : baseClass;
+    if (actualArgs)
+    {
+      templSpec = substituteTemplateArgumentsInString(templSpec,baseTemplate->templateArguments(),actualArgs);
+    }
+    auto nextActualArgs = stringToArgumentList(baseClass->getLanguage(),templSpec);
+    computeMemberRelationsForBaseClass(cd,&bbcd,nextActualArgs.get());
   }
 }
 
@@ -8769,7 +8808,8 @@ static void computeMemberRelations()
     {
       for (const auto &bcd : cd->baseClasses())
       {
-        computeMemberRelationsForBaseClass(cd.get(),&bcd);
+        auto actualArgs = stringToArgumentList(cd->getLanguage(),bcd.templSpecifiers);
+        computeMemberRelationsForBaseClass(cd.get(),&bcd,actualArgs.get());
       }
     }
   }

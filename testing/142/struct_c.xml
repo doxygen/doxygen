@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="struct_c" kind="struct" language="C++" prot="public">
+    <compoundname>C</compoundname>
+    <basecompoundref refid="struct_b" prot="public" virt="non-virtual">B&lt; U &gt;</basecompoundref>
+    <templateparamlist>
+      <param>
+        <type>typename U</type>
+      </param>
+    </templateparamlist>
+    <sectiondef kind="public-type">
+      <memberdef kind="typedef" id="struct_c_1ae18e31f516252e8253fc3fd8379d54ba" prot="public" static="no">
+        <type><ref refid="struct_b" kindref="compound">B</ref>&lt; U &gt;</type>
+        <definition>using C&lt; U &gt;::BaseClass = B&lt;U&gt;</definition>
+        <argsstring/>
+        <name>BaseClass</name>
+        <qualifiedname>C::BaseClass</qualifiedname>
+        <briefdescription>
+          <para>Type of the base class. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="142_template_inherit_docs.cpp" line="29" column="3" bodyfile="142_template_inherit_docs.cpp" bodystart="29" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="struct_c_1afee1e576b27c7b3bf9b8d78eaf0e88d4" prot="public" static="no" const="yes" explicit="no" inline="no" virt="virtual">
+        <type>void</type>
+        <definition>void C&lt; U &gt;::apply</definition>
+        <argsstring>(const U &amp;src) const override</argsstring>
+        <name>apply</name>
+        <qualifiedname>C::apply</qualifiedname>
+        <reimplements refid="struct_a_1a268af8cb4720bcc8697bf24a11381cc0">apply</reimplements>
+        <param>
+          <type>const U &amp;</type>
+          <declname>src</declname>
+        </param>
+        <briefdescription>
+          <para>Documented in base class. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="142_template_inherit_docs.cpp" line="31" column="8"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>Extends the class another time, with an undocumented override. </para>
+    </briefdescription>
+    <detaileddescription>
+      <para>
+        <parameterlist kind="templateparam">
+          <parameteritem>
+            <parameternamelist>
+              <parametername>U</parametername>
+            </parameternamelist>
+            <parameterdescription>
+              <para><ref refid="struct_a" kindref="compound">A</ref> type. </para>
+            </parameterdescription>
+          </parameteritem>
+        </parameterlist>
+      </para>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="3">
+        <label>A&lt; T &gt;</label>
+        <link refid="struct_a"/>
+      </node>
+      <node id="2">
+        <label>B&lt; U &gt;</label>
+        <link refid="struct_b"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>C&lt; U &gt;</label>
+        <link refid="struct_c"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="3">
+        <label>A&lt; T &gt;</label>
+        <link refid="struct_a"/>
+      </node>
+      <node id="2">
+        <label>B&lt; U &gt;</label>
+        <link refid="struct_b"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>C&lt; U &gt;</label>
+        <link refid="struct_c"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="142_template_inherit_docs.cpp" line="26" column="1" bodyfile="142_template_inherit_docs.cpp" bodystart="27" bodyend="32"/>
+    <listofallmembers>
+      <member refid="struct_c_1afee1e576b27c7b3bf9b8d78eaf0e88d4" prot="public" virt="virtual">
+        <scope>C</scope>
+        <name>apply</name>
+      </member>
+      <member refid="struct_a_1a268af8cb4720bcc8697bf24a11381cc0" prot="public" virt="virtual" ambiguityscope="B&lt; U &gt;::">
+        <scope>C</scope>
+        <name>apply</name>
+      </member>
+      <member refid="struct_c_1ae18e31f516252e8253fc3fd8379d54ba" prot="public" virt="non-virtual">
+        <scope>C</scope>
+        <name>BaseClass</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
