@@ -125,7 +125,7 @@ inline StringVector split(const std::string &s,const std::string &delimiter,bool
     pos = s.find(delimiter, prev);
     if (pos == std::string::npos) pos = len;
     if (pos>prev) result.push_back(s.substr(prev,pos-prev));
-    else if (retainEmpty=true && pos && pos==prev)result.push_back("");
+    else if (retainEmpty && pos && pos==prev)result.push_back("");
     prev = pos + delimiter.length();
   }
   while (pos<len && prev<len);

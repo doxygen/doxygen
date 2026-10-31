@@ -2001,7 +2001,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const DString &inc,const DString 
 
     if (yyextra->replacementVector.size())
     {
-      StringVector txtVec = split(incText.str(), "\n");
+      StringVector txtVec = split(incText.str(), "\n", true);
       for (const auto &replElem : yyextra->replacementVector)
       {
         reg::Ex re(replElem.re);
@@ -2014,6 +2014,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const DString &inc,const DString 
           std::string newLine;
           while (reg::search(line,match,re,pos))
           {
+            if (match.length() == 0) break;
             newLine += line.substr(pos,match.position() - pos);
             newLine += replElem.replacement;
             pos=match.position()+match.length();
