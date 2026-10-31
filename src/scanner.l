@@ -8748,6 +8748,12 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
           {
             yyextra->current->protection = yyextra->protection = Protection::Protected ;
           }
+          else if (!ce->name.empty() && ce->name.at(ni)=='@' && (ce->spec.isStruct() || ce->spec.isUnion()))
+          {
+            // members of an anonymous struct/union are members of the enclosing class
+            // and thus share its protection
+            yyextra->current->protection = yyextra->protection = ce->protection;
+          }
           else
           {
             yyextra->current->protection = yyextra->protection = Protection::Public ;

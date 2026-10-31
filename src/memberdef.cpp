@@ -3598,6 +3598,20 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
 
   bool htmlEndLabelTable=false;
   StringVector sl = getLabels(scopedContainer);
+  auto startHtmlLabelTable = [&]()
+  {
+    if (!sl.empty())
+    {
+      ol.pushGeneratorState();
+      ol.disableAll();
+      ol.enable(OutputType::Html);
+      ol.writeString("<table class=\"mlabels\">\n");
+      ol.writeString("  <tr>\n");
+      ol.writeString("  <td class=\"mlabels-left\">\n");
+      ol.popGeneratorState();
+      htmlEndLabelTable=true;
+    }
+  };
 
   static const reg::Ex r(R"(@\d+)");
   reg::Match match;
@@ -3635,6 +3649,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       ol.addLabel(cfname, memAnchor);
       // search for the last anonymous compound name in the definition
 
+      startHtmlLabelTable();
       ol.startMemberDocName(isObjCMethod());
       if (reg::search(sdef,match,reAnonymous))
       {
@@ -3736,17 +3751,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       }
     }
 
-    if (!sl.empty())
-    {
-      ol.pushGeneratorState();
-      ol.disableAll();
-      ol.enable(OutputType::Html);
-      ol.writeString("<table class=\"mlabels\">\n");
-      ol.writeString("  <tr>\n");
-      ol.writeString("  <td class=\"mlabels-left\">\n");
-      ol.popGeneratorState();
-      htmlEndLabelTable=true;
-    }
+    startHtmlLabelTable();
 
     ol.startMemberDocName(isObjCMethod());
     if (cd && cd->isObjectiveC())

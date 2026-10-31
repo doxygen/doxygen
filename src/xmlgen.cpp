@@ -711,11 +711,19 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
   const ClassDef *annoClassDef=md->getClassDefOfAnonymousType();
   if (annoClassDef && md->isAnonymous() && !md->isEnumerate())
   {
-    for (const auto &imd : *annoClassDef->getMemberList(MemberListType::PubAttribs()))
+    for (auto lt : { MemberListType::PubAttribs(), MemberListType::ProAttribs(),
+                     MemberListType::PacAttribs(), MemberListType::PriAttribs() })
     {
-      if (memberVisible(def,imd))
+      const MemberList *ml = annoClassDef->getMemberList(lt);
+      if (ml)
       {
-        generateXMLForMember(imd,ti,t,def);
+        for (const auto &imd : *ml)
+        {
+          if (memberVisible(def,imd))
+          {
+            generateXMLForMember(imd,ti,t,def);
+          }
+        }
       }
     }
     return;

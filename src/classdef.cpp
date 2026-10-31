@@ -1180,10 +1180,16 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
               switch (prot)
               {
                 case Protection::Protected:
-                  addMemberToList(MemberListType::ProAttribs(),md,true);
+                  if (md->anonymousMemberForDeclaration()==nullptr) // not a split member that has a separate declaration member
+                  {
+                    addMemberToList(MemberListType::ProAttribs(),md,true);
+                  }
                   break;
                 case Protection::Package:
-                  addMemberToList(MemberListType::PacAttribs(),md,true);
+                  if (md->anonymousMemberForDeclaration()==nullptr) // not a split member that has a separate declaration member
+                  {
+                    addMemberToList(MemberListType::PacAttribs(),md,true);
+                  }
                   break;
                 case Protection::Public:
                   {
@@ -1197,7 +1203,10 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
                   }
                   break;
                 case Protection::Private:
-                  addMemberToList(MemberListType::PriAttribs(),md,true);
+                  if (md->anonymousMemberForDeclaration()==nullptr) // not a split member that has a separate declaration member
+                  {
+                    addMemberToList(MemberListType::PriAttribs(),md,true);
+                  }
                   break;
               }
             }
