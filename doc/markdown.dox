@@ -659,7 +659,7 @@ Furthermore, a `*` or `_` only starts an emphasis  and a `~` only starts a strik
 
 An emphasis or a strikethrough ends if
 - it is not followed by an alphanumerical character, and
-- it is not preceded by a space, newline, or one the following characters `({[<=+-\@`
+- it is not preceded by a space, newline, or one the following characters `({[<\@`
 
 The span of the emphasis or strikethrough is limited to a single paragraph.
 
