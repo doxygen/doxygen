@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="structw" kind="struct" language="C++" prot="public">
+    <compoundname>w</compoundname>
+    <basecompoundref refid="structt" prot="public" virt="non-virtual">t&lt; char &gt;</basecompoundref>
+    <briefdescription>
+      <para>Derived from an instance of the primary template. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="3">
+        <label>Base1</label>
+        <link refid="struct_base1"/>
+      </node>
+      <node id="2">
+        <label>t&lt; char &gt;</label>
+        <link refid="structt"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>w</label>
+        <link refid="structw"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="3">
+        <label>Base1</label>
+        <link refid="struct_base1"/>
+      </node>
+      <node id="2">
+        <label>t&lt; char &gt;</label>
+        <link refid="structt"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>w</label>
+        <link refid="structw"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="142_template_specialization.cpp" line="40" column="1" bodyfile="142_template_specialization.cpp" bodystart="41" bodyend="42"/>
+    <listofallmembers>
+      <member refid="structt_1aa6fae5672780f5883eb259bff83122ee" prot="public" virt="non-virtual">
+        <scope>w</scope>
+        <name>A</name>
+      </member>
+      <member refid="structt_1aea24ec8e06912938077792b442ecdd3b" prot="public" virt="non-virtual">
+        <scope>w</scope>
+        <name>get</name>
+      </member>
+      <member refid="structt_1a80752018587ae8dc67f2b250db6e7eb8" prot="public" virt="non-virtual">
+        <scope>w</scope>
+        <name>h</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

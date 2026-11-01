@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="structt_3_01_t_01_5_01_4" kind="struct" language="C++" prot="public">
+    <compoundname>t&lt; T * &gt;</compoundname>
+    <templateparamlist>
+      <param>
+        <type>class T</type>
+      </param>
+    </templateparamlist>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structt_3_01_t_01_5_01_4_1ab9baefba0410abf96b1d101aba4ad52e" prot="public" static="no" mutable="no">
+        <type>T *</type>
+        <definition>T* t&lt; T * &gt;::ptr</definition>
+        <argsstring/>
+        <name>ptr</name>
+        <qualifiedname>t&lt; T * &gt;::ptr</qualifiedname>
+        <briefdescription>
+          <para>Variable of the partial specialization. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="142_template_specialization.cpp" line="36" column="5" bodyfile="142_template_specialization.cpp" bodystart="36" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>Partial specialization. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="142_template_specialization.cpp" line="33" column="1" bodyfile="142_template_specialization.cpp" bodystart="34" bodyend="37"/>
+    <listofallmembers>
+      <member refid="structt_3_01_t_01_5_01_4_1ab9baefba0410abf96b1d101aba4ad52e" prot="public" virt="non-virtual">
+        <scope>t&lt; T * &gt;</scope>
+        <name>ptr</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
