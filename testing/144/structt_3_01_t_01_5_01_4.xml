@@ -21,7 +21,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="142_template_specialization.cpp" line="36" column="5" bodyfile="142_template_specialization.cpp" bodystart="36" bodyend="-1"/>
+        <location file="144_template_specialization.cpp" line="36" column="5" bodyfile="144_template_specialization.cpp" bodystart="36" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -29,7 +29,7 @@
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="142_template_specialization.cpp" line="33" column="1" bodyfile="142_template_specialization.cpp" bodystart="34" bodyend="37"/>
+    <location file="144_template_specialization.cpp" line="33" column="1" bodyfile="144_template_specialization.cpp" bodystart="34" bodyend="37"/>
     <listofallmembers>
       <member refid="structt_3_01_t_01_5_01_4_1ab9baefba0410abf96b1d101aba4ad52e" prot="public" virt="non-virtual">
         <scope>t&lt; T * &gt;</scope>

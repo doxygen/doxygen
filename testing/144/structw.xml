@@ -44,7 +44,7 @@
         </childnode>
       </node>
     </collaborationgraph>
-    <location file="142_template_specialization.cpp" line="40" column="1" bodyfile="142_template_specialization.cpp" bodystart="41" bodyend="42"/>
+    <location file="144_template_specialization.cpp" line="40" column="1" bodyfile="144_template_specialization.cpp" bodystart="41" bodyend="42"/>
     <listofallmembers>
       <member refid="structt_1aa6fae5672780f5883eb259bff83122ee" prot="public" virt="non-virtual">
         <scope>w</scope>

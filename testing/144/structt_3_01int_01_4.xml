@@ -19,7 +19,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="142_template_specialization.cpp" line="28" column="3" bodyfile="142_template_specialization.cpp" bodystart="28" bodyend="-1"/>
+        <location file="144_template_specialization.cpp" line="28" column="3" bodyfile="144_template_specialization.cpp" bodystart="28" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -51,7 +51,7 @@
         </childnode>
       </node>
     </collaborationgraph>
-    <location file="142_template_specialization.cpp" line="25" column="1" bodyfile="142_template_specialization.cpp" bodystart="26" bodyend="29"/>
+    <location file="144_template_specialization.cpp" line="25" column="1" bodyfile="144_template_specialization.cpp" bodystart="26" bodyend="29"/>
     <listofallmembers>
       <member refid="structt_3_01int_01_4_1a19dfc0f10b7b500501756063125ba3c4" prot="public" virt="non-virtual">
         <scope>t&lt; int &gt;</scope>
