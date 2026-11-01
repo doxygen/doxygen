@@ -2010,17 +2010,34 @@ static bool readIncludeFile(yyscan_t yyscanner,const DString &inc,const DString 
         int i = 0;
         for (const auto &line : txtVec)
         {
-          pos = 0;
           std::string newLine;
-          while (reg::search(line,match,re,pos))
+          if (replElem.re == "^")
           {
-            if (match.length() == 0) break;
-            newLine += line.substr(pos,match.position() - pos);
             newLine += replElem.replacement;
-            pos=match.position()+match.length();
-            if (!replElem.global) break;
+            newLine += line;
           }
-          newLine += line.substr(pos);
+          else if (replElem.re == "$")
+          {
+            newLine += line;
+            newLine += replElem.replacement;
+          }
+          else if ((replElem.re == "^$") && (line.length() == 0))
+          {
+            newLine += replElem.replacement;
+          }
+          else
+          {
+            pos = 0;
+            while (reg::search(line,match,re,pos))
+            {
+              if (match.length() == 0) break;
+              newLine += line.substr(pos,match.position() - pos);
+              newLine += replElem.replacement;
+              pos=match.position()+match.length();
+              if (!replElem.global) break;
+            }
+            newLine += line.substr(pos);
+          }
           txtVec[i++] = newLine;
         }
       }
