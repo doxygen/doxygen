@@ -114,8 +114,8 @@ bool literal_at(std::string_view data,const char (&str)[N])
 
 /// split input string \a s by string delimiter \a delimiter.
 /// returns a vector of non-empty strings that are between the delimiters unless
-/// \a retainEmpty is set in which case also an empty string is added when there
-/// are 2 subsequent delimiters
+/// \note If \a retainEmpty is set to true empty strings will added when there
+/// is no content between two 2 subsequent delimiters.
 inline StringVector split(const std::string &s,const std::string &delimiter,bool retainEmpty=false)
 {
   StringVector result;
@@ -123,9 +123,18 @@ inline StringVector split(const std::string &s,const std::string &delimiter,bool
   do
   {
     pos = s.find(delimiter, prev);
-    if (pos == std::string::npos) pos = len;
-    if (pos>prev) result.push_back(s.substr(prev,pos-prev));
-    else if (retainEmpty && pos && pos==prev)result.push_back("");
+    if (pos == std::string::npos)
+    {
+      pos = len;
+    }
+    if (pos>prev)
+    {
+      result.push_back(s.substr(prev,pos-prev));
+    }
+    else if (retainEmpty && pos>0 && pos==prev)
+    {
+      result.push_back("");
+    }
     prev = pos + delimiter.length();
   }
   while (pos<len && prev<len);

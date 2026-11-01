@@ -94,9 +94,10 @@ struct commentcnv_FileState
   int oldRaiseLvl = 0;
   DString oldRaiseLbl;
 };
-struct commentcnv_repl
+struct commentcnv_Repl
 {
-  commentcnv_repl(std::string r, std::string repl, bool gl) : re(r), replacement(repl), global(gl) {}
+  commentcnv_Repl(std::string &&r, std::string &&repl, bool gl)
+    : re(r), replacement(std::move(repl)), global(std::move(gl)) {}
   std::string re;
   std::string replacement;
   bool global;
@@ -119,7 +120,7 @@ struct commentcnvYY_state
   DString raiseLabel;
   int      raiseIncrement = 0;
   DString raisePrefix;
-  std::vector<commentcnv_repl> replacementVector;
+  std::vector<commentcnv_Repl> replacements;
   bool     skip = false;
   DString fileName;
   int      lineNr = 0;
@@ -1582,18 +1583,19 @@ static bool parseIncludeOptions(yyscan_t yyscanner,std::string_view s)
 
   if (isDoc)
   {
-    yyextra->replacementVector.clear();
+    yyextra->replacements.clear();
     for (const auto &opt : optList)
     {
       std::string_view locOpt = stripWhiteSpace(opt);
       size_t posEqual = locOpt.find('=');
-      std::string_view option = posEqual!=std::string::npos ? stripWhiteSpace(locOpt.substr(0,posEqual)) : locOpt;
-      std::string_view value  = posEqual!=std::string::npos ? stripWhiteSpace(locOpt.substr(posEqual+1)) : std::string_view();
+      auto option = std::string{posEqual!=std::string::npos ? stripWhiteSpace(locOpt.substr(0,posEqual)) : locOpt};
+      auto value  = std::string{posEqual!=std::string::npos ? stripWhiteSpace(locOpt.substr(posEqual+1)) : std::string()};
 
-      if (option==std::string_view{"doc"} && value.empty())
+      if (option=="doc" && value.empty())
       {
+        // ok
       }
-      else if (option==std::string_view{"raise"} && !value.empty())
+      else if (option=="raise" && !value.empty())
       {
         yyextra->raiseIncrement = atoi(value.data());
         if (yyextra->raiseLevel+yyextra->raiseIncrement>=SectionType::MaxLevel) // check range
@@ -1603,29 +1605,26 @@ static bool parseIncludeOptions(yyscan_t yyscanner,std::string_view s)
           yyextra->raiseIncrement = std::max(0,SectionType::MaxLevel-1-yyextra->raiseLevel);
         }
       }
-      else if (option==std::string_view{"prefix"} && !value.empty())
+      else if (option=="prefix" && !value.empty())
       {
         yyextra->raisePrefix = value;
       }
-      else if (option==std::string_view{"replace"} && !value.empty())
+      else if (option=="replace" && !value.empty())
       {
         bool global = false;
-        StringVector replVec = split(std::string(value), std::string {value[0]}, true);
-        if (replVec.size() != 2 && replVec.size() != 3 ||
-            (replVec.size() == 3  && replVec[2] != "g"))
+        StringVector replVec = split(value, std::string{value[0]}, true);
+        size_t replSize = replVec.size();
+        if ((replSize!=2 && replSize!=3) || (replSize==3 && replVec[2]!="g"))
         {
           warn(yyextra->fileName,yyextra->lineNr,"Incorrect replace option '{}' for {} command with value '{}'",option, cmdName, value);
         }
         else
         {
-          if (replVec.size() == 3)
+          if (replSize==3 && !replVec[0].empty())
           {
-            global = true;
-            if (replVec[0][0] == '^') global = false;
-            else if (replVec[0][replVec[0].length()-1] == '$') global = false;
+            global = !(replVec[0][0]=='^' || replVec[0][replVec[0].length()-1]=='$');
           }
-          commentcnv_repl r(replVec[0], replVec[1], global);
-          yyextra->replacementVector.push_back(r);
+          yyextra->replacements.emplace_back(std::move(replVec[0]), std::move(replVec[1]), global);
         }
       }
       else
@@ -1999,10 +1998,10 @@ static bool readIncludeFile(yyscan_t yyscanner,const DString &inc,const DString 
       incText = extractBlock(incText, blockId, blockPos);
     }
 
-    if (yyextra->replacementVector.size())
+    if (!yyextra->replacements.empty())
     {
       StringVector txtVec = split(incText.str(), "\n", true);
-      for (const auto &replElem : yyextra->replacementVector)
+      for (const auto &replElem : yyextra->replacements)
       {
         reg::Ex re(replElem.re);
         size_t pos = 0;
@@ -2025,16 +2024,16 @@ static bool readIncludeFile(yyscan_t yyscanner,const DString &inc,const DString 
           {
             newLine += replElem.replacement;
           }
-          else
+          else // normal case
           {
             pos = 0;
             while (reg::search(line,match,re,pos))
             {
-              if (match.length() == 0) break;
+              if (match.length() == 0) break; // e.g. re="a*"
               newLine += line.substr(pos,match.position() - pos);
               newLine += replElem.replacement;
               pos=match.position()+match.length();
-              if (!replElem.global) break;
+              if (!replElem.global) break; // single replacement only
             }
             newLine += line.substr(pos);
           }
@@ -2283,7 +2282,7 @@ void convertCppComments(const std::string &inBuf,std::string &outBuf,const std::
   yyextra->raisePrefix = "";
   yyextra->insertCppCommentMarker=false;
   yyextra->expandedAliases.clear();
-  yyextra->replacementVector.clear();
+  yyextra->replacements.clear();
   while (!yyextra->condStack.empty()) yyextra->condStack.pop();
   clearCommentStack(yyscanner);
   yyextra->vhdl = false;
