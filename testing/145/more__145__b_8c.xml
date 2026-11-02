@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
-  <compounddef id="141__copydoc__static_8c" kind="file" language="C++">
-    <compoundname>141_copydoc_static.c</compoundname>
+  <compounddef id="more__145__b_8c" kind="file" language="C++">
+    <compoundname>more_145_b.c</compoundname>
     <sectiondef kind="func">
-      <memberdef kind="function" id="141__copydoc__static_8c_1a8780f1c443289bec0dcca679696302be" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="more__145__b_8c_1a8780f1c443289bec0dcca679696302be" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
         <definition>static int helper</definition>
         <argsstring>(void)</argsstring>
@@ -12,36 +12,36 @@
           <type>void</type>
         </param>
         <briefdescription>
-          <para>Helper of this file. </para>
+          <para>Helper of the other file. </para>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="141_copydoc_static.c" line="8" column="12" bodyfile="141_copydoc_static.c" bodystart="8" bodyend="8"/>
+        <location file="more_145_b.c" line="4" column="12" bodyfile="more_145_b.c" bodystart="4" bodyend="4"/>
       </memberdef>
-      <memberdef kind="function" id="141__copydoc__static_8c_1ac88e9f84aee580ab59a540fc7b0795f4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="more__145__b_8c_1aa55d35787e42f5a4ca22ae0337d68499" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
-        <definition>int api</definition>
+        <definition>int other_api</definition>
         <argsstring>(void)</argsstring>
-        <name>api</name>
+        <name>other_api</name>
         <param>
           <type>void</type>
         </param>
         <briefdescription>
-          <para>Helper of this file.    </para>
+          <para>Helper of the other file.    </para>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="141_copydoc_static.c" line="11" column="5" bodyfile="141_copydoc_static.c" bodystart="11" bodyend="11"/>
+        <location file="more_145_b.c" line="7" column="5" bodyfile="more_145_b.c" bodystart="7" bodyend="7"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="141_copydoc_static.c"/>
+    <location file="more_145_b.c"/>
   </compounddef>
 </doxygen>
