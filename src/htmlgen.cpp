@@ -318,6 +318,7 @@ static DString substituteHtmlKeywords(const DString &file,
   DString projectName = Config_getString(PROJECT_NAME);
   bool treeView = Config_getBool(GENERATE_TREEVIEW);
   bool dynamicSections = Config_getBool(HTML_DYNAMIC_SECTIONS) ||
+                         (Config_getBool(OBFUSCATE_EMAILS) && !Config_getBool(GENERATE_HTMLHELP)) ||
                          (Config_getBool(SOURCE_BROWSER) && Config_getBool(SOURCE_TOOLTIPS));
   bool codeFolding = Config_getBool(HTML_CODE_FOLDING);
   bool searchEngine = Config_getBool(SEARCHENGINE);
@@ -1401,13 +1402,15 @@ void HtmlGenerator::init()
   }
 
   if (Config_getBool(HTML_DYNAMIC_SECTIONS) ||
+      (Config_getBool(OBFUSCATE_EMAILS) && !Config_getBool(GENERATE_HTMLHELP)) ||
       (Config_getBool(SOURCE_BROWSER) && Config_getBool(SOURCE_TOOLTIPS)))
   {
     std::ofstream f = Portable::openOutputStream(dname+"/dynsections.js");
     if (f.is_open())
     {
       TextStream t(&f);
-      if (Config_getBool(HTML_DYNAMIC_SECTIONS))
+      if (Config_getBool(HTML_DYNAMIC_SECTIONS) ||
+          (Config_getBool(OBFUSCATE_EMAILS) && !Config_getBool(GENERATE_HTMLHELP)))
       {
         t << replaceVariables(mgr.getAsString("dynsections.js"));
       }
@@ -1829,6 +1832,7 @@ void HtmlGenerator::writeStyleInfo(int part)
     Doxygen::indexList->addStyleSheetFile("navtree.css");
 
     if (Config_getBool(HTML_DYNAMIC_SECTIONS) ||
+        (Config_getBool(OBFUSCATE_EMAILS) && !Config_getBool(GENERATE_HTMLHELP)) ||
         (Config_getBool(SOURCE_BROWSER) && Config_getBool(SOURCE_TOOLTIPS)))
     {
       Doxygen::indexList->addStyleSheetFile("dynsections.js");
