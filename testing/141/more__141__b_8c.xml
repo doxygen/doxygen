@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="more__141__b_8c" kind="file" language="C++">
+    <compoundname>more_141_b.c</compoundname>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="more__141__b_8c_1a8780f1c443289bec0dcca679696302be" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>static int helper</definition>
+        <argsstring>(void)</argsstring>
+        <name>helper</name>
+        <param>
+          <type>void</type>
+        </param>
+        <briefdescription>
+          <para>Helper of the other file. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="more_141_b.c" line="4" column="12" bodyfile="more_141_b.c" bodystart="4" bodyend="4"/>
+      </memberdef>
+      <memberdef kind="function" id="more__141__b_8c_1aa55d35787e42f5a4ca22ae0337d68499" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int other_api</definition>
+        <argsstring>(void)</argsstring>
+        <name>other_api</name>
+        <param>
+          <type>void</type>
+        </param>
+        <briefdescription>
+          <para>Helper of the other file.    </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="more_141_b.c" line="7" column="5" bodyfile="more_141_b.c" bodystart="7" bodyend="7"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="more_141_b.c"/>
+  </compounddef>
+</doxygen>
