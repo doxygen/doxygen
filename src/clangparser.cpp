@@ -298,7 +298,36 @@ void ClangTUParser::parse()
       CXDiagnostic diag = clang_getDiagnostic(p->tu, static_cast<unsigned>(i));
       CXString string = clang_formatDiagnostic(diag,
           clang_defaultDiagnosticDisplayOptions());
-      err("{} [clang]\n",clang_getCString(string));
+      std::string context;
+      {
+        CXFile diagFile;
+        clang_getExpansionLocation(clang_getDiagnosticLocation(diag),&diagFile,nullptr,nullptr,nullptr);
+        if (diagFile)
+        {
+          struct IncData { CXFile file; std::string text; } data { diagFile, "" };
+          clang_getInclusions(p->tu,
+            [](CXFile includedFile,CXSourceLocation *stack,unsigned len,CXClientData cd)
+            {
+              auto *d = static_cast<IncData*>(cd);
+              if (len>0 && clang_File_isEqual(includedFile,d->file) && d->text.empty())
+              {
+                // stack[0] is the direct includer, stack[len-1] the main file
+                for (unsigned k=0;k<len;k++)
+                {
+                  CXFile f; unsigned line;
+                  clang_getSpellingLocation(stack[k],&f,&line,nullptr,nullptr);
+                  CXString fn = clang_getFileName(f);
+                  d->text += std::string(k==0 ? "In file included from " : "                 from ")
+                           + clang_getCString(fn) + ":" + std::to_string(line)
+                           + (k+1==len ? ":\n" : ",\n");
+                  clang_disposeString(fn);
+                }
+              }
+            },&data);
+          context = data.text;
+        }
+      }
+      err("{}{} [clang]\n",context,clang_getCString(string));
       clang_disposeString(string);
       clang_disposeDiagnostic(diag);
     }
