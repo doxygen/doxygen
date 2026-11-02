@@ -264,6 +264,10 @@ void PageDefImpl::writeTagFile(TextStream &tagFile)
 
 void PageDefImpl::writeDocumentation(OutputList &ol)
 {
+  bool foundCiteList = name()=="citelist";
+  bool autoLinkSave = Config_getBool(AUTOLINK_SUPPORT);
+  if (foundCiteList) Config_updateBool(AUTOLINK_SUPPORT, false);
+
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   int hierarchyLevel = -1; // Pages start at the root
   PageDef *pd = this;
@@ -404,6 +408,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
 
   ol.popGeneratorState();
   //1.}
+  if (foundCiteList) Config_updateBool(AUTOLINK_SUPPORT, autoLinkSave);
 }
 
 void PageDefImpl::writePageDocumentation(OutputList &ol) const
