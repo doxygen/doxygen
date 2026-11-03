@@ -317,11 +317,12 @@ void ClangTUParser::parse()
                   CXFile f; unsigned line;
                   clang_getSpellingLocation(stack[k],&f,&line,nullptr,nullptr);
                   CXString fn = clang_getFileName(f);
-                  d->text += std::string(k==0 ? "In file included from " : "                 from ")
+                  d->text += std::string(k==0 ? "In file included from " : "                        from ")
                            + clang_getCString(fn) + ":" + std::to_string(line)
                            + (k+1==len ? ":\n" : ",\n");
                   clang_disposeString(fn);
                 }
+                if (len>0) d->text += "       ";
               }
             },&data);
           context = data.text;
