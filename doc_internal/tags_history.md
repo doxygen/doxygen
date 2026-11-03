@@ -157,7 +157,6 @@ The following table gives an overview of the doxygen configuration settings and 
 <dt></dt>              <dd>REFERENCED_BY_RELATION</dd>
 <dt></dt>              <dd>REFERENCES_RELATION</dd>
 <dt>New in 1.2.13</dt>
-<dt></dt>              <dd></dd>
 <dt></dt>              <dd>EXTRACT_LOCAL_CLASSES</dd>
 <dt></dt>              <dd>GENERATE_AUTOGEN_DEF</dd>
 <dt></dt>              <dd>INLINE_INHERITED_MEMB</dd>
