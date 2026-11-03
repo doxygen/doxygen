@@ -67,6 +67,13 @@ static const SelectionMarkerInfo htmlMarkerInfo = { '<', "<!--BEGIN ",10,"<!--EN
 
 // note: this is only active if DISABLE_INDEX=YES, if DISABLE_INDEX is disabled, this
 // part will be rendered inside menu.js
+static inline bool useDynamicSections()
+{
+  return Config_getBool(HTML_DYNAMIC_SECTIONS) ||
+         (Config_getBool(OBFUSCATE_EMAILS) && !Config_getBool(GENERATE_HTMLHELP)) ||
+         (Config_getBool(SOURCE_BROWSER) && Config_getBool(SOURCE_TOOLTIPS));
+}
+
 static void writeClientSearchBox(TextStream &t,const DString &relPath)
 {
   t << "        <div id=\"MSearchBox\" class=\"MSearchBoxInactive\">\n";
@@ -317,9 +324,7 @@ static DString substituteHtmlKeywords(const DString &file,
 
   DString projectName = Config_getString(PROJECT_NAME);
   bool treeView = Config_getBool(GENERATE_TREEVIEW);
-  bool dynamicSections = Config_getBool(HTML_DYNAMIC_SECTIONS) ||
-                         (Config_getBool(OBFUSCATE_EMAILS) && !Config_getBool(GENERATE_HTMLHELP)) ||
-                         (Config_getBool(SOURCE_BROWSER) && Config_getBool(SOURCE_TOOLTIPS));
+  bool dynamicSections = useDynamicSections();
   bool codeFolding = Config_getBool(HTML_CODE_FOLDING);
   bool searchEngine = Config_getBool(SEARCHENGINE);
   bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
@@ -1401,9 +1406,7 @@ void HtmlGenerator::init()
     }
   }
 
-  if (Config_getBool(HTML_DYNAMIC_SECTIONS) ||
-      (Config_getBool(OBFUSCATE_EMAILS) && !Config_getBool(GENERATE_HTMLHELP)) ||
-      (Config_getBool(SOURCE_BROWSER) && Config_getBool(SOURCE_TOOLTIPS)))
+  if (useDynamicSections())
   {
     std::ofstream f = Portable::openOutputStream(dname+"/dynsections.js");
     if (f.is_open())
@@ -1831,9 +1834,7 @@ void HtmlGenerator::writeStyleInfo(int part)
 
     Doxygen::indexList->addStyleSheetFile("navtree.css");
 
-    if (Config_getBool(HTML_DYNAMIC_SECTIONS) ||
-        (Config_getBool(OBFUSCATE_EMAILS) && !Config_getBool(GENERATE_HTMLHELP)) ||
-        (Config_getBool(SOURCE_BROWSER) && Config_getBool(SOURCE_TOOLTIPS)))
+    if (useDynamicSections())
     {
       Doxygen::indexList->addStyleSheetFile("dynsections.js");
     }
