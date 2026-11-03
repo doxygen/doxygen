@@ -231,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.body.addEventListener('click', (e) => {
-    let mailEl = e.target.closest('a[href^="mai\'+"]');
+    let mailEl = e.target.closest('a[href^="mailto:\'"]');
     if (mailEl) {
       e.preventDefault();
       let parts = mailEl.getAttribute('href').split("'+'");
@@ -242,7 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    let dynhead = e.target.closest('.dynheader');
+    let dynhead = e.target.closest('.dynheader[id]');
     if (dynhead) {
       dynsection.toggleVisibility(dynhead);
       e.preventDefault();
