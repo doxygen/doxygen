@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include <memory>
 
-#include "qcstring.h"
+#include "dstring.h"
 #include "growvector.h"
 #include "construct.h"
 #include "types.h"
@@ -51,7 +51,7 @@ class IDocNodeAST
   public:
     ABSTRACT_BASE_CLASS(IDocNodeAST)
 
-    virtual bool isEmpty() const = 0;
+    virtual bool empty() const = 0;
 };
 
 using IDocNodeASTPtr = std::unique_ptr<IDocNodeAST>;
@@ -60,7 +60,7 @@ using IDocNodeASTPtr = std::unique_ptr<IDocNodeAST>;
 /*! Main entry point for the comment block parser.
  *  @param parserIntf The parser object created via createDocParser()
  *  @param fileName  File in which the documentation block is found (or the
- *                   name of the example file in case isExample is TRUE).
+ *                   name of the example file in case isExample is true).
  *  @param startLine Line at which the documentation block is found.
  *  @param ctx       Class or namespace to which this block belongs.
  *  @param md        Member definition to which the documentation belongs.
@@ -72,33 +72,33 @@ using IDocNodeASTPtr = std::unique_ptr<IDocNodeAST>;
  */
 IDocNodeASTPtr validatingParseDoc(
     IDocParser &parserIntf,
-    const QCString &fileName,
+    const DString &fileName,
     int startLine,
     const Definition *ctx,
     const MemberDef *md,
-    const QCString &input,
+    const DString &input,
     const DocOptions &options);
 
 /*! Main entry point for parsing simple text fragments. These
  *  fragments are limited to words, whitespace and symbols.
  */
-IDocNodeASTPtr validatingParseText(IDocParser &parser,const QCString &input);
+IDocNodeASTPtr validatingParseText(IDocParser &parser,const DString &input);
 
 
 /*! Main entry point for parsing titles. These allow limited markup commands */
-IDocNodeASTPtr validatingParseTitle(IDocParser &parserIntf,const QCString &fileName,int lineNr,
-                                    const QCString &input);
+IDocNodeASTPtr validatingParseTitle(IDocParser &parserIntf,const DString &fileName,int lineNr,
+                                    const DString &input);
 
 
-IDocNodeASTPtr createRef(IDocParser &parser,const QCString &target,const QCString &context, const QCString &srcFile = "", int srcLine = -1);
+IDocNodeASTPtr createRef(IDocParser &parser,const DString &target,const DString &context, const DString &srcFile = "", int srcLine = -1);
 
 //--------------------------------------------------------------------------------
 
 /*! Searches for section and anchor commands in the input
  *  Sections found will be added to the SectionManager.
  */
-void docFindSections(const QCString &input,
+void docFindSections(const DString &input,
                      const Definition *d,
-                     const QCString &fileName);
+                     const DString &fileName);
 
 #endif

@@ -56,10 +56,10 @@
 
 static StringSet removeSet;
 
-static QCString dateToRTFDateString()
+static DString dateToRTFDateString()
 {
   auto tm = getCurrentDateTime();
-  QCString result;
+  DString result;
   switch (Config_getEnum(TIMESTAMP))
   {
     case TIMESTAMP_t::YES:
@@ -78,11 +78,11 @@ static QCString dateToRTFDateString()
   return "{\\creatim " + result + "}\n";
 }
 
-static QCString docifyToString(const QCString &str)
+static DString docifyToString(const DString &str)
 {
-  QCString result;
+  DString result;
   result.reserve(str.length());
-  if (!str.isEmpty())
+  if (!str.empty())
   {
     const char *p=str.data();
     while (*p)
@@ -101,9 +101,9 @@ static QCString docifyToString(const QCString &str)
   return result;
 }
 
-static QCString makeIndexName(const QCString &s,int i)
+static DString makeIndexName(const DString &s,int i)
 {
-  QCString result=s;
+  DString result=s;
   result+=static_cast<char>(i+'0');
   return result;
 }
@@ -116,20 +116,20 @@ RTFCodeGenerator::RTFCodeGenerator(TextStream *t) : m_t(t)
 }
 
 void RTFCodeGenerator::writeCodeLink(CodeSymbolType,
-                                 const QCString &ref,const QCString &f,
-                                 const QCString &anchor,const QCString &name,
-                                 const QCString &)
+                                 const DString &ref,const DString &f,
+                                 const DString &anchor,const DString &name,
+                                 const DString &)
 {
   m_col+=name.length();
   if (m_hide) return;
-  if (ref.isEmpty() && Config_getBool(RTF_HYPERLINKS))
+  if (ref.empty() && Config_getBool(RTF_HYPERLINKS))
   {
-    QCString refName;
-    if (!f.isEmpty())
+    DString refName;
+    if (!f.empty())
     {
       refName+=stripPath(f);
     }
-    if (!anchor.isEmpty())
+    if (!anchor.empty())
     {
       refName+='_';
       refName+=anchor;
@@ -150,12 +150,12 @@ void RTFCodeGenerator::writeCodeLink(CodeSymbolType,
   }
 }
 
-void RTFCodeGenerator::codify(const QCString &str)
+void RTFCodeGenerator::codify(const DString &str)
 {
   // note that RTF does not have a "verbatim", so "\n" means
   // nothing... add a "newParagraph()";
   const int tabSize = Config_getInt(TAB_SIZE);
-  if (!str.isEmpty())
+  if (!str.empty())
   {
     char c;
     const char *p=str.data();
@@ -214,7 +214,7 @@ void RTFCodeGenerator::setStripIndentAmount(size_t amount)
   m_stripIndentAmount = amount;
 }
 
-void RTFCodeGenerator::startCodeFragment(const QCString &)
+void RTFCodeGenerator::startCodeFragment(const DString &)
 {
   DBG_RTF(*m_t << "{\\comment (startCodeFragment) }\n")
   *m_t << "{\n";
@@ -222,7 +222,7 @@ void RTFCodeGenerator::startCodeFragment(const QCString &)
   *m_t << rtf_Style_Reset << rtf_Code_DepthStyle();
 }
 
-void RTFCodeGenerator::endCodeFragment(const QCString &)
+void RTFCodeGenerator::endCodeFragment(const DString &)
 {
   bool wasHidden = m_hide;
   m_hide = false;
@@ -231,10 +231,10 @@ void RTFCodeGenerator::endCodeFragment(const QCString &)
 
   DBG_RTF(*m_t << "{\\comment (endCodeFragment) }\n")
   *m_t << "}\n";
-  //m_omitParagraph = TRUE;
+  //m_omitParagraph = true;
 }
 
-void RTFCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fileName,const QCString &anchor,int l,bool writeLineAnchor)
+void RTFCodeGenerator::writeLineNumber(const DString &ref,const DString &fileName,const DString &anchor,int l,bool writeLineAnchor)
 {
   if (m_hide) return;
   bool rtfHyperlinks = Config_getBool(RTF_HYPERLINKS);
@@ -242,16 +242,16 @@ void RTFCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fileN
   m_doxyCodeLineOpen = true;
   if (Config_getBool(SOURCE_BROWSER))
   {
-    QCString lineNumber;
+    DString lineNumber;
     lineNumber.sprintf("%05d",l);
 
-    QCString lineAnchor;
-    if (!m_sourceFileName.isEmpty())
+    DString lineAnchor;
+    if (!m_sourceFileName.empty())
     {
       lineAnchor.sprintf("_l%05d",l);
       lineAnchor.prepend(stripExtensionGeneral(stripPath(m_sourceFileName), ".rtf"));
     }
-    bool showTarget = rtfHyperlinks && !lineAnchor.isEmpty() && writeLineAnchor;
+    bool showTarget = rtfHyperlinks && !lineAnchor.empty() && writeLineAnchor;
     if (showTarget)
     {
         *m_t << "{\\bkmkstart ";
@@ -261,9 +261,9 @@ void RTFCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fileN
         *m_t << rtfFormatBmkStr(lineAnchor);
         *m_t << "}\n";
     }
-    if (!fileName.isEmpty())
+    if (!fileName.empty())
     {
-      writeCodeLink(CodeSymbolType::Default,ref,fileName,anchor,lineNumber,QCString());
+      writeCodeLink(CodeSymbolType::Default,ref,fileName,anchor,lineNumber,DString());
     }
     else
     {
@@ -292,7 +292,7 @@ void RTFCodeGenerator::endCodeLine()
   m_doxyCodeLineOpen = false;
 }
 
-void RTFCodeGenerator::startFontClass(const QCString &name)
+void RTFCodeGenerator::startFontClass(const DString &name)
 {
   if (m_hide) return;
   int cod = 2;
@@ -323,13 +323,13 @@ void RTFCodeGenerator::endFontClass()
   *m_t << "}";
 }
 
-QCString RTFCodeGenerator::rtf_Code_DepthStyle()
+DString RTFCodeGenerator::rtf_Code_DepthStyle()
 {
-  QCString n=makeIndexName("CodeExample",m_indentLevel);
+  DString n=makeIndexName("CodeExample",m_indentLevel);
   return rtf_Style[n.str()].reference();
 }
 
-void RTFCodeGenerator::setSourceFileName(const QCString &name)
+void RTFCodeGenerator::setSourceFileName(const DString &name)
 {
   m_sourceFileName = name;
 }
@@ -381,12 +381,12 @@ void RTFGenerator::addCodeGen(OutputCodeList &list)
   list.add<RTFCodeGeneratorDefer>(m_codeGen);
 }
 
-void RTFGenerator::setRelativePath(const QCString &path)
+void RTFGenerator::setRelativePath(const DString &path)
 {
   m_relPath = path;
 }
 
-void RTFGenerator::setSourceFileName(const QCString &name)
+void RTFGenerator::setSourceFileName(const DString &name)
 {
   m_codeGen->setSourceFileName(name);
 }
@@ -460,7 +460,7 @@ void RTFGenerator::writeExtensionsFile(TextStream &t)
 
 void RTFGenerator::init()
 {
-  QCString dir=Config_getString(RTF_OUTPUT);
+  DString dir=Config_getString(RTF_OUTPUT);
   Dir d(dir.str());
   if (!d.exists() && !d.mkdir(dir.str()))
   {
@@ -483,19 +483,19 @@ void RTFGenerator::init()
   }
 
   // overwrite some (or all) definitions from file
-  QCString rtfStyleSheetFile = Config_getString(RTF_STYLESHEET_FILE);
-  if (!rtfStyleSheetFile.isEmpty())
+  DString rtfStyleSheetFile = Config_getString(RTF_STYLESHEET_FILE);
+  if (!rtfStyleSheetFile.empty())
   {
     loadStylesheet(rtfStyleSheetFile, rtf_Style);
   }
 
   // If user has defined an extension file, load its contents.
-  QCString rtfExtensionsFile = Config_getString(RTF_EXTENSIONS_FILE);
-  if (!rtfExtensionsFile.isEmpty())
+  DString rtfExtensionsFile = Config_getString(RTF_EXTENSIONS_FILE);
+  if (!rtfExtensionsFile.empty())
   {
     loadExtensions(rtfExtensionsFile);
 
-    if (!rtf_logoFilename.isEmpty())
+    if (!rtf_logoFilename.empty())
     {
       FileInfo fi(rtf_logoFilename.str());
       if (!fi.exists())
@@ -506,7 +506,7 @@ void RTFGenerator::init()
       }
       else
       {
-        QCString destFileName = Config_getString(RTF_OUTPUT)+"/"+fi.fileName();
+        DString destFileName = Config_getString(RTF_OUTPUT)+"/"+fi.fileName();
         copyFile(rtf_logoFilename,destFileName);
         rtf_logoFilename = fi.fileName();
       }
@@ -518,7 +518,7 @@ void RTFGenerator::init()
 
 void RTFGenerator::cleanup()
 {
-  QCString dname = Config_getString(RTF_OUTPUT);
+  DString dname = Config_getString(RTF_OUTPUT);
   Dir d(dname.str());
   clearSubDirs(d);
 }
@@ -698,13 +698,13 @@ void RTFGenerator::beginRTFSection()
   }
   int level = 2 + m_hierarchyLevel;
 
-  m_t << rtf_Style[QCString().sprintf("Heading%d", level).str()].reference() << "\n";
+  m_t << rtf_Style[DString().sprintf("Heading%d", level).str()].reference() << "\n";
 }
 
-void RTFGenerator::startFile(const QCString &name,bool,const QCString &,const QCString &,int,int hierarchyLevel)
+void RTFGenerator::startFile(const DString &name,bool,const DString &,const DString &,int,int hierarchyLevel)
 {
-  //setEncoding(QCString().sprintf("CP%s",theTranslator->trRTFansicp()));
-  QCString fileName=name;
+  //setEncoding(DString().sprintf("CP%s",theTranslator->trRTFansicp()));
+  DString fileName=name;
   m_relPath = relativePathToRoot(fileName);
   m_hierarchyLevel = hierarchyLevel;
 
@@ -737,7 +737,7 @@ void RTFGenerator::endProjectNumber()
 
 void RTFGenerator::startIndexSection(IndexSection is)
 {
-  //QCString paperName;
+  //DString paperName;
 
   //m_indentLevel = 0;
 
@@ -752,13 +752,13 @@ void RTFGenerator::startIndexSection(IndexSection is)
       break;
     case IndexSection::isTitlePageAuthor:
       m_t << "}\n";
-      if (!rtf_subject.isEmpty())      m_t << "{\\subject "  << rtf_subject      << "}\n";
-      if (!rtf_comments.isEmpty())     m_t << "{\\comment "  << rtf_comments     << "}\n";
-      if (!rtf_company.isEmpty())      m_t << "{\\company "  << rtf_company      << "}\n";
-      if (!rtf_author.isEmpty())       m_t << "{\\author "   << rtf_author       << "}\n";
-      if (!rtf_manager.isEmpty())      m_t << "{\\manager "  << rtf_manager      << "}\n";
-      if (!rtf_documentType.isEmpty()) m_t << "{\\category " << rtf_documentType << "}\n";
-      if (!rtf_keywords.isEmpty())     m_t << "{\\keywords " << rtf_keywords     << "}\n";
+      if (!rtf_subject.empty())      m_t << "{\\subject "  << rtf_subject      << "}\n";
+      if (!rtf_comments.empty())     m_t << "{\\comment "  << rtf_comments     << "}\n";
+      if (!rtf_company.empty())      m_t << "{\\company "  << rtf_company      << "}\n";
+      if (!rtf_author.empty())       m_t << "{\\author "   << rtf_author       << "}\n";
+      if (!rtf_manager.empty())      m_t << "{\\manager "  << rtf_manager      << "}\n";
+      if (!rtf_documentType.empty()) m_t << "{\\category " << rtf_documentType << "}\n";
+      if (!rtf_keywords.empty())     m_t << "{\\keywords " << rtf_keywords     << "}\n";
       m_t << "{\\comment ";
       break;
     case IndexSection::isMainPage:
@@ -887,7 +887,7 @@ void RTFGenerator::startIndexSection(IndexSection is)
     case IndexSection::isFileDocumentation:
       {
         //File Documentation
-        bool isFirst=TRUE;
+        bool isFirst=true;
         for (const auto &fn : *Doxygen::inputNameLinkedMap)
         {
           for (const auto &fd : *fn)
@@ -897,7 +897,7 @@ void RTFGenerator::startIndexSection(IndexSection is)
               if (isFirst)
               {
                 beginRTFChapter();
-                isFirst=FALSE;
+                isFirst=false;
                 break;
               }
             }
@@ -928,12 +928,12 @@ void RTFGenerator::endIndexSection(IndexSection is)
 {
   bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
   bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
-  QCString projectName = Config_getString(PROJECT_NAME);
+  DString projectName = Config_getString(PROJECT_NAME);
 
   switch (is)
   {
     case IndexSection::isTitlePageStart:
-      if (!rtf_title.isEmpty())
+      if (!rtf_title.empty())
         // User has overridden document title in extensions file
         m_t << "}" << rtf_title;
       else
@@ -956,18 +956,18 @@ void RTFGenerator::endIndexSection(IndexSection is)
         m_t << rtf_Style_Reset << rtf_Style["SubTitle"].reference() << "\n"; // set to title style
 
         m_t << "\\vertalc\\qc\\par\\par\\par\\par\\par\\par\\par\n";
-        if (!rtf_logoFilename.isEmpty())
+        if (!rtf_logoFilename.empty())
         {
           m_t << "{\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE \"" << rtf_logoFilename;
           m_t << "\" \\\\d \\\\*MERGEFORMAT} {\\fldrslt IMAGE }}\\par\\par\n";
         }
-        if (!rtf_company.isEmpty())
+        if (!rtf_company.empty())
         {
           m_t << rtf_company << "\\par\\par\n";
         }
 
         m_t << rtf_Style_Reset << rtf_Style["Title"].reference() << "\n"; // set to title style
-        if (!rtf_title.isEmpty())
+        if (!rtf_title.empty())
         {
           // User has overridden document title in extensions file
           m_t << "{\\field\\fldedit {\\*\\fldinst TITLE \\\\*MERGEFORMAT}{\\fldrslt " << rtf_title << "}}\\par\n";
@@ -986,18 +986,18 @@ void RTFGenerator::endIndexSection(IndexSection is)
 
         m_t << rtf_Style_Reset << rtf_Style["SubTitle"].reference() << "\n"; // set to title style
         m_t << "\\par\n";
-        if (!rtf_documentType.isEmpty())
+        if (!rtf_documentType.empty())
         {
           m_t << rtf_documentType << "\\par\n";
         }
-        if (!rtf_documentId.isEmpty())
+        if (!rtf_documentId.empty())
         {
           m_t << rtf_documentId << "\\par\n";
         }
         m_t << "\\par\\par\\par\\par\\par\\par\\par\\par\\par\\par\\par\\par\n";
 
         m_t << rtf_Style_Reset << rtf_Style["SubTitle"].reference() << "\n"; // set to subtitle style
-        if (!rtf_author.isEmpty())
+        if (!rtf_author.empty())
         {
           m_t << "{\\field\\fldedit {\\*\\fldinst AUTHOR \\\\*MERGEFORMAT}{\\fldrslt "<< rtf_author << " }}\\par\n";
         }
@@ -1038,7 +1038,7 @@ void RTFGenerator::endIndexSection(IndexSection is)
     case IndexSection::isMainPage:
       if (Doxygen::mainPage)
       {
-        writePageLink(Doxygen::mainPage->getOutputFileBase(), TRUE);
+        writePageLink(Doxygen::mainPage->getOutputFileBase(), true);
       }
       break;
     case IndexSection::isTopicIndex:
@@ -1112,7 +1112,7 @@ void RTFGenerator::endIndexSection(IndexSection is)
         {
           if (!gd->isReference() && !gd->isASubGroup())
           {
-            writePageLink(gd->getOutputFileBase(), FALSE);
+            writePageLink(gd->getOutputFileBase(), false);
           }
         }
       }
@@ -1124,7 +1124,7 @@ void RTFGenerator::endIndexSection(IndexSection is)
         {
           if (!mod->isReference() && mod->isPrimaryInterface())
           {
-            writePageLink(mod->getOutputFileBase(), FALSE);
+            writePageLink(mod->getOutputFileBase(), false);
           }
         }
       }
@@ -1224,7 +1224,7 @@ void RTFGenerator::endIndexSection(IndexSection is)
       break;
     case IndexSection::isFileDocumentation:
       {
-        bool isFirst=TRUE;
+        bool isFirst=true;
 
         m_t << "{\\tc \\v " << theTranslator->trFileDocumentation() << "}\n";
         for (const auto &fn : *Doxygen::inputNameLinkedMap)
@@ -1238,7 +1238,7 @@ void RTFGenerator::endIndexSection(IndexSection is)
               {
                 beginRTFSection();
               }
-              isFirst=FALSE;
+              isFirst=false;
               m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
               m_t << fd->getOutputFileBase();
               m_t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
@@ -1250,7 +1250,7 @@ void RTFGenerator::endIndexSection(IndexSection is)
               {
                 beginRTFSection();
               }
-              isFirst=FALSE;
+              isFirst=false;
               m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
               m_t << fd->getSourceFileBase();
               m_t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
@@ -1286,7 +1286,7 @@ void RTFGenerator::endIndexSection(IndexSection is)
           if (!pd->getGroupDef() && !pd->isReference() && !pd->hasParentPage()
             && Doxygen::mainPage.get() != pd.get())
           {
-            writePageLink(pd->getOutputFileBase(), FALSE);
+            writePageLink(pd->getOutputFileBase(), false);
           }
         }
       }
@@ -1305,7 +1305,7 @@ void RTFGenerator::endIndexSection(IndexSection is)
    }
 }
 
-void RTFGenerator::writePageLink(const QCString &name,bool)
+void RTFGenerator::writePageLink(const DString &name,bool)
 {
    m_t << "\\par " << rtf_Style_Reset << "\n";
    m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
@@ -1329,14 +1329,14 @@ void RTFGenerator::writeStyleInfo(int)
 {
 }
 
-void RTFGenerator::lineBreak(const QCString &)
+void RTFGenerator::lineBreak(const DString &)
 {
   DBG_RTF(m_t << "{\\comment (lineBreak)}"    << "\n")
   m_t << "\\par\n";
-  m_omitParagraph = TRUE;
+  m_omitParagraph = true;
 }
 
-void RTFGenerator::writeString(const QCString &text)
+void RTFGenerator::writeString(const DString &text)
 {
   m_t << text;
 }
@@ -1348,7 +1348,7 @@ void RTFGenerator::startIndexList()
   m_t << "\\par\n";
   incIndentLevel();
   m_t << rtf_Style_Reset << rtf_LCList_DepthStyle() << "\n";
-  m_omitParagraph = TRUE;
+  m_omitParagraph = true;
 }
 
 void RTFGenerator::endIndexList()
@@ -1357,7 +1357,7 @@ void RTFGenerator::endIndexList()
   if (!m_omitParagraph)
   {
     m_t << "\\par";
-    m_omitParagraph = TRUE;
+    m_omitParagraph = true;
   }
   m_t << "}";
   decIndentLevel();
@@ -1383,7 +1383,7 @@ void RTFGenerator::endItemList()
   DBG_RTF(m_t << "{\\comment (endItemList level=" << indentLevel() << ")}\n")
   m_t << "}";
   decIndentLevel();
-  m_omitParagraph = TRUE;
+  m_omitParagraph = true;
 }
 
 /*! write bullet or enum item */
@@ -1403,7 +1403,7 @@ void RTFGenerator::startItemListItem()
   {
     m_t << rtf_BList_DepthStyle() << "\n";
   }
-  m_omitParagraph = TRUE;
+  m_omitParagraph = true;
 }
 
 void RTFGenerator::endItemListItem()
@@ -1411,21 +1411,21 @@ void RTFGenerator::endItemListItem()
   DBG_RTF(m_t << "{\\comment (endItemListItem)}\n")
 }
 
-void RTFGenerator::startIndexItem(const QCString &,const QCString &)
+void RTFGenerator::startIndexItem(const DString &,const DString &)
 {
   DBG_RTF(m_t << "{\\comment (startIndexItem)}\n")
 
   if (!m_omitParagraph)
   {
     m_t << "\\par\n";
-    m_omitParagraph = TRUE;
+    m_omitParagraph = true;
   }
 }
 
-void RTFGenerator::endIndexItem(const QCString &ref,const QCString &fn)
+void RTFGenerator::endIndexItem(const DString &ref,const DString &fn)
 {
   DBG_RTF(m_t << "{\\comment (endIndexItem)}\n")
-  if (ref.isEmpty() && !fn.isEmpty())
+  if (ref.empty() && !fn.empty())
   {
     m_t << "\\tab ";
     writeRTFReference(fn);
@@ -1435,16 +1435,16 @@ void RTFGenerator::endIndexItem(const QCString &ref,const QCString &fn)
   {
     m_t << "\n";
   }
-  m_omitParagraph = TRUE;
+  m_omitParagraph = true;
 }
 
-void RTFGenerator::writeStartAnnoItem(const QCString &,const QCString &f,
-    const QCString &path,const QCString &name)
+void RTFGenerator::writeStartAnnoItem(const DString &,const DString &f,
+    const DString &path,const DString &name)
 {
   DBG_RTF(m_t << "{\\comment (writeStartAnnoItem)}\n")
   m_t << "{\\b ";
-  if (!path.isEmpty()) docify(path);
-  if (!f.isEmpty() && Config_getBool(RTF_HYPERLINKS))
+  if (!path.empty()) docify(path);
+  if (!f.empty() && Config_getBool(RTF_HYPERLINKS))
   {
     m_t << "{\\field {\\*\\fldinst { HYPERLINK  \\\\l \"";
     m_t << rtfFormatBmkStr(stripPath(f));
@@ -1480,12 +1480,12 @@ void RTFGenerator::startIndexValue(bool hasBrief)
   if (hasBrief) m_t << "(";
 }
 
-void RTFGenerator::endIndexValue(const QCString &name,bool hasBrief)
+void RTFGenerator::endIndexValue(const DString &name,bool hasBrief)
 {
   DBG_RTF(m_t << "{\\comment (endIndexValue)}\n")
   if (hasBrief) m_t << ")";
   m_t << "} ";
-  if (!name.isEmpty())
+  if (!name.empty())
   {
     m_t << "\\tab ";
     writeRTFReference(name);
@@ -1495,7 +1495,7 @@ void RTFGenerator::endIndexValue(const QCString &name,bool hasBrief)
   {
     m_t << "\n";
   }
-  m_omitParagraph=FALSE;
+  m_omitParagraph=false;
   newParagraph();
 }
 
@@ -1506,7 +1506,7 @@ void RTFGenerator::startCompoundTemplateParams()
   DBG_RTF(m_t << "{\\comment Begin SubSubSection}\n")
   m_t << "{\n";
   int level = 4 + m_hierarchyLevel;
-  m_t << rtf_Style_Reset << rtf_Style[QCString().sprintf("Heading%d", level).str()].reference() << "\n";
+  m_t << rtf_Style_Reset << rtf_Style[DString().sprintf("Heading%d", level).str()].reference() << "\n";
 }
 
 void RTFGenerator::endCompoundTemplateParams()
@@ -1515,16 +1515,16 @@ void RTFGenerator::endCompoundTemplateParams()
   m_t << "}\n";
 }
 
-void RTFGenerator::startTextLink(const QCString &f,const QCString &anchor)
+void RTFGenerator::startTextLink(const DString &f,const DString &anchor)
 {
   if (Config_getBool(RTF_HYPERLINKS))
   {
-    QCString ref;
-    if (!f.isEmpty())
+    DString ref;
+    if (!f.empty())
     {
       ref+=stripPath(f);
     }
-    if (!anchor.isEmpty())
+    if (!anchor.empty())
     {
       ref+='_';
       ref+=anchor;
@@ -1545,18 +1545,18 @@ void RTFGenerator::endTextLink()
   }
 }
 
-static QCString objectLinkToString(const QCString &ref,    const QCString &f,
-                                   const QCString &anchor, const QCString &text)
+static DString objectLinkToString(const DString &ref,    const DString &f,
+                                   const DString &anchor, const DString &text)
 {
-  QCString result;
-  if (ref.isEmpty() && Config_getBool(RTF_HYPERLINKS))
+  DString result;
+  if (ref.empty() && Config_getBool(RTF_HYPERLINKS))
   {
-    QCString refName;
-    if (!f.isEmpty())
+    DString refName;
+    if (!f.empty())
     {
       refName+=stripPath(f);
     }
-    if (!anchor.isEmpty())
+    if (!anchor.empty())
     {
       refName+='_';
       refName+=anchor;
@@ -1580,8 +1580,8 @@ static QCString objectLinkToString(const QCString &ref,    const QCString &f,
   return result;
 }
 
-void RTFGenerator::writeObjectLink(const QCString &ref,    const QCString &f,
-                                   const QCString &anchor, const QCString &text)
+void RTFGenerator::writeObjectLink(const DString &ref,    const DString &f,
+                                   const DString &anchor, const DString &text)
 {
   m_t << objectLinkToString(ref,f,anchor,text);
 }
@@ -1592,14 +1592,14 @@ void RTFGenerator::startPageRef()
   startEmphasis();
 }
 
-void RTFGenerator::endPageRef(const QCString &clname, const QCString &anchor)
+void RTFGenerator::endPageRef(const DString &clname, const DString &anchor)
 {
-  QCString ref;
-  if (!clname.isEmpty())
+  DString ref;
+  if (!clname.empty())
   {
     ref+=clname;
   }
-  if (!anchor.isEmpty())
+  if (!anchor.empty())
   {
     ref+='_';
     ref+=anchor;
@@ -1609,21 +1609,21 @@ void RTFGenerator::endPageRef(const QCString &clname, const QCString &anchor)
   m_t << ")";
 }
 
-void RTFGenerator::startTitleHead(const QCString &)
+void RTFGenerator::startTitleHead(const DString &)
 {
   DBG_RTF(m_t << "{\\comment startTitleHead}\n")
   int level = 2 + m_hierarchyLevel;
-  QCString heading;
+  DString heading;
   heading.sprintf("Heading%d", level);
   //    beginRTFSection();
   m_t << rtf_Style_Reset << rtf_Style[heading.str()].reference() << "\n";
 }
 
-void RTFGenerator::endTitleHead(const QCString &fileName,const QCString &name)
+void RTFGenerator::endTitleHead(const DString &fileName,const DString &name)
 {
   DBG_RTF(m_t << "{\\comment endTitleHead}\n")
   m_t << "\\par " << rtf_Style_Reset << "\n";
-  if (!name.isEmpty())
+  if (!name.empty())
   {
     // make table of contents entry
     int level = 2 + m_hierarchyLevel;
@@ -1632,15 +1632,15 @@ void RTFGenerator::endTitleHead(const QCString &fileName,const QCString &name)
     m_t << "}\n";
 
     // make an index entry
-    addIndexItem(name,QCString());
+    addIndexItem(name,DString());
   }
-  if (!fileName.isEmpty())
+  if (!fileName.empty())
   {
-    writeAnchor(fileName,QCString());
+    writeAnchor(fileName,DString());
   }
 }
 
-void RTFGenerator::startGroupHeader(const QCString &,int extraIndent)
+void RTFGenerator::startGroupHeader(const DString &,int extraIndent)
 {
   DBG_RTF(m_t << "{\\comment startGroupHeader}\n")
   m_t << rtf_Style_Reset;
@@ -1667,16 +1667,16 @@ void RTFGenerator::endGroupHeader(int)
   m_t << rtf_Style_Reset << "\n";
 }
 
-void RTFGenerator::startMemberDoc(const QCString &clname,
-    const QCString &memname,
-    const QCString &,
-    const QCString &,
+void RTFGenerator::startMemberDoc(const DString &clname,
+    const DString &memname,
+    const DString &,
+    const DString &,
     int,
     int,
     bool showInline)
 {
   DBG_RTF(m_t << "{\\comment startMemberDoc}\n")
-  if (!memname.isEmpty() && memname[0]!='@')
+  if (!memname.empty() && memname[0]!='@')
   {
     addIndexItem(memname,clname);
     addIndexItem(clname,memname);
@@ -1689,7 +1689,7 @@ void RTFGenerator::startMemberDoc(const QCString &clname,
     level = 5;
   if (level < 1)
     level = 1;
-  m_t << rtf_Style_Reset << rtf_Style[QCString().sprintf("Heading%d", level).str()].reference();
+  m_t << rtf_Style_Reset << rtf_Style[DString().sprintf("Heading%d", level).str()].reference();
   //styleStack.push(rtf_Style_Heading4);
   m_t << "{\n";
   //printf("RTFGenerator::startMemberDoc() '%s'\n",rtf_Style["Heading4"].reference());
@@ -1700,7 +1700,7 @@ void RTFGenerator::startMemberDoc(const QCString &clname,
 void RTFGenerator::endMemberDoc(bool)
 {
   DBG_RTF(m_t << "{\\comment endMemberDoc}\n")
-  //const QCString &style = styleStack.pop();
+  //const DString &style = styleStack.pop();
   //printf("RTFGenerator::endMemberDoc() '%s'\n",style);
   //ASSERT(style==rtf_Style["Heading4"].reference());
   endBold();
@@ -1708,22 +1708,22 @@ void RTFGenerator::endMemberDoc(bool)
   newParagraph();
 }
 
-void RTFGenerator::startDoxyAnchor(const QCString &,const QCString &,
-                                   const QCString &,const QCString &,
-                                   const QCString &
+void RTFGenerator::startDoxyAnchor(const DString &,const DString &,
+                                   const DString &,const DString &,
+                                   const DString &
                                   )
 {
   DBG_RTF(m_t << "{\\comment startDoxyAnchor}\n")
 }
 
-void RTFGenerator::endDoxyAnchor(const QCString &fName,const QCString &anchor)
+void RTFGenerator::endDoxyAnchor(const DString &fName,const DString &anchor)
 {
-  QCString ref;
-  if (!fName.isEmpty())
+  DString ref;
+  if (!fName.empty())
   {
     ref+=stripPath(fName);
   }
-  if (!anchor.isEmpty())
+  if (!anchor.empty())
   {
     ref+='_';
     ref+=anchor;
@@ -1738,19 +1738,19 @@ void RTFGenerator::endDoxyAnchor(const QCString &fName,const QCString &anchor)
   m_t << "}\n";
 }
 
-void RTFGenerator::addLabel(const QCString &,const QCString &)
+void RTFGenerator::addLabel(const DString &,const DString &)
 {
   DBG_RTF(m_t << "{\\comment addLabel}\n")
 }
 
 
-void RTFGenerator::addIndexItem(const QCString &s1,const QCString &s2)
+void RTFGenerator::addIndexItem(const DString &s1,const DString &s2)
 {
-  if (!s1.isEmpty())
+  if (!s1.empty())
   {
     m_t << "{\\xe \\v ";
     docify(s1);
-    if (!s2.isEmpty())
+    if (!s2.empty())
     {
       m_t << "\\:";
       docify(s2);
@@ -1774,7 +1774,7 @@ void RTFGenerator::endIndent()
 }
 
 
-void RTFGenerator::startMemberDescription(const QCString &,const QCString &,bool)
+void RTFGenerator::startMemberDescription(const DString &,const DString &,bool)
 {
   DBG_RTF(m_t << "{\\comment (startMemberDescription)}\n")
   m_t << "{\n";
@@ -1790,7 +1790,7 @@ void RTFGenerator::endMemberDescription()
   decIndentLevel();
   m_t << "\\par";
   m_t << "}\n";
-  m_omitParagraph = TRUE;
+  m_omitParagraph = true;
 }
 
 void RTFGenerator::startDescForItem()
@@ -1803,7 +1803,7 @@ void RTFGenerator::endDescForItem()
   DBG_RTF(m_t << "{\\comment (endDescForItem) }\n")
 }
 
-void RTFGenerator::startSection(const QCString &,const QCString &title,SectionType type)
+void RTFGenerator::startSection(const DString &,const DString &title,SectionType type)
 {
   DBG_RTF(m_t << "{\\comment (startSection)}\n")
   m_t << "{";
@@ -1821,7 +1821,7 @@ void RTFGenerator::startSection(const QCString &,const QCString &title,SectionTy
     default: ASSERT(0); break;
   }
   num = std::clamp(num, SectionType::MinLevel, SectionType::MaxLevel);
-  QCString heading;
+  DString heading;
   heading.sprintf("Heading%d",num);
   // set style
   m_t << rtf_Style[heading.str()].reference();
@@ -1831,21 +1831,21 @@ void RTFGenerator::startSection(const QCString &,const QCString &title,SectionTy
   m_t << "}\n";
 }
 
-void RTFGenerator::endSection(const QCString &lab,SectionType)
+void RTFGenerator::endSection(const DString &lab,SectionType)
 {
   DBG_RTF(m_t << "{\\comment (endSection)}\n")
   // make bookmark
-  m_omitParagraph=FALSE;
+  m_omitParagraph=false;
   newParagraph();
-  writeAnchor(QCString(),lab);
+  writeAnchor(DString(),lab);
   m_t << "}";
 }
 
-void RTFGenerator::docify(const QCString &str)
+void RTFGenerator::docify(const DString &str)
 {
-  if (str.isEmpty()) return;
+  if (str.empty()) return;
   m_t << docifyToString(str);
-  m_omitParagraph = FALSE;
+  m_omitParagraph = false;
 }
 
 void RTFGenerator::writeChar(char c)
@@ -1862,12 +1862,12 @@ void RTFGenerator::startClassDiagram()
 }
 
 void RTFGenerator::endClassDiagram(const ClassDiagram &d,
-    const QCString &fileName,const QCString &)
+    const DString &fileName,const DString &)
 {
   newParagraph();
 
   // create a png file
-  d.writeImage(m_t,dir(),m_relPath,fileName,FALSE);
+  d.writeImage(m_t,dir(),m_relPath,fileName,false,false);
 
   // display the file
   m_t << "{\n";
@@ -1878,7 +1878,7 @@ void RTFGenerator::endClassDiagram(const ClassDiagram &d,
   m_t << "}\n";
 }
 
-void RTFGenerator::startMemberItem(const QCString &,MemberItemType,const QCString &)
+void RTFGenerator::startMemberItem(const DString &,MemberItemType,const DString &)
 {
   DBG_RTF(m_t << "{\\comment startMemberItem }\n")
   m_t << rtf_Style_Reset << rtf_BList_DepthStyle() << "\n"; // set style to appropriate depth
@@ -1890,18 +1890,18 @@ void RTFGenerator::endMemberItem(MemberItemType)
   newParagraph();
 }
 
-void RTFGenerator::writeAnchor(const QCString &fileName,const QCString &name)
+void RTFGenerator::writeAnchor(const DString &fileName,const DString &name)
 {
-  QCString anchor;
-  if (!fileName.isEmpty())
+  DString anchor;
+  if (!fileName.empty())
   {
     anchor+=stripPath(fileName);
   }
-  if (!fileName.isEmpty() && !name.isEmpty())
+  if (!fileName.empty() && !name.empty())
   {
     anchor+='_';
   }
-  if (!name.isEmpty())
+  if (!name.empty())
   {
     anchor+=name;
   }
@@ -1912,7 +1912,7 @@ void RTFGenerator::writeAnchor(const QCString &fileName,const QCString &name)
   m_t << "{\\bkmkend " << rtfFormatBmkStr(anchor) << "}\n";
 }
 
-void RTFGenerator::writeRTFReference(const QCString &label)
+void RTFGenerator::writeRTFReference(const DString &label)
 {
   m_t << "{\\field\\fldedit {\\*\\fldinst PAGEREF ";
   m_t << rtfFormatBmkStr(stripPath(label));
@@ -1946,7 +1946,7 @@ void RTFGenerator::endMemberList()
 #endif
 }
 
-void RTFGenerator::startDescTable(const QCString &title,const bool hasInits)
+void RTFGenerator::startDescTable(const DString &title,const bool hasInits)
 {
   DBG_RTF(m_t << "{\\comment (startDescTable) }\n")
   m_t << "{\\par\n";
@@ -2059,36 +2059,36 @@ void RTFGenerator::decIndentLevel()
 }
 
 // a style for list formatted with "list continue" style
-QCString RTFGenerator::rtf_CList_DepthStyle()
+DString RTFGenerator::rtf_CList_DepthStyle()
 {
-  QCString n=makeIndexName("ListContinue",indentLevel());
+  DString n=makeIndexName("ListContinue",indentLevel());
   return rtf_Style[n.str()].reference();
 }
 
 // a style for list formatted as a "latext style" table of contents
-QCString RTFGenerator::rtf_LCList_DepthStyle()
+DString RTFGenerator::rtf_LCList_DepthStyle()
 {
-  QCString n=makeIndexName("LatexTOC",indentLevel());
+  DString n=makeIndexName("LatexTOC",indentLevel());
   return rtf_Style[n.str()].reference();
 }
 
 // a style for list formatted as a "bullet" style
-QCString RTFGenerator::rtf_BList_DepthStyle()
+DString RTFGenerator::rtf_BList_DepthStyle()
 {
-  QCString n=makeIndexName("ListBullet",indentLevel());
+  DString n=makeIndexName("ListBullet",indentLevel());
   return rtf_Style[n.str()].reference();
 }
 
 // a style for list formatted as a "enumeration" style
-QCString RTFGenerator::rtf_EList_DepthStyle()
+DString RTFGenerator::rtf_EList_DepthStyle()
 {
-  QCString n=makeIndexName("ListEnum",indentLevel());
+  DString n=makeIndexName("ListEnum",indentLevel());
   return rtf_Style[n.str()].reference();
 }
 
-QCString RTFGenerator::rtf_DList_DepthStyle()
+DString RTFGenerator::rtf_DList_DepthStyle()
 {
-  QCString n=makeIndexName("DescContinue",indentLevel());
+  DString n=makeIndexName("DescContinue",indentLevel());
   return rtf_Style[n.str()].reference();
 }
 
@@ -2112,7 +2112,7 @@ void RTFGenerator::endTextBlock(bool /*paraBreak*/)
   newParagraph();
   DBG_RTF(m_t << "{\\comment endTextBlock}\n")
   m_t << "}\n";
-  //m_omitParagraph = TRUE;
+  //m_omitParagraph = true;
 }
 
 void RTFGenerator::newParagraph()
@@ -2122,22 +2122,22 @@ void RTFGenerator::newParagraph()
     DBG_RTF(m_t << "{\\comment (newParagraph)}\n")
     m_t << "\\par\n";
   }
-  m_omitParagraph = FALSE;
+  m_omitParagraph = false;
 }
 
-void RTFGenerator::startParagraph(const QCString &txt)
+void RTFGenerator::startParagraph(const DString &txt)
 {
   DBG_RTF(m_t << "{\\comment startParagraph}\n")
   newParagraph();
   m_t << "{\n";
-  if (QCString(txt) == "reference") m_t << "\\ql\n";
+  if (DString(txt) == "reference") m_t << "\\ql\n";
 }
 
 void RTFGenerator::endParagraph()
 {
   DBG_RTF(m_t << "{\\comment endParagraph}\n")
   m_t << "}\\par\n";
-  m_omitParagraph = TRUE;
+  m_omitParagraph = true;
 }
 
 void RTFGenerator::startMemberSubtitle()
@@ -2158,7 +2158,7 @@ bool isLeadBytes(int c)
 {
   bool result=false;           // for SBCS Codepages (cp1252,1251 etc...);
 
-  QCString codePage = theTranslator->trRTFansicp();
+  DString codePage = theTranslator->trRTFansicp();
 
   if (codePage == "932")       // cp932 (Japanese Shift-JIS)
   {
@@ -2182,16 +2182,16 @@ bool isLeadBytes(int c)
 
 
 // note: function is not reentrant!
-static void encodeForOutput(TextStream &t,const QCString &s)
+static void encodeForOutput(TextStream &t,const DString &s)
 {
   if (s==nullptr) return;
-  QCString encoding;
-  bool converted=FALSE;
+  DString encoding;
+  bool converted=false;
   size_t l = s.length();
   static std::vector<char> enc;
   if (l*4>enc.size()) enc.resize(l*4); // worst case
   encoding.sprintf("CP%s",qPrint(theTranslator->trRTFansicp()));
-  if (!encoding.isEmpty())
+  if (!encoding.empty())
   {
     // convert from UTF-8 back to the output encoding
     void *cd = portable_iconv_open(encoding.data(),"UTF-8");
@@ -2204,7 +2204,7 @@ static void encodeForOutput(TextStream &t,const QCString &s)
       if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
       {
         enc.resize(enc.size()-oLeft);
-        converted=TRUE;
+        converted=true;
       }
       portable_iconv_close(cd);
     }
@@ -2214,7 +2214,7 @@ static void encodeForOutput(TextStream &t,const QCString &s)
     memcpy(enc.data(),s.data(),l);
     enc.resize(l);
   }
-  bool multiByte = FALSE;
+  bool multiByte = false;
 
   for (size_t i=0;i<enc.size();i++)
   {
@@ -2223,7 +2223,7 @@ static void encodeForOutput(TextStream &t,const QCString &s)
     if (c>=0x80 || multiByte)
     {
       char esc[10];
-      qsnprintf(esc,10,"\\'%X",c);        // escape sequence for SBCS and DBCS(1st&2nd bytes).
+      snprintf(esc,10,"\\'%X",c);        // escape sequence for SBCS and DBCS(1st&2nd bytes).
       t << esc;
 
       if (!multiByte)
@@ -2232,7 +2232,7 @@ static void encodeForOutput(TextStream &t,const QCString &s)
       }
       else
       {
-        multiByte = FALSE;           // end of Double Bytes Character.
+        multiByte = false;           // end of Double Bytes Character.
       }
     }
     else
@@ -2246,7 +2246,7 @@ static void encodeForOutput(TextStream &t,const QCString &s)
  * VERY brittle routine inline RTF's included by other RTF's.
  * it is recursive and ugly.
  */
-static bool preProcessFile(Dir &d,const QCString &infName, TextStream &t, bool bIncludeHeader=true, bool removeFile = true)
+static bool preProcessFile(Dir &d,const DString &infName, TextStream &t, bool bIncludeHeader=true, bool removeFile = true)
 {
   static bool rtfDebug = Debug::isFlagSet(Debug::Rtf);
   std::ifstream f = Portable::openInputStream(infName);
@@ -2257,7 +2257,7 @@ static bool preProcessFile(Dir &d,const QCString &infName, TextStream &t, bool b
   }
 
   const int maxLineLength = 10240;
-  static QCString lineBuf(maxLineLength, QCString::ExplicitSize);
+  static DString lineBuf(maxLineLength, DString::ExplicitSize);
 
   // scan until find end of header
   // this is EXTREEEEEEEMLY brittle.  It works on OUR rtf
@@ -2281,9 +2281,9 @@ static bool preProcessFile(Dir &d,const QCString &infName, TextStream &t, bool b
     {
       size_t startNamePos  = prevLine.find('"',pos)+1;
       size_t endNamePos    = prevLine.find('"',startNamePos);
-      QCString fileName    = prevLine.substr(startNamePos,endNamePos-startNamePos);
+      DString fileName    = prevLine.substr(startNamePos,endNamePos-startNamePos);
       DBG_RTF(t << "{\\comment begin include " << fileName << "}\n")
-      if (!preProcessFile(d,fileName,t,FALSE)) return FALSE;
+      if (!preProcessFile(d,fileName,t,false)) return false;
       DBG_RTF(t << "{\\comment end include " << fileName << "}\n")
     }
     else if (!first) // no INCLUDETEXT on this line
@@ -2310,7 +2310,7 @@ static bool preProcessFile(Dir &d,const QCString &infName, TextStream &t, bool b
   f.close();
   // remove temporary file
   if (!rtfDebug && removeFile) removeSet.insert(FileInfo(d.filePath(infName.str())).absFilePath());
-  return TRUE;
+  return true;
 }
 
 void RTFGenerator::startDotGraph()
@@ -2322,13 +2322,13 @@ void RTFGenerator::endDotGraph(DotClassGraph &g)
 {
   newParagraph();
 
-  QCString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Rtf,dir(),fileName(),m_relPath,TRUE,FALSE);
+  DString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Rtf,dir(),fileName(),m_relPath,true,false);
 
   // display the file
   m_t << "{\n";
   m_t << rtf_Style_Reset << "\n";
   m_t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE \"";
-  QCString imgExt = getDotImageExtension();
+  DString imgExt = getDotImageExtension();
   m_t << fn << "." << imgExt;
   m_t << "\" \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par\n";
   m_t << "}\n";
@@ -2345,13 +2345,13 @@ void RTFGenerator::endInclDepGraph(DotInclDepGraph &g)
 {
   newParagraph();
 
-  QCString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Rtf,dir(),fileName(),m_relPath,FALSE);
+  DString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Rtf,dir(),fileName(),m_relPath,false);
 
   // display the file
   m_t << "{\n";
   m_t << rtf_Style_Reset << "\n";
   m_t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE \"";
-  QCString imgExt = getDotImageExtension();
+  DString imgExt = getDotImageExtension();
   m_t << fn << "." << imgExt;
   m_t << "\" \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par\n";
   m_t << "}\n";
@@ -2375,13 +2375,13 @@ void RTFGenerator::endCallGraph(DotCallGraph &g)
 {
   newParagraph();
 
-  QCString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Rtf,dir(),fileName(),m_relPath,FALSE);
+  DString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Rtf,dir(),fileName(),m_relPath,false);
 
   // display the file
   m_t << "{\n";
   m_t << rtf_Style_Reset << "\n";
   m_t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE \"";
-  QCString imgExt = getDotImageExtension();
+  DString imgExt = getDotImageExtension();
   m_t << fn << "." << imgExt;
   m_t << "\" \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par\n";
   m_t << "}\n";
@@ -2397,13 +2397,13 @@ void RTFGenerator::endDirDepGraph(DotDirDeps &g)
 {
   newParagraph();
 
-  QCString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Rtf,dir(),fileName(),m_relPath,FALSE);
+  DString fn = g.writeGraph(m_t,GraphOutputFormat::BITMAP,EmbeddedOutputFormat::Rtf,dir(),fileName(),m_relPath,false);
 
   // display the file
   m_t << "{\n";
   m_t << rtf_Style_Reset << "\n";
   m_t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE \"";
-  QCString imgExt = getDotImageExtension();
+  DString imgExt = getDotImageExtension();
   m_t << fn << "." << imgExt;
   m_t << "\" \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par\n";
   m_t << "}\n";
@@ -2413,7 +2413,7 @@ void RTFGenerator::endDirDepGraph(DotDirDeps &g)
 /** Tests the integrity of the result by counting brackets.
  *
  */
-void testRTFOutput(const QCString &name)
+void testRTFOutput(const DString &name)
 {
   int bcount=0;
   int line=1;
@@ -2458,7 +2458,7 @@ err:
  * This is an API to a VERY brittle RTF preprocessor that combines nested
  * RTF files.  This version replaces the infile with the new file
  */
-bool RTFGenerator::preProcessFileInplace(const QCString &path,const QCString &name)
+bool RTFGenerator::preProcessFileInplace(const DString &path,const DString &name)
 {
   static bool rtfDebug = Debug::isFlagSet(Debug::Rtf);
 
@@ -2467,7 +2467,7 @@ bool RTFGenerator::preProcessFileInplace(const QCString &path,const QCString &na
   if (!d.exists())
   {
     err("Output dir {} does not exist!\n",path);
-    return FALSE;
+    return false;
   }
   std::string oldDir = Dir::currentDirPath();
 
@@ -2475,15 +2475,15 @@ bool RTFGenerator::preProcessFileInplace(const QCString &path,const QCString &na
   Dir::setCurrent(d.absPath());
   Dir thisDir;
 
-  QCString combinedName = path+"/combined.rtf";
-  QCString mainRTFName  = path+"/"+name;
+  DString combinedName = path+"/combined.rtf";
+  DString mainRTFName  = path+"/"+name;
 
   std::ofstream f = Portable::openOutputStream(combinedName);
   if (!f.is_open())
   {
     err("Failed to open {} for writing!\n",combinedName);
     Dir::setCurrent(oldDir);
-    return FALSE;
+    return false;
   }
   TextStream outt(&f);
 
@@ -2494,7 +2494,7 @@ bool RTFGenerator::preProcessFileInplace(const QCString &path,const QCString &na
     f.close();
     if (!rtfDebug) removeSet.insert(FileInfo(thisDir.filePath(combinedName.str())).absFilePath());
     Dir::setCurrent(oldDir);
-    return FALSE;
+    return false;
   }
 
   // everything worked, move the files
@@ -2512,18 +2512,18 @@ bool RTFGenerator::preProcessFileInplace(const QCString &path,const QCString &na
 
   testRTFOutput(mainRTFName);
 
-  QCString rtfOutputDir = Dir::currentDirPath();
+  DString rtfOutputDir = Dir::currentDirPath();
   for (auto &s : removeSet)
   {
-    QCString s1 = s;
+    DString s1 = s;
     if (s1.startsWith(rtfOutputDir)) Portable::unlink(s1);
   }
 
   Dir::setCurrent(oldDir);
-  return TRUE;
+  return true;
 }
 
-void RTFGenerator::startMemberGroupHeader(const QCString &,bool hasHeader)
+void RTFGenerator::startMemberGroupHeader(const DString &,bool hasHeader)
 {
   DBG_RTF(m_t << "{\\comment startMemberGroupHeader}\n")
   m_t << "{\n";
@@ -2531,7 +2531,7 @@ void RTFGenerator::startMemberGroupHeader(const QCString &,bool hasHeader)
   m_t << rtf_Style_Reset << rtf_Style["GroupHeader"].reference();
 }
 
-void RTFGenerator::endMemberGroupHeader()
+void RTFGenerator::endMemberGroupHeader(bool)
 {
   DBG_RTF(m_t << "{\\comment endMemberGroupHeader}\n")
   newParagraph();
@@ -2582,17 +2582,17 @@ void RTFGenerator::startExamples()
 void RTFGenerator::endExamples()
 {
   DBG_RTF(m_t << "{\\comment (endExamples)}\n")
-  m_omitParagraph = FALSE;
+  m_omitParagraph = false;
   newParagraph();
   decIndentLevel();
-  m_omitParagraph = TRUE;
+  m_omitParagraph = true;
   m_t << "}";
 }
 
-void RTFGenerator::startParameterType(bool first,const QCString &key)
+void RTFGenerator::startParameterType(bool first,const DString &key)
 {
   DBG_RTF(m_t << "{\\comment (startParameterType)}\n")
-  if (!first && !key.isEmpty())
+  if (!first && !key.empty())
   {
     m_t << " " << key << " ";
   }
@@ -2604,10 +2604,10 @@ void RTFGenerator::endParameterType()
   m_t << " ";
 }
 
-void RTFGenerator::exceptionEntry(const QCString &prefix,bool closeBracket)
+void RTFGenerator::exceptionEntry(const DString &prefix,bool closeBracket)
 {
   DBG_RTF(m_t << "{\\comment (exceptionEntry)}\n")
-  if (!prefix.isEmpty())
+  if (!prefix.empty())
   {
     m_t << " " << prefix << "(";
   }
@@ -2623,10 +2623,10 @@ void RTFGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const M
   auto astImpl = dynamic_cast<const DocNodeAST*>(ast);
   if (astImpl)
   {
-    RTFDocVisitor visitor(m_t,*m_codeList,ctx?ctx->getDefFileExtension():QCString(""),m_hierarchyLevel);
+    RTFDocVisitor visitor(m_t,*m_codeList,ctx?ctx->getDefFileExtension():DString(""),m_hierarchyLevel);
     std::visit(visitor,astImpl->root);
   }
-  m_omitParagraph = TRUE;
+  m_omitParagraph = true;
 }
 
 void RTFGenerator::rtfwriteRuler_doubleline()
@@ -2653,7 +2653,7 @@ void RTFGenerator::rtfwriteRuler_thin()
   m_t << "{\\pard\\widctlpar\\brdrb\\brdrs\\brdrw5\\brsp20 \\adjustright \\par}\n";
 }
 
-void RTFGenerator::startConstraintList(const QCString &header)
+void RTFGenerator::startConstraintList(const DString &header)
 {
   DBG_RTF(m_t << "{\\comment (startConstraintList)}\n")
   m_t << "{"; // ends at endConstraintList
@@ -2710,7 +2710,7 @@ void RTFGenerator::endConstraintList()
   DBG_RTF(m_t << "{\\comment (endConstraintList)}\n")
   newParagraph();
   decIndentLevel();
-  m_omitParagraph = TRUE;
+  m_omitParagraph = true;
   m_t << "}";
 }
 
@@ -2828,7 +2828,7 @@ void RTFGenerator::startLabels()
 {
 }
 
-void RTFGenerator::writeLabel(const QCString &l,bool isLast)
+void RTFGenerator::writeLabel(const DString &l,bool isLast)
 {
   m_t << "{\\f2 [" << l << "]}";
   if (!isLast) m_t << ", ";
@@ -2839,9 +2839,9 @@ void RTFGenerator::endLabels()
 }
 
 void RTFGenerator::writeInheritedSectionTitle(
-                  const QCString &/*id*/,const QCString &ref,
-                  const QCString &file,  const QCString &anchor,
-                  const QCString &title, const QCString &name)
+                  const DString &/*id*/,const DString &ref,
+                  const DString &file,  const DString &anchor,
+                  const DString &title, const DString &name)
 {
   m_t << rtf_Style_Reset;
   m_t << rtf_Style["Heading4"].reference();
@@ -2868,9 +2868,9 @@ void RTFGenerator::endParameterExtra(bool last,bool /* emptyList */, bool closeB
 
 static std::mutex g_rtfFormatMutex;
 static std::unordered_map<std::string,std::string> g_tagMap;
-static QCString g_nextTag( "AAAAAAAAAA" );
+static DString g_nextTag( "AAAAAAAAAA" );
 
-QCString rtfFormatBmkStr(const QCString &name)
+DString rtfFormatBmkStr(const DString &name)
 {
   std::lock_guard<std::mutex> lock(g_rtfFormatMutex);
 
@@ -2884,7 +2884,7 @@ QCString rtfFormatBmkStr(const QCString &name)
     return it->second;
   }
 
-  QCString tag = g_nextTag;
+  DString tag = g_nextTag;
   auto result = g_tagMap.emplace(name.str(), g_nextTag.str());
 
   if (result.second) // new item was added

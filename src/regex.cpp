@@ -403,10 +403,13 @@ void Ex::Private::compile()
           }
           if (data[prevTokenPos].kind()==PToken::Kind::EndCapture)
           {
-            // find the beginning of the capture range
-            while (prevTokenPos>0 && data[prevTokenPos].kind()!=PToken::Kind::BeginCapture)
+            // find the beginning of the capture range, accounting for nesting
+            int depth = 1;
+            while (prevTokenPos>0 && depth>0)
             {
               prevTokenPos--;
+              if (data[prevTokenPos].kind()==PToken::Kind::EndCapture)   depth++;
+              else if (data[prevTokenPos].kind()==PToken::Kind::BeginCapture) depth--;
             }
           }
           data.insert(data.begin()+prevTokenPos,

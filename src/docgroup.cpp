@@ -23,7 +23,7 @@
 static std::atomic_int g_groupId;
 static std::mutex g_memberGroupInfoMapMutex;
 
-void DocGroup::enterFile(const QCString &fileName,int)
+void DocGroup::enterFile(const DString &fileName,int)
 {
   m_openCount = 0;
   m_autoGroupStack.clear();
@@ -33,7 +33,7 @@ void DocGroup::enterFile(const QCString &fileName,int)
   m_compoundName=fileName;
 }
 
-void DocGroup::leaveFile(const QCString &fileName,int line)
+void DocGroup::leaveFile(const DString &fileName,int line)
 {
   //if (m_memberGroupId!=DOX_NOGROUP)
   //{
@@ -52,7 +52,7 @@ void DocGroup::leaveFile(const QCString &fileName,int line)
   }
 }
 
-void DocGroup::enterCompound(const QCString &fileName,int line,const QCString &name)
+void DocGroup::enterCompound(const DString &fileName,int line,const DString &name)
 {
   if (m_memberGroupId!=DOX_NOGROUP)
   {
@@ -62,19 +62,19 @@ void DocGroup::enterCompound(const QCString &fileName,int line,const QCString &n
   m_memberGroupRelates.clear();
   m_memberGroupDocs.clear();
   m_compoundName = name;
-  int i = m_compoundName.find('(');
-  if (i!=-1)
+  size_t i = m_compoundName.find('(');
+  if (i!=DString::npos)
   {
     m_compoundName=m_compoundName.left(i); // strip category (Obj-C)
   }
-  if (m_compoundName.isEmpty())
+  if (m_compoundName.empty())
   {
     m_compoundName=fileName;
   }
   //printf("groupEnterCompound(%s)\n",qPrint(name));
 }
 
-void DocGroup::leaveCompound(const QCString &,int,const QCString &/* name */)
+void DocGroup::leaveCompound(const DString &,int,const DString &/* name */)
 {
   //printf("groupLeaveCompound(%s)\n",qPrint(name));
   //if (m_memberGroupId!=DOX_NOGROUP)
@@ -94,8 +94,8 @@ int DocGroup::findExistingGroup(const MemberGroupInfo *info)
   for (const auto &[groupId,groupInfo] : Doxygen::memberGroupInfoMap)
   {
     if (m_compoundName==groupInfo->compoundName &&  // same file or scope
-	!groupInfo->header.isEmpty() &&             // not a nameless group
-	qstricmp(groupInfo->header,info->header)==0  // same header name
+	!groupInfo->header.empty() &&             // not a nameless group
+	dstricmp(groupInfo->header,info->header)==0  // same header name
        )
     {
       //printf("Found it!\n");
@@ -105,7 +105,7 @@ int DocGroup::findExistingGroup(const MemberGroupInfo *info)
   return ++g_groupId; // start new group
 }
 
-void DocGroup::open(Entry *e,const QCString &,int, bool implicit)
+void DocGroup::open(Entry *e,const DString &,int, bool implicit)
 {
   if (!implicit) m_openCount++;
   //printf("==> openGroup(name=%s,sec=%x) m_autoGroupStack=%zu\n",
@@ -138,7 +138,7 @@ void DocGroup::open(Entry *e,const QCString &,int, bool implicit)
   }
 }
 
-void DocGroup::close(Entry *e,const QCString &fileName,int line,bool foundInline,bool implicit)
+void DocGroup::close(Entry *e,const DString &fileName,int line,bool foundInline,bool implicit)
 {
   if (!implicit)
   {
@@ -208,7 +208,7 @@ void DocGroup::addDocs(Entry *e)
   {
     m_memberGroupDocs=e->brief.stripWhiteSpace();
     e->doc = stripLeadingAndTrailingEmptyLines(e->doc,e->docLine);
-    if (!m_memberGroupDocs.isEmpty() && !e->doc.isEmpty())
+    if (!m_memberGroupDocs.empty() && !e->doc.empty())
     {
       m_memberGroupDocs+="\n\n";
     }
@@ -223,6 +223,7 @@ void DocGroup::addDocs(Entry *e)
         info->docFile = e->docFile;
         info->docLine = e->docLine;
         info->setRefItems(e->sli);
+        info->setRequirementReferences(e->rqli);
       }
     }
     e->doc.clear();
@@ -230,7 +231,7 @@ void DocGroup::addDocs(Entry *e)
   }
 }
 
-bool DocGroup::isEmpty() const
+bool DocGroup::empty() const
 {
   return (m_memberGroupId==DOX_NOGROUP);
 }

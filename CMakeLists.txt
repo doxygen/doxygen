@@ -38,7 +38,7 @@ option(enable_tracing  "Enable tracing option in release builds [development]" O
 option(enable_lex_debug "Enable debugging info for lexical scanners in release builds [development]" OFF)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
-  if (CYGWIN OR MINGW)
+  if (CYGWIN OR MINGW OR NOT "${CMAKE_TOOLCHAIN_FILE}" STREQUAL "")
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
   else()
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
@@ -62,7 +62,7 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Sanitizers")
 include(version)
 
-message(STATUS "Using Cmake version ${CMAKE_VERSION}")
+message(STATUS "Using CMake version ${CMAKE_VERSION}")
 if(${CMAKE_VERSION} VERSION_LESS "3.21.0")
   set(depfile_supported  "0" CACHE INTERNAL "DEPFILE is not supported")
 else()

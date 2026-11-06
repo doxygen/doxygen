@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="union_0funion_0e_8g__uvar" kind="union" language="C++" prot="public">
+    <compoundname>[union].g_uvar</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="union_0funion_0e_8g__uvar_1ac577a09289a048114c646869968b9ea0" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int @315266323270336241362012132362025305311314061063::ga</definition>
+        <argsstring/>
+        <name>ga</name>
+        <qualifiedname>[union].g_uvar::ga</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>global union member ga </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="121_anonymous.cpp" line="43" column="7"/>
+      </memberdef>
+      <memberdef kind="variable" id="union_0funion_0e_8g__uvar_1a1f32bb255adeb334bf088e63ca9bdf1e" prot="public" static="no" mutable="no">
+        <type>float</type>
+        <definition>float @315266323270336241362012132362025305311314061063::gb</definition>
+        <argsstring/>
+        <name>gb</name>
+        <qualifiedname>[union].g_uvar::gb</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>global union member gb </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="121_anonymous.cpp" line="44" column="9"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>a global union type </para>
+    </detaileddescription>
+    <location file="121_anonymous.cpp" line="41" column="1" bodyfile="121_anonymous.cpp" bodystart="42" bodyend="45"/>
+    <listofallmembers>
+      <member refid="union_0funion_0e_8g__uvar_1ac577a09289a048114c646869968b9ea0" prot="public" virt="non-virtual">
+        <scope>[union].g_uvar</scope>
+        <name>ga</name>
+      </member>
+      <member refid="union_0funion_0e_8g__uvar_1a1f32bb255adeb334bf088e63ca9bdf1e" prot="public" virt="non-virtual">
+        <scope>[union].g_uvar</scope>
+        <name>gb</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

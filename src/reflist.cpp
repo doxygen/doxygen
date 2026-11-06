@@ -21,8 +21,8 @@
 #include "definition.h"
 #include "config.h"
 
-RefList::RefList(const QCString &listName, const QCString &pageTitle, const QCString &secTitle) :
-       m_listName(listName), m_fileName(convertNameToFile(listName,FALSE,TRUE)),
+RefList::RefList(const DString &listName, const DString &pageTitle, const DString &secTitle) :
+       m_listName(listName), m_fileName(convertNameToFile(listName,false,true)),
        m_pageTitle(pageTitle), m_secTitle(secTitle)
 {
 }
@@ -58,16 +58,16 @@ void RefList::generatePage()
 
   std::stable_sort(m_entries.begin(),m_entries.end(),
             [](const std::unique_ptr<RefItem> &left,const std::unique_ptr<RefItem> &right)
-            { return qstricmp_sort(left->title(),right->title()) < 0; });
+            { return dstricmp_sort(left->title(),right->title()) < 0; });
   //RefItem *item;
-  QCString doc;
+  DString doc;
   int cnt = 0;
   doc += "<dl class=\"reflist\">";
-  QCString lastGroup;
+  DString lastGroup;
   bool first=true;
   for (const std::unique_ptr<RefItem> &item : m_entries)
   {
-    if (item->name().isEmpty()) continue;
+    if (item->name().empty()) continue;
     cnt++;
     bool startNewGroup = item->group()!=lastGroup;
     if (startNewGroup)
@@ -91,10 +91,10 @@ void RefList::generatePage()
       doc += " \\_internalref ";
       doc += item->name();
       // escape \'s in title, see issue #5901
-      QCString escapedTitle = substitute(item->title(),"\\","\\\\");
+      DString escapedTitle = substitute(item->title(),"\\","\\\\");
       doc += " \""+escapedTitle+"\" ";
       // write declaration in case a function with arguments
-      if (!item->args().isEmpty())
+      if (!item->args().empty())
       {
         // escape @'s in argument list, needed for Java annotations (see issue #6208)
         // escape \'s in argument list (see issue #6533)
@@ -121,6 +121,6 @@ void RefList::generatePage()
   //printf("generatePage('%s')\n",doc.data());
   if (cnt>0)
   {
-    addRelatedPage(m_listName,m_pageTitle,doc,m_fileName,1,1,RefItemVector(),nullptr,nullptr,TRUE);
+    addRelatedPage(m_listName,m_pageTitle,doc,m_fileName,1,1,RefItemVector(),nullptr,nullptr,true);
   }
 }

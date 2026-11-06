@@ -260,6 +260,7 @@ add_library(doxymain STATIC
     dotnode.cpp
     dotrunner.cpp
     doxygen.cpp
+    dstring.cpp
     eclipsehelp.cpp
     emoji.cpp
     entry.cpp
@@ -286,6 +287,7 @@ add_library(doxymain STATIC
     memberdef.cpp
     membergroup.cpp
     memberlist.cpp
+    mermaid.cpp
     moduledef.cpp
     msc.cpp
     namespacedef.cpp
@@ -295,10 +297,10 @@ add_library(doxymain STATIC
     perlmodgen.cpp
     plantuml.cpp
     plantumlsvgpatcher.cpp
-    qcstring.cpp
     qhp.cpp
     reflist.cpp
     regex.cpp
+    requirement.cpp
     resourcemgr.cpp
     rtfdocvisitor.cpp
     rtfgen.cpp
@@ -349,6 +351,9 @@ add_executable(doxygen
 include(ApplyEditbin)
 apply_editbin(doxygen console)
 
+include(ApplyManifest)
+apply_manifest(doxygen)
+
 add_sanitizers(doxygen)
 
 if (use_libclang)
@@ -365,7 +370,11 @@ if (use_libclang)
     include_directories(${LLVM_INCLUDE_DIRS})
     add_definitions(${LLVM_DEFINITIONS})
     if (static_libclang)
-        set(CLANG_LIBS libclang clangTooling)
+        if (MSVC OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
+          set(CLANG_LIBS libclang clangTooling)
+        else()
+          set(CLANG_LIBS libclang_static clangTooling)
+        endif()
         add_definitions(-DCINDEX_NO_EXPORTS)
     else() # dynamically linked version of clang
         llvm_config(doxymain USE_SHARED support)

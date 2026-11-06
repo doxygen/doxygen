@@ -18,7 +18,7 @@
 #include <memory>
 #include <initializer_list>
 
-#include "qcstring.h"
+#include "dstring.h"
 #include "construct.h"
 
 /** @brief Compiled resource */
@@ -43,20 +43,20 @@ class ResourceMgr
     void registerResources(std::initializer_list<Resource> resources);
 
     /** Writes all resource belonging to a given category to a given target directory */
-    bool writeCategory(const QCString &categoryName,const QCString &targetDir) const;
+    bool writeCategory(const DString &categoryName,const DString &targetDir) const;
 
     /** Copies a registered resource to a given target directory */
-    bool copyResource(const QCString &name,const QCString &targetDir) const;
+    bool copyResource(const DString &name,const DString &targetDir) const;
 
     /** Copies a registered resource to a given target directory under a given target name */
-    bool copyResourceAs(const QCString &name,const QCString &targetDir,const QCString &targetName, bool append=false) const;
+    bool copyResourceAs(const DString &name,const DString &targetDir,const DString &targetName, bool append=false) const;
 
     /** Gets the resource data as a C string */
-    QCString getAsString(const QCString &name) const;
+    DString getAsString(const DString &name) const;
 
   private:
     /** Returns a pointer to the resource object with the given name. */
-    const Resource *get(const QCString &name) const;
+    const Resource *get(const DString &name) const;
 
     ResourceMgr();
    ~ResourceMgr();

@@ -41,7 +41,7 @@ available through the global functions \c Config_getXXX(), where \c XXX is the
 type of the option. The argument of these functions is a string naming
 the option as it appears in the configuration file. For instance:
 \c Config_getBool(GENERATE_TESTLIST) returns a reference to a boolean
-value that is \c TRUE if the test list was enabled in the configuration file.
+value that is \c true if the test list was enabled in the configuration file.
 
 The function \c readConfiguration() in \c src/doxygen.cpp
 reads the command line options and then calls the configuration parser.

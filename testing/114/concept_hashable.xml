@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="concept_hashable" kind="concept">
+    <compoundname>Hashable</compoundname>
+    <templateparamlist>
+      <param>
+        <type>typename T</type>
+      </param>
+    </templateparamlist>
+    <initializer>template&lt;typename T&gt;
+concept <ref refid="concept_hashable" kindref="compound">Hashable</ref> =  requires(T a)
+{
+    /** For values `a` of type `T`, the expression `std::hash&lt;T&gt;{}(a)`
+     *  should compile and its result is convertible to `std::size_t` */
+    { std::hash&lt;T&gt;{}(a) } -&gt; std::convertible_to&lt;std::size_t&gt;;
+}</initializer>
+    <conceptparts>
+      <codepart line="6">
+        <programlisting>
+          <codeline>
+            <highlight class="keyword">template</highlight>
+            <highlight class="normal">&lt;</highlight>
+            <highlight class="keyword">typename</highlight>
+            <highlight class="normal"><sp/>T&gt;</highlight>
+          </codeline>
+          <codeline>
+            <highlight class="normal"/>
+            <highlight class="keyword">concept<sp/></highlight>
+            <highlight class="normal">Hashable<sp/>=<sp/></highlight>
+            <highlight class="keyword">requires</highlight>
+            <highlight class="normal">(T<sp/>a)</highlight>
+          </codeline>
+          <codeline>
+            <highlight class="normal">{</highlight>
+          </codeline>
+        </programlisting>
+      </codepart>
+      <docpart line="8" col="4">
+        <para>For values <computeroutput>a</computeroutput> of type <computeroutput>T</computeroutput>, the expression <computeroutput>std::hash&lt;T&gt;{}(a)</computeroutput> should compile and its result is convertible to <computeroutput>std::size_t</computeroutput> </para>
+      </docpart>
+      <codepart line="10">
+        <programlisting>
+          <codeline>
+            <highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/>std::hash&lt;T&gt;{}(a)<sp/>}<sp/>-&gt;<sp/>std::convertible_to&lt;std::size_t&gt;;</highlight>
+          </codeline>
+          <codeline>
+            <highlight class="normal">}</highlight>
+          </codeline>
+        </programlisting>
+      </codepart>
+    </conceptparts>
+    <briefdescription>
+      <para>Declaration of the concept "Hashable", which is satisfied by any type <computeroutput>T</computeroutput>. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="114_concept.cpp" line="6" column="1"/>
+  </compounddef>
+</doxygen>

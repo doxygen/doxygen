@@ -42,7 +42,7 @@
 #include <map>
 #include <algorithm>
 #include <filesystem>
-#include "qcstring.h"
+#include "dstring.h"
 #include "namespacedef.h"
 #include "portable.h"
 #include "dir.h"
@@ -57,24 +57,24 @@ class Doxyparse : public OutputCodeIntf
     // and cross-linked version of the source code, but who needs that anyway ;-)
     OutputType type() const override { return OutputType::Extension; }
     std::unique_ptr<OutputCodeIntf> clone() override { return std::make_unique<Doxyparse>(m_fd); }
-    void codify(const QCString &) override {}
+    void codify(const DString &) override {}
     void stripCodeComments(bool) override {}
     void startSpecialComment() override {}
     void endSpecialComment() override {}
     void setStripIndentAmount(size_t) override {}
-    void writeCodeLink(CodeSymbolType,const QCString &,const QCString &,const QCString &,const QCString &,const QCString &)  override {}
+    void writeCodeLink(CodeSymbolType,const DString &,const DString &,const DString &,const DString &,const DString &)  override {}
     void startCodeLine(int) override {}
     void endCodeLine() override {}
-    void writeCodeAnchor(const QCString &) override {}
-    void startFontClass(const QCString &) override {}
+    void writeCodeAnchor(const DString &) override {}
+    void startFontClass(const DString &) override {}
     void endFontClass() override {}
-    void writeLineNumber(const QCString &,const QCString &,const QCString &,int,bool) override {}
-    virtual void writeTooltip(const QCString &,const DocLinkInfo &,
-                              const QCString &,const QCString &,const SourceLinkInfo &,
+    void writeLineNumber(const DString &,const DString &,const DString &,int,bool) override {}
+    virtual void writeTooltip(const DString &,const DocLinkInfo &,
+                              const DString &,const DString &,const SourceLinkInfo &,
                               const SourceLinkInfo &) override {}
-    void startCodeFragment(const QCString &) override {}
-    void endCodeFragment(const QCString &) override {}
-    void startFold(int,const QCString &,const QCString &) override {}
+    void startCodeFragment(const DString &) override {}
+    void endCodeFragment(const DString &) override {}
+    void startFold(int,const DString &,const DString &) override {}
     void endFold() override {}
 
     void linkableSymbol(int l, const char *sym, Definition *symDef, Definition *context)
@@ -110,8 +110,8 @@ static void findXRefSymbols(FileDef *fd)
   parseList.add(std::move(parse));
 
   // parse the source code
-  intf->parseCode(parseList, QCString(), fileToString(fd->absFilePath()), lang,
-                  FALSE, CodeParserOptions().setFileDef(fd));
+  intf->parseCode(parseList, DString(), fileToString(fd->absFilePath()), lang,
+                  false, CodeParserOptions().setFileDef(fd));
 }
 
 static bool ignoreStaticExternalCall(const MemberDef *context, const MemberDef *md) {
@@ -189,7 +189,7 @@ std::string argumentData(const Argument &argument) {
   std::string data = "";
   if (argument.type.size() > 1)
     data = sanitizeString(argument.type.data());
-  else if (!argument.name.isEmpty())
+  else if (!argument.name.empty())
     data = sanitizeString(argument.name.data());
   return data;
 }
@@ -452,38 +452,38 @@ int main(int argc,char **argv) {
   // we need a place to put intermediate files
   std::ostringstream tmpdir;
   unsigned int pid = Portable::pid();
-  if (!Portable::getenv("TMP").isEmpty())
+  if (!Portable::getenv("TMP").empty())
     tmpdir << Portable::getenv("TMP") << "/doxyparse-" << pid;
-  else if (!Portable::getenv("TEMP").isEmpty())
+  else if (!Portable::getenv("TEMP").empty())
     tmpdir << Portable::getenv("TEMP") << "/doxyparse-" << pid;
   else
     tmpdir << "doxyparse-" << pid;
 
   Config_updateString(OUTPUT_DIRECTORY,tmpdir.str().c_str());
   // enable HTML (fake) output to omit warning about missing output format
-  Config_updateBool(GENERATE_HTML,TRUE);
+  Config_updateBool(GENERATE_HTML,true);
   // disable latex output
-  Config_updateBool(GENERATE_LATEX,FALSE);
+  Config_updateBool(GENERATE_LATEX,false);
   // be quiet
-  Config_updateBool(QUIET,TRUE);
+  Config_updateBool(QUIET,true);
   // turn off warnings
-  Config_updateBool(WARNINGS,FALSE);
-  Config_updateBool(WARN_IF_UNDOCUMENTED,FALSE);
-  Config_updateBool(WARN_IF_DOC_ERROR,FALSE);
-  Config_updateBool(WARN_IF_UNDOC_ENUM_VAL,FALSE);
+  Config_updateBool(WARNINGS,false);
+  Config_updateBool(WARN_IF_UNDOCUMENTED,false);
+  Config_updateBool(WARN_IF_DOC_ERROR,false);
+  Config_updateBool(WARN_IF_UNDOC_ENUM_VAL,false);
   // Extract as much as possible
-  Config_updateBool(EXTRACT_ALL,TRUE);
-  Config_updateBool(EXTRACT_STATIC,TRUE);
-  Config_updateBool(EXTRACT_PRIVATE,TRUE);
-  Config_updateBool(EXTRACT_LOCAL_METHODS,TRUE);
-  Config_updateBool(EXTRACT_PACKAGE,TRUE);
+  Config_updateBool(EXTRACT_ALL,true);
+  Config_updateBool(EXTRACT_STATIC,true);
+  Config_updateBool(EXTRACT_PRIVATE,true);
+  Config_updateBool(EXTRACT_LOCAL_METHODS,true);
+  Config_updateBool(EXTRACT_PACKAGE,true);
   // Extract source browse information, needed
   // to make doxygen gather the cross reference info
-  Config_updateBool(SOURCE_BROWSER,TRUE);
+  Config_updateBool(SOURCE_BROWSER,true);
   // find functions call between modules
-  Config_updateBool(CALL_GRAPH,TRUE);
+  Config_updateBool(CALL_GRAPH,true);
   // loop recursive over input files
-  Config_updateBool(RECURSIVE,TRUE);
+  Config_updateBool(RECURSIVE,true);
   // add file extensions
   Config_updateList(FILE_PATTERNS, { "*.cc", "*.cxx", "*.cpp", "*.java",
                                      "*.py", "*.pyw", "*.cs", "*.c", "*.h", "*.hh", "*.hpp"});
@@ -521,7 +521,7 @@ int main(int argc,char **argv) {
 
   Dir thisDir;
   // remove temporary files
-  if (!Doxygen::filterDBFileName.isEmpty()) thisDir.remove(Doxygen::filterDBFileName.str());
+  if (!Doxygen::filterDBFileName.empty()) thisDir.remove(Doxygen::filterDBFileName.str());
 
   // clean up after us
   thisDir.rmdir(Config_getString(OUTPUT_DIRECTORY).str());

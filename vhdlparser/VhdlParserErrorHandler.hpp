@@ -40,7 +40,7 @@ class VhdlErrorHandler: public ErrorHandler
     }
 
   private:
-    QCString m_fileName;
+    DString m_fileName;
 };
 
 class VhdlTokenManagerErrorHandler: public TokenManagerErrorHandler
@@ -59,7 +59,7 @@ class VhdlTokenManagerErrorHandler: public TokenManagerErrorHandler
     }
 
   private:
-    QCString m_fileName;
+    DString m_fileName;
 };
 
 } }

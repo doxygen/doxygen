@@ -22,7 +22,7 @@
 #include <string>
 #include "construct.h"
 
-class QCString;
+class DString;
 
 class Preprocessor
 {
@@ -31,8 +31,8 @@ class Preprocessor
    ~Preprocessor();
     NON_COPYABLE(Preprocessor)
 
-    void processFile(const QCString &fileName,const std::string &input,std::string &output);
-    void addSearchDir(const QCString &dir);
+    void processFile(const DString &fileName,const std::string &input,std::string &output);
+    void addSearchDir(const DString &dir);
  private:
    struct Private;
    std::unique_ptr<Private> p;

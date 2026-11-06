@@ -46,7 +46,7 @@ insert a newline as if a physical newline was in the original file.
 
 Note when you need a literal `{` or `}` or `,` (or non default separator)
 in the value part of an alias you have to
-escape it by means of a backslash (`\`), this can lead to conflicts with the
+escape it by means of a backslash (\c \\), this can lead to conflicts with the
 commands \c \\{ and \c \\} for these it is advised to use the version \c @@{ and \c @@} or
 use a double escape (\c \\\\{ and \c \\\\})
 

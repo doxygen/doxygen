@@ -18,7 +18,7 @@
 
 #include <stack>
 
-#include "qcstring.h"
+#include "dstring.h"
 #include "docvisitor.h"
 #include "docnode.h"
 
@@ -34,11 +34,11 @@ enum class TexOrPdf
 };
 
 /*! @brief Concrete visitor implementation for LaTeX output. */
-class LatexDocVisitor : public DocVisitor
+class LatexDocVisitor final : public DocVisitor
 {
   public:
     LatexDocVisitor(TextStream &t,OutputCodeList &ci,LatexCodeGenerator &lcg,
-                    const QCString &langExt, int hierarchyLevel = 0);
+                    const DString &langExt, int hierarchyLevel = 0);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -95,6 +95,7 @@ class LatexDocVisitor : public DocVisitor
     void operator()(const DocMscFile &);
     void operator()(const DocDiaFile &);
     void operator()(const DocPlantUmlFile &);
+    void operator()(const DocMermaidFile &);
     void operator()(const DocLink &lnk);
     void operator()(const DocRef &ref);
     void operator()(const DocSecRefItem &);
@@ -134,31 +135,36 @@ class LatexDocVisitor : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void filter(const QCString &str, const bool retainNewLine = false);
-    void startLink(const QCString &ref,const QCString &file,
-                   const QCString &anchor,bool refToTable=false,bool refToSection=false);
-    void endLink(const QCString &ref,const QCString &file,
-                 const QCString &anchor,bool refToTable=false,bool refToSection=false, SectionType sectionType = SectionType::Anchor);
-    void startDotFile(const QCString &fileName,const QCString &width,
-                      const QCString &height, bool hasCaption,
-                      const QCString &srcFile,int srcLine);
+    void filter(const DString &str, const bool retainNewLine = false, const bool citeEntry = false);
+    void startLink(const DString &ref,const DString &file,
+                   const DString &anchor,bool refToTable=false,bool refToSection=false);
+    void endLink(const DString &ref,const DString &file,
+                 const DString &anchor,bool refToTable=false,bool refToSection=false, SectionType sectionType = SectionType::Anchor);
+    void startDotFile(const DString &fileName,const DString &width,
+                      const DString &height, bool hasCaption,
+                      const DString &srcFile,int srcLine, bool newFile = true);
     void endDotFile(bool hasCaption);
 
-    void startMscFile(const QCString &fileName,const QCString &width,
-                      const QCString &height, bool hasCaption,
-                      const QCString &srcFile,int srcLine);
+    void startMscFile(const DString &fileName,const DString &width,
+                      const DString &height, bool hasCaption,
+                      const DString &srcFile,int srcLine,bool newFile = true);
     void endMscFile(bool hasCaption);
-    void writeMscFile(const QCString &fileName, const DocVerbatim &s);
+    void writeMscFile(const DString &fileName, const DocVerbatim &s, bool newFile = true);
 
-    void startDiaFile(const QCString &fileName,const QCString &width,
-                      const QCString &height, bool hasCaption,
-                      const QCString &srcFile,int srcLine);
+    void startDiaFile(const DString &fileName,const DString &width,
+                      const DString &height, bool hasCaption,
+                      const DString &srcFile,int srcLine,bool newFile = true);
     void endDiaFile(bool hasCaption);
-    void writePlantUMLFile(const QCString &fileName, const DocVerbatim &s);
-    void startPlantUmlFile(const QCString &fileName,const QCString &width,
-                      const QCString &height, bool hasCaption,
-                      const QCString &srcFile,int srcLine);
+    void writePlantUMLFile(const DString &fileName, const DocVerbatim &s);
+    void startPlantUmlFile(const DString &fileName,const DString &width,
+                      const DString &height, bool hasCaption,
+                      const DString &srcFile,int srcLine);
     void endPlantUmlFile(bool hasCaption);
+    void writeMermaidFile(const DString &baseName, const DocVerbatim &s);
+    void startMermaidFile(const DString &fileName,const DString &width,
+                      const DString &height, bool hasCaption,
+                      const DString &srcFile,int srcLine);
+    void endMermaidFile(bool hasCaption);
 
     void visitCaption(const DocNodeList &children);
 
@@ -177,7 +183,7 @@ class LatexDocVisitor : public DocVisitor
     bool m_insidePre;
     bool m_insideItem;
     bool m_hide;
-    QCString m_langExt;
+    DString m_langExt;
     int m_hierarchyLevel;
     TexOrPdf m_texOrPdf = TexOrPdf::NO;
 

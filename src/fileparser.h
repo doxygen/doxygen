@@ -19,12 +19,12 @@
 #include "parserintf.h"
 
 /** @brief Generic code parser */
-class FileCodeParser : public CodeParserInterface
+class FileCodeParser final : public CodeParserInterface
 {
   public:
     void parseCode(OutputCodeList &codeOutIntf,
-                   const QCString &scopeName,
-                   const QCString &input,
+                   const DString &scopeName,
+                   const DString &input,
                    SrcLangExt lang,
                    bool stripCodeComments,
                    const CodeParserOptions &options

@@ -21,12 +21,12 @@
 
 class FileDef;
 class MemberDef;
-class QCString;
+class DString;
 class Definition;
 
 /** LEX code scanner.
  */
-class LexCodeParser : public CodeParserInterface
+class LexCodeParser final : public CodeParserInterface
 {
   public:
     LexCodeParser();
@@ -34,8 +34,8 @@ class LexCodeParser : public CodeParserInterface
     NON_COPYABLE(LexCodeParser)
 
     void parseCode(OutputCodeList &codeOutIntf,
-                   const QCString &scopeName,
-                   const QCString &input,
+                   const DString &scopeName,
+                   const DString &input,
                    SrcLangExt,
                    bool stripCodeComments,
                    const CodeParserOptions &options

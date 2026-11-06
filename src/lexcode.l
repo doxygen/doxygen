@@ -54,13 +54,13 @@ struct lexcodeYY_state
      const char   *inputString;     //!< the code fragment as text
      int           inputPosition;   //!< read offset during parsing
      int           inputLines;      //!< number of line in the code fragment
-     QCString      fileName;
+     DString      fileName;
      int           yyLineNr;        //!< current line number
      bool          insideCodeLine = false;
 
-     bool          lineNumbers = FALSE;
+     bool          lineNumbers = false;
      const Definition   *searchCtx;
-     bool          collectXRefs = FALSE;
+     bool          collectXRefs = false;
 
      int           lastContext = 0;
      int           lastCContext = 0;
@@ -70,20 +70,20 @@ struct lexcodeYY_state
      int           lastRawStringContext = 0;
      int           curlyCount = 0;
 
-     QCString      rulesPatternBuffer;
-     QCString      CCodeBuffer;
+     DString      rulesPatternBuffer;
+     DString      CCodeBuffer;
      int           startCCodeLine = -1;
      int           roundCount = 0;
-     bool          insideCode = FALSE;
-     QCString      delimiter;
-     QCString      docBlockName;
+     bool          insideCode = false;
+     DString      delimiter;
+     DString      docBlockName;
      size_t        fencedSize = 0;
      bool          nestedComment = false;
 
      bool          stripCodeComments;
      bool          exampleBlock;
-     QCString      exampleName;
-     QCString      classScope;
+     DString      exampleName;
+     DString      classScope;
 
      std::unique_ptr<FileDef> exampleFileDef;
      const FileDef    *sourceFileDef = nullptr;
@@ -95,12 +95,12 @@ struct lexcodeYY_state
 
 [[maybe_unused]] static const char *stateToString(int state);
 
-static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor);
+static void setCurrentDoc(yyscan_t yyscanner,const DString &anchor);
 static void startCodeLine(yyscan_t yyscanner);
 static void endFontClass(yyscan_t yyscanner);
 static void endCodeLine(yyscan_t yyscanner);
 static void nextCodeLine(yyscan_t yyscanner);
-static void codifyLines(yyscan_t yyscanner,const QCString &text);
+static void codifyLines(yyscan_t yyscanner,const DString &text);
 static void startFontClass(yyscan_t yyscanner,const char *s);
 static int countLines(yyscan_t yyscanner);
 static int yyread(yyscan_t yyscanner,char *buf,int max_size);
@@ -372,7 +372,7 @@ NONLopt [^\n]*
                          }
 <RulesRoundQuest>{nl}    {
                            yyextra->rulesPatternBuffer += yytext;
-                           if (!yyextra->rulesPatternBuffer.isEmpty())
+                           if (!yyextra->rulesPatternBuffer.empty())
                            {
                              startFontClass(yyscanner,"stringliteral");
                              codifyLines(yyscanner,yyextra->rulesPatternBuffer.data());
@@ -427,7 +427,7 @@ NONLopt [^\n]*
                            yyextra->rulesPatternBuffer += yytext;
                         }
 <RulesPattern>{ws}+"|"  {
-                           if (!yyextra->rulesPatternBuffer.isEmpty())
+                           if (!yyextra->rulesPatternBuffer.empty())
                            {
                              startFontClass(yyscanner,"stringliteral");
                              codifyLines(yyscanner,yyextra->rulesPatternBuffer);
@@ -447,7 +447,7 @@ NONLopt [^\n]*
                          }
 <RulesPattern>({ws}|{nl}) {
                            unput(*yytext);
-                           if (!yyextra->rulesPatternBuffer.isEmpty())
+                           if (!yyextra->rulesPatternBuffer.empty())
                            {
                              startFontClass(yyscanner,"stringliteral");
                              codifyLines(yyscanner,yyextra->rulesPatternBuffer);
@@ -462,7 +462,7 @@ NONLopt [^\n]*
                            yyextra->rulesPatternBuffer += yytext;
                          }
 <RulesPattern>{CCS}       {
-                           if (!yyextra->rulesPatternBuffer.isEmpty())
+                           if (!yyextra->rulesPatternBuffer.empty())
                            {
                              startFontClass(yyscanner,"stringliteral");
                              codifyLines(yyscanner,yyextra->rulesPatternBuffer);
@@ -537,7 +537,7 @@ NONLopt [^\n]*
                           }
 <SkipCurly>{B}*{RAWBEGIN} {
                             char *p = yytext;
-                            while (*p && qisspace(*p)) p++;
+                            while (*p && disspace(*p)) p++;
                             yyextra->delimiter = extractBeginRawStringDelimiter(p);
                             yyextra->lastRawStringContext = YY_START;
                             yyextra->CCodeBuffer += yytext;
@@ -641,11 +641,11 @@ NONLopt [^\n]*
 <Comment>{CCS}             { yyextra->CCodeBuffer += yytext ; }
 <Comment>{CPPC}             { yyextra->CCodeBuffer += yytext ; }
 <Comment>{CMD}("code"|"verbatim"|"iliteral")       {
-                            yyextra->insideCode=TRUE;
+                            yyextra->insideCode=true;
                             yyextra->CCodeBuffer += yytext ;
                           }
 <Comment>{CMD}("endcode"|"endverbatim"|"endiliteral") {
-                            yyextra->insideCode=FALSE;
+                            yyextra->insideCode=false;
                             yyextra->CCodeBuffer += yytext ;
                           }
 <Comment>[^ \.\t\r\n\/\*]+ { yyextra->CCodeBuffer += yytext ; }
@@ -750,44 +750,44 @@ NONLopt [^\n]*
                               yyextra->docBlockName.at(1)=')';
                             }
                             yyextra->fencedSize=0;
-                            yyextra->nestedComment=FALSE;
+                            yyextra->nestedComment=false;
                             BEGIN(DocCopyBlock);
                           }
 <DocBlock>{B}*"<"{PRE}">" {
                             yyextra->CCodeBuffer += yytext;
                             yyextra->docBlockName="<pre>";
                             yyextra->fencedSize=0;
-                            yyextra->nestedComment=FALSE;
+                            yyextra->nestedComment=false;
                             BEGIN(DocCopyBlock);
                           }
 <DocBlock>{CMD}"startuml"/[^a-z_A-Z0-9\-] { // verbatim type command (which could contain nested comments!)
                             yyextra->CCodeBuffer += yytext;
                             yyextra->docBlockName="uml";
                             yyextra->fencedSize=0;
-                            yyextra->nestedComment=FALSE;
+                            yyextra->nestedComment=false;
                             BEGIN(DocCopyBlock);
                           }
-<DocBlock>{CMD}("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"code")/[^a-z_A-Z0-9\-] { // verbatim command (which could contain nested comments!)
+<DocBlock>{CMD}("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"mermaid"|"code")/[^a-z_A-Z0-9\-] { // verbatim command (which could contain nested comments!)
                             yyextra->CCodeBuffer += yytext;
                             yyextra->docBlockName=&yytext[1];
                             yyextra->fencedSize=0;
-                            yyextra->nestedComment=FALSE;
+                            yyextra->nestedComment=false;
                             BEGIN(DocCopyBlock);
                           }
 <DocBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]* {
                             yyextra->CCodeBuffer += yytext;
-                            QCString pat = substitute(yytext,"*"," ");
+                            DString pat = substitute(yytext,"*"," ");
                             yyextra->docBlockName="~~~";
                             yyextra->fencedSize=pat.stripWhiteSpace().length();
-                            yyextra->nestedComment=FALSE;
+                            yyextra->nestedComment=false;
                             BEGIN(DocCopyBlock);
                           }
 <DocBlock>^({B}*"*"+)?{B}{0,3}"```"[`]* {
                             yyextra->CCodeBuffer += yytext;
-                            QCString pat = substitute(yytext,"*"," ");
+                            DString pat = substitute(yytext,"*"," ");
                             yyextra->docBlockName="```";
                             yyextra->fencedSize=pat.stripWhiteSpace().length();
-                            yyextra->nestedComment=FALSE;
+                            yyextra->nestedComment=false;
                             BEGIN(DocCopyBlock);
                           }
 <DocBlock>{B}*"<code>"    {
@@ -826,7 +826,7 @@ NONLopt [^\n]*
                               BEGIN(DocBlock);
                             }
                           }
-<DocCopyBlock>{CMD}("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
+<DocCopyBlock>{CMD}("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"endmermaid"|"enduml"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
                             yyextra->CCodeBuffer += yytext;
                             if (&yytext[4]==yyextra->docBlockName)
                             {
@@ -883,7 +883,7 @@ NONLopt [^\n]*
                           }
 <DocCopyBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]* {
                             yyextra->CCodeBuffer += yytext;
-                            QCString pat = substitute(yytext,"*"," ");
+                            DString pat = substitute(yytext,"*"," ");
                             if (yyextra->fencedSize==pat.stripWhiteSpace().length())
                             {
                               BEGIN(DocBlock);
@@ -891,7 +891,7 @@ NONLopt [^\n]*
                           }
 <DocCopyBlock>^({B}*"*"+)?{B}{0,3}"```"[`]* {
                             yyextra->CCodeBuffer += yytext;
-                            QCString pat = substitute(yytext,"*"," ");
+                            DString pat = substitute(yytext,"*"," ");
                             if (yyextra->fencedSize==pat.stripWhiteSpace().length())
                             {
                               BEGIN(DocBlock);
@@ -903,11 +903,11 @@ NONLopt [^\n]*
 <DocCopyBlock>{CCS}|{CCE}|{CPPC} {
                             if (yytext[1]=='*')
                             {
-                              yyextra->nestedComment=TRUE;
+                              yyextra->nestedComment=true;
                             }
                             else if (yytext[0]=='*')
                             {
-                              yyextra->nestedComment=FALSE;
+                              yyextra->nestedComment=false;
                             }
                             yyextra->CCodeBuffer += yytext;
                           }
@@ -949,7 +949,7 @@ NONLopt [^\n]*
                           }
 %%
 
-static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor)
+static void setCurrentDoc(yyscan_t yyscanner,const DString &anchor)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (Doxygen::searchIndex.enabled())
@@ -981,7 +981,7 @@ static void startCodeLine(yyscan_t yyscanner)
       yyextra->currentDefinition = d;
       yyextra->currentMemberDef = yyextra->sourceFileDef->getSourceMember(yyextra->yyLineNr);
       yyextra->classScope = d->name();
-      QCString lineAnchor;
+      DString lineAnchor;
       lineAnchor.sprintf("l%05d",yyextra->yyLineNr);
       if (yyextra->currentMemberDef)
       {
@@ -995,14 +995,14 @@ static void startCodeLine(yyscan_t yyscanner)
       {
         yyextra->code->writeLineNumber(d->getReference(),
                             d->getOutputFileBase(),
-                            QCString(),yyextra->yyLineNr,
+                            DString(),yyextra->yyLineNr,
                             !yyextra->includeCodeFragment);
         setCurrentDoc(yyscanner,lineAnchor);
       }
     }
     else
     {
-      yyextra->code->writeLineNumber(QCString(),QCString(),QCString(),yyextra->yyLineNr,
+      yyextra->code->writeLineNumber(DString(),DString(),DString(),yyextra->yyLineNr,
                                      !yyextra->includeCodeFragment);
     }
   }
@@ -1050,10 +1050,10 @@ static void nextCodeLine(yyscan_t yyscanner)
   }
 }
 
-static void codifyLines(yyscan_t yyscanner,const QCString &text)
+static void codifyLines(yyscan_t yyscanner,const DString &text)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (text.isEmpty()) return;
+  if (text.empty()) return;
   const char *p=text.data(),*sp=p;
   bool done=false;
   while (!done)
@@ -1065,7 +1065,7 @@ static void codifyLines(yyscan_t yyscanner,const QCString &text)
     {
       yyextra->yyLineNr++;
       size_t l = static_cast<size_t>(p-sp-1);
-      yyextra->code->codify(QCString(sp,l));
+      yyextra->code->codify(DString(sp,l));
       nextCodeLine(yyscanner);
     }
     else
@@ -1138,7 +1138,7 @@ static void lineCount(yyscan_t yyscanner)
 static void handleCCode(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (yyextra->CCodeBuffer.isEmpty()) return;
+  if (yyextra->CCodeBuffer.empty()) return;
 
   yyextra->ccodeParser.setInsideCodeLine(yyextra->insideCodeLine);
   yyextra->ccodeParser.parseCode(*yyextra->code,
@@ -1192,8 +1192,8 @@ void LexCodeParser::resetCodeParserState()
 }
 
 void LexCodeParser::parseCode(OutputCodeList &codeOutIntf,
-                              const QCString &scopeName,
-                              const QCString &input,
+                              const DString &scopeName,
+                              const DString &input,
                               SrcLangExt,
                               bool stripCodeComments,
                               const CodeParserOptions &options
@@ -1202,7 +1202,7 @@ void LexCodeParser::parseCode(OutputCodeList &codeOutIntf,
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
 
-  if (input.isEmpty()) return;
+  if (input.empty()) return;
 
   DebugLex debugLex(Debug::Lex_lexcode, __FILE__, options.fileDef() ? qPrint(options.fileDef()->fileName()) : nullptr);
 
@@ -1216,7 +1216,7 @@ void LexCodeParser::parseCode(OutputCodeList &codeOutIntf,
   yyextra->currentMemberDef  = options.memberDef();
   yyextra->searchCtx         = options.searchCtx();
   yyextra->collectXRefs      = options.collectXRefs();
-  yyextra->yyLineNr          = options.startLine()!=1 ? options.startLine() : 1;
+  yyextra->yyLineNr          = options.startLine()!=-1 ? options.startLine() : 1;
   yyextra->inputLines        = options.endLine()!=-1  ? options.endLine()+1 : yyextra->yyLineNr + countLines(yyscanner) - 1;
   yyextra->startCCodeLine    = yyextra->yyLineNr;
   yyextra->stripCodeComments = stripCodeComments;
@@ -1228,7 +1228,7 @@ void LexCodeParser::parseCode(OutputCodeList &codeOutIntf,
   if (options.isExample() && options.fileDef()==nullptr)
   {
     // create a dummy filedef for the example
-    yyextra->exampleFileDef = createFileDef(QCString(),!options.exampleName().isEmpty() ? options.exampleName() : QCString("generated"));
+    yyextra->exampleFileDef = createFileDef(DString(),!options.exampleName().empty() ? options.exampleName() : DString("generated"));
     yyextra->sourceFileDef = yyextra->exampleFileDef.get();
   }
 

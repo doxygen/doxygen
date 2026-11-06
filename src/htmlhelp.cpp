@@ -48,8 +48,8 @@ class HtmlHelpRecoder
 
     void initialize()
     {
-      QCString str = Config_getString(CHM_INDEX_ENCODING);
-      if (str.isEmpty()) str = "CP1250"; // use safe and likely default
+      DString str = Config_getString(CHM_INDEX_ENCODING);
+      if (str.empty()) str = "CP1250"; // use safe and likely default
       m_fromUtf8 = portable_iconv_open(str.data(),"UTF-8");
       if (m_fromUtf8==m_iconv_null)
       {
@@ -65,11 +65,11 @@ class HtmlHelpRecoder
       }
     }
 
-    QCString recode(const QCString &s)
+    DString recode(const DString &s)
     {
       size_t iSize     = s.length();
       size_t oSize     = iSize*4;
-      QCString output(oSize, QCString::ExplicitSize);
+      DString output(oSize, DString::ExplicitSize);
       size_t iLeft     = iSize;
       size_t oLeft     = oSize;
       const char *iPtr = s.data();
@@ -97,12 +97,12 @@ class HtmlHelpRecoder
 /** Class representing a field in the HTML help index. */
 struct IndexField
 {
-  IndexField(const QCString &k,const QCString &n,const QCString &u,const QCString &a,bool l,bool r) :
+  IndexField(const DString &k,const DString &n,const DString &u,const DString &a,bool l,bool r) :
     key(k), name(n), url(u), anchor(a), link(l), reversed(r) {}
-  QCString key;
-  QCString name;
-  QCString url;
-  QCString anchor;
+  DString key;
+  DString name;
+  DString url;
+  DString anchor;
   bool     link;
   bool     reversed;
 };
@@ -116,8 +116,8 @@ class HtmlHelpIndex
     HtmlHelpIndex(HtmlHelpRecoder &recoder);
    ~HtmlHelpIndex();
     NON_COPYABLE(HtmlHelpIndex)
-    void addItem(const QCString &first,const QCString &second,
-                 const QCString &url, const QCString &anchor,
+    void addItem(const DString &first,const DString &second,
+                 const DString &url, const DString &anchor,
                  bool hasLink,bool reversed);
     void writeFields(std::ostream &t);
     size_t size() const { return m_map.size(); }
@@ -145,40 +145,40 @@ HtmlHelpIndex::~HtmlHelpIndex() = default;
  *  \param anchor the anchor of the documentation within the page.
  *  \param hasLink if true, the url (without anchor) can be used in the
  *         level1 item, when writing the header of a list of level2 items.
- *  \param reversed TRUE if level1 is the member name and level2 the compound
+ *  \param reversed true if level1 is the member name and level2 the compound
  *         name.
  */
-void HtmlHelpIndex::addItem(const QCString &level1,const QCString &level2,
-                       const QCString &url,const QCString &anchor,bool hasLink,
+void HtmlHelpIndex::addItem(const DString &level1,const DString &level2,
+                       const DString &url,const DString &anchor,bool hasLink,
                        bool reversed)
 {
   static const reg::Ex re(R"(@\d+)");
-  QCString key = substitute(level1,"?","&quest;");
-  if (!level2.isEmpty()) key+= "?" + substitute(level2,"?","&quest;");
+  DString key = substitute(level1,"?","&quest;");
+  if (!level2.empty()) key+= "?" + substitute(level2,"?","&quest;");
   if (reg::search(key.str(),re)) // skip anonymous stuff
   {
     return;
   }
-  QCString key_anchor = key;
-  if (!anchor.isEmpty())
+  DString key_anchor = key;
+  if (!anchor.empty())
   {
     key_anchor += anchor;
   }
   m_map.add(key_anchor,key,url,anchor,hasLink,reversed);
 }
 
-static QCString field2URL(const IndexField *f,bool checkReversed)
+static DString field2URL(const IndexField *f,bool checkReversed)
 {
-  QCString result = f->url;
+  DString result = f->url;
   addHtmlExtensionIfMissing(result);
-  if (!f->anchor.isEmpty() && (!checkReversed || f->reversed))
+  if (!f->anchor.empty() && (!checkReversed || f->reversed))
   {
     result+="#"+f->anchor;
   }
   return result;
 }
 
-static QCString convertToHtmlAndTruncate(const QCString &s)
+static DString convertToHtmlAndTruncate(const DString &s)
 {
   /* to prevent
    *  Warning: Keyword string:
@@ -187,7 +187,7 @@ static QCString convertToHtmlAndTruncate(const QCString &s)
    */
   int maxLen = 400;
   size_t maxExpandedLen = maxLen+50;
-  QCString result = convertToHtml(s,true);
+  DString result = convertToHtml(s,true);
   if (result.length()>maxExpandedLen) // we need to truncate the string
   {
     // in the unlikely case that the string after conversion grows from maxLen to maxExpandedLen, we try smaller parts
@@ -220,14 +220,14 @@ static QCString convertToHtmlAndTruncate(const QCString &s)
  *  Will result in the following list:
  *
  *  <pre>
- *    a1       -> link to url if hasLink==TRUE
+ *    a1       -> link to url if hasLink==true
  *      b1     -> link to url#anchor
  *      b2     -> link to url#anchor
- *    a2       -> link to url if hasLink==TRUE
+ *    a2       -> link to url if hasLink==true
  *      b1     -> link to url#anchor
  *      b2     -> link to url#anchor
- *    a3       -> link to url if hasLink==TRUE
- *    a4       -> link to url if hasLink==TRUE
+ *    a3       -> link to url if hasLink==true
+ *    a4       -> link to url if hasLink==true
  *      b1     -> link to url#anchor
  *  </pre>
  */
@@ -235,19 +235,18 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
 {
   std::stable_sort(std::begin(m_map),
             std::end(m_map),
-            [](const auto &e1,const auto &e2) { return qstricmp_sort(e1->name,e2->name)<0; }
+            [](const auto &e1,const auto &e2) { return dstricmp_sort(e1->name,e2->name)<0; }
            );
-  QCString prevLevel1;
-  bool level2Started=FALSE;
+  DString prevLevel1;
+  bool level2Started=false;
   for (auto it = std::begin(m_map); it!=std::end(m_map); ++it)
   {
     auto &f = *it;
-    QCString level1,level2;
-    int i = f->name.find('?');
-    if (i!=-1)
+    DString level1,level2;
+    if (size_t i = f->name.find('?'); i!=DString::npos)
     {
       level1 = f->name.left(i);
-      level2 = f->name.right(f->name.length()-i-1);
+      level2 = f->name.mid(i+1);
     }
     else
     {
@@ -256,7 +255,7 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
 
     { // finish old list at level 2
       if (level2Started) t << "  </UL>\n";
-      level2Started=FALSE;
+      level2Started=false;
 
       // <Antony>
       // Added this code so that an item with only one subitem is written
@@ -265,13 +264,13 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
       //   a1, b1 -> will create only a1, not separate subitem for b1
       //   a2, b2
       //   a2, b3
-      QCString nextLevel1;
+      DString nextLevel1;
       auto it_next = std::next(it);
       if (it_next!=std::end(m_map))
       {
         auto &fnext = *it_next;
-        int j = fnext->name.find('?');
-        if (j<0) j=0;
+        size_t j = fnext->name.find('?');
+        if (j==DString::npos) j=0;
         nextLevel1 = fnext->name.left(j);
       }
       if (!(level1 == prevLevel1 || level1 == nextLevel1))
@@ -281,10 +280,10 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
       prevLevel1 = level1;
       // </Antony>
 
-      if (level2.isEmpty())
+      if (level2.empty())
       {
         t << "  <LI><OBJECT type=\"text/sitemap\">";
-        t << "<param name=\"Local\" value=\"" << field2URL(f.get(),FALSE);
+        t << "<param name=\"Local\" value=\"" << field2URL(f.get(),false);
         t << "\">";
         t << "<param name=\"Name\" value=\"" << convertToHtmlAndTruncate(m_recoder.recode(level1)) << "\">"
            "</OBJECT>\n";
@@ -294,7 +293,7 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
         if (f->link)
         {
           t << "  <LI><OBJECT type=\"text/sitemap\">";
-          t << "<param name=\"Local\" value=\"" << field2URL(f.get(),TRUE);
+          t << "<param name=\"Local\" value=\"" << field2URL(f.get(),true);
           t << "\">";
           t << "<param name=\"Name\" value=\"" << convertToHtmlAndTruncate(m_recoder.recode(level1)) << "\">"
                "</OBJECT>\n";
@@ -308,20 +307,20 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
         }
       }
     }
-    if (!level2Started && !level2.isEmpty())
+    if (!level2Started && !level2.empty())
     { // start new list at level 2
       t << "  <UL>\n";
-      level2Started=TRUE;
+      level2Started=true;
     }
-    else if (level2Started && level2.isEmpty())
+    else if (level2Started && level2.empty())
     { // end list at level 2
       t << "  </UL>\n";
-      level2Started=FALSE;
+      level2Started=false;
     }
     if (level2Started)
     {
       t << "    <LI><OBJECT type=\"text/sitemap\">";
-      t << "<param name=\"Local\" value=\"" << field2URL(f.get(),FALSE);
+      t << "<param name=\"Local\" value=\"" << field2URL(f.get(),false);
       t << "\">";
       t << "<param name=\"Name\" value=\"" << convertToHtmlAndTruncate(m_recoder.recode(level2)) << "\">"
          "</OBJECT>\n";
@@ -338,8 +337,8 @@ class HtmlHelp::Private
     Private() : index(recoder) {}
     void createProjectFile();
     std::ofstream cts,kts;
-    QCString prevFile;
-    QCString prevAnc;
+    DString prevFile;
+    DString prevAnc;
     bool ctsItemPresent = false;
     int dc = 0;
     StringSet indexFiles;
@@ -367,7 +366,7 @@ void HtmlHelp::initialize()
   p->recoder.initialize();
 
   /* open the contents file */
-  QCString fName = Config_getString(HTML_OUTPUT) + "/" + hhcFileName;
+  DString fName = Config_getString(HTML_OUTPUT) + "/" + hhcFileName;
   p->cts = Portable::openOutputStream(fName);
   if (!p->cts.is_open())
   {
@@ -401,19 +400,19 @@ void HtmlHelp::initialize()
 void HtmlHelp::Private::createProjectFile()
 {
   /* Write the project file */
-  QCString fName = Config_getString(HTML_OUTPUT) + "/" + hhpFileName;
+  DString fName = Config_getString(HTML_OUTPUT) + "/" + hhpFileName;
   std::ofstream t = Portable::openOutputStream(fName);
   if (t.is_open())
   {
-    QCString hhcFile = "\"" + hhcFileName  + "\"";
-    QCString hhkFile = "\"" + hhkFileName  + "\"";
+    DString hhcFile = "\"" + hhcFileName  + "\"";
+    DString hhkFile = "\"" + hhkFileName  + "\"";
     bool hhkPresent = index.size()>0;
     if (!ctsItemPresent) hhcFile = "";
     if (!hhkPresent) hhkFile = "";
 
-    QCString indexName="index"+Doxygen::htmlFileExtension;
+    DString indexName="index"+Doxygen::htmlFileExtension;
     t << "[OPTIONS]\n";
-    if (!Config_getString(CHM_FILE).isEmpty())
+    if (!Config_getString(CHM_FILE).empty())
     {
       t << "Compiled file=" << Config_getString(CHM_FILE) << "\n";
     }
@@ -478,7 +477,7 @@ void HtmlHelp::Private::createProjectFile()
   }
 }
 
-void HtmlHelp::addIndexFile(const QCString &s)
+void HtmlHelp::addIndexFile(const DString &s)
 {
   p->indexFiles.insert(s.str());
 }
@@ -542,20 +541,20 @@ void HtmlHelp::decContentsDepth()
  *  \param nameAsHtml name parameter in HTML format
  */
 void HtmlHelp::addContentsItem(bool isDir,
-                               const QCString &name,
-                               const QCString &ref,
-                               const QCString &file,
-                               const QCString &anchor,
+                               const DString &name,
+                               const DString &ref,
+                               const DString &file,
+                               const DString &anchor,
                                bool /* separateIndex */,
                                bool /* addToNavIndex */,
                                const Definition * /* def */,
-                               const QCString & /* nameAsHtml */)
+                               const DString & /* nameAsHtml */)
 {
   p->ctsItemPresent = true;
   for (int i=0; i<p->dc; i++) p->cts << "  ";
   p->cts << "<LI><OBJECT type=\"text/sitemap\">";
-  p->cts << "<param name=\"Name\" value=\"" << convertToHtml(p->recoder.recode(name),TRUE) << "\">";
-  if (!file.isEmpty())      // made file optional param - KPW
+  p->cts << "<param name=\"Name\" value=\"" << convertToHtml(p->recoder.recode(name),true) << "\">";
+  if (!file.empty())      // made file optional param - KPW
   {
     if (file[0]=='!' || file[0]=='^') // special markers for user defined URLs
     {
@@ -567,17 +566,17 @@ void HtmlHelp::addContentsItem(bool isDir,
     }
     else
     {
-      QCString currFile = file;
+      DString currFile = file;
       addHtmlExtensionIfMissing(currFile);
-      QCString currAnc = anchor;
+      DString currAnc = anchor;
       p->cts << "<param name=\"Local\" value=\"";
-      if (!ref.isEmpty()) p->cts << externalRef("",ref,true);
+      if (!ref.empty()) p->cts << externalRef("",ref,true);
       p->cts << currFile;
-      if (p->prevFile == currFile && p->prevAnc.isEmpty() && currAnc.isEmpty())
+      if (p->prevFile == currFile && p->prevAnc.empty() && currAnc.empty())
       {
         currAnc = "top";
       }
-      if (!currAnc.isEmpty()) p->cts << "#" << currAnc;
+      if (!currAnc.empty()) p->cts << "#" << currAnc;
       p->cts << "\">";
       p->prevFile = currFile;
       p->prevAnc = currAnc;
@@ -598,31 +597,32 @@ void HtmlHelp::addContentsItem(bool isDir,
 
 
 void HtmlHelp::addIndexItem(const Definition *context,const MemberDef *md,
-                            const QCString &sectionAnchor,const QCString &word)
+                            const DString &sectionAnchor,const DString &word)
 {
   if (context && md)
   {
-    QCString cfname  = md->getOutputFileBase();
-    QCString argStr  = md->argsString();
-    QCString level1  = context->name();
-    QCString level2  = md->name() + argStr;
-    QCString anchor  = !sectionAnchor.isEmpty() ? sectionAnchor : md->anchor();
-    p->index.addItem(level1,level2,cfname,anchor,TRUE,FALSE);
-    p->index.addItem(level2,level1,cfname,anchor,TRUE,TRUE);
+    if (sectionAnchor.empty() && !md->hasDocumentation()) return;
+    DString cfname  = md->getOutputFileBase();
+    DString argStr  = md->argsString();
+    DString level1  = context->name();
+    DString level2  = md->name() + argStr;
+    DString anchor  = !sectionAnchor.empty() ? sectionAnchor : md->anchor();
+    p->index.addItem(level1,level2,cfname,anchor,true,false);
+    p->index.addItem(level2,level1,cfname,anchor,true,true);
   }
   else if (context)
   {
-    QCString level1  = !word.isEmpty() ? word : context->name();
-    p->index.addItem(level1,QCString(),context->getOutputFileBase(),sectionAnchor,TRUE,FALSE);
+    DString level1  = !word.empty() ? word : context->name();
+    p->index.addItem(level1,DString(),context->getOutputFileBase(),sectionAnchor,true,false);
   }
 }
 
-void HtmlHelp::addStyleSheetFile(const QCString &fileName)
+void HtmlHelp::addStyleSheetFile(const DString &fileName)
 {
   p->styleFiles.insert(fileName.str());
 }
 
-void HtmlHelp::addImageFile(const QCString &fileName)
+void HtmlHelp::addImageFile(const DString &fileName)
 {
   p->imageFiles.insert(fileName.str());
 }

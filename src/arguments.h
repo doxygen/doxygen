@@ -17,7 +17,7 @@
 #define ARGUMENTS_H
 
 #include <vector>
-#include "qcstring.h"
+#include "dstring.h"
 
 /*! \brief This class contains the information about the argument of a
  *         function or template
@@ -25,27 +25,27 @@
  */
 struct Argument
 {
-  /*! return TRUE if this argument is documentation and the argument has a
+  /*! return true if this argument is documentation and the argument has a
    *  non empty name.
    */
-  bool hasDocumentation() const
+  bool hasDocumentation(bool allowEmptyName=false) const
   {
-    return !name.isEmpty() && !docs.isEmpty();
+    return (allowEmptyName || !name.empty()) && !docs.empty();
   }
 
   bool hasTemplateDocumentation() const
   {
-    return (!name.isEmpty() || !type.isEmpty()) && !docs.isEmpty();
+    return (!name.empty() || !type.empty()) && !docs.empty();
   }
 
-  QCString attrib;   /*!< Argument's attribute (IDL only) */
-  QCString type;     /*!< Argument's type */
-  QCString canType;  /*!< Cached value of canonical type (after type resolution). Empty initially. */
-  QCString name;     /*!< Argument's name (may be empty) */
-  QCString array;    /*!< Argument's array specifier (may be empty) */
-  QCString defval;   /*!< Argument's default value (may be empty) */
-  QCString docs;     /*!< Argument's documentation (may be empty) */
-  QCString typeConstraint;  /*!< Used for Java generics: \<T extends C\> */
+  DString attrib;   /*!< Argument's attribute (IDL only) */
+  DString type;     /*!< Argument's type */
+  DString canType;  /*!< Cached value of canonical type (after type resolution). Empty initially. */
+  DString name;     /*!< Argument's name (may be empty) */
+  DString array;    /*!< Argument's array specifier (may be empty) */
+  DString defval;   /*!< Argument's default value (may be empty) */
+  DString docs;     /*!< Argument's documentation (may be empty) */
+  DString typeConstraint;  /*!< Used for Java generics: \<T extends C\> */
 };
 
 enum class RefQualifierType
@@ -69,7 +69,7 @@ class ArgumentList
     using const_iterator = typename Vec::const_iterator;
 
     /*! Does any argument of this list have documentation? */
-    bool hasDocumentation() const;
+    bool hasDocumentation(bool allowEmptyNames=false) const;
     /*! Does any template argument of this list have documentation? */
     bool hasTemplateDocumentation() const;
     /*! Does this list have zero or more parameters */
@@ -80,13 +80,13 @@ class ArgumentList
     void reset()
     {
       clear();
-      m_constSpecifier = FALSE;
-      m_volatileSpecifier = FALSE;
-      m_pureSpecifier = FALSE;
+      m_constSpecifier = false;
+      m_volatileSpecifier = false;
+      m_pureSpecifier = false;
       m_trailingReturnType.clear();
-      m_isDeleted = FALSE;
+      m_isDeleted = false;
       m_refQualifier = RefQualifierType::None;
-      m_noParameters = FALSE;
+      m_noParameters = false;
     }
 
     // make vector accessible
@@ -111,7 +111,7 @@ class ArgumentList
     bool constSpecifier() const           { return m_constSpecifier; }
     bool volatileSpecifier() const        { return m_volatileSpecifier; }
     bool pureSpecifier() const            { return m_pureSpecifier; }
-    QCString trailingReturnType() const   { return m_trailingReturnType; }
+    DString trailingReturnType() const    { return m_trailingReturnType; }
     bool isDeleted() const                { return m_isDeleted; }
     RefQualifierType refQualifier() const { return m_refQualifier; }
     bool noParameters() const             { return m_noParameters; }
@@ -119,8 +119,8 @@ class ArgumentList
     void setConstSpecifier(bool b)        { m_constSpecifier = b; }
     void setVolatileSpecifier(bool b)     { m_volatileSpecifier = b; }
     void setPureSpecifier(bool b)         { m_pureSpecifier = b; }
-    void setTrailingReturnType(const QCString &s);
-    void appendTrailingReturnType(const QCString &s);
+    void setTrailingReturnType(const DString &s);
+    void appendTrailingReturnType(const DString &s);
     void finishTrailingReturnType();
     void setIsDeleted(bool b)             { m_isDeleted = b; }
     void setRefQualifier(RefQualifierType t) { m_refQualifier = t; }
@@ -129,19 +129,19 @@ class ArgumentList
   private:
     std::vector<Argument> m_args;
     /*! Does the member modify the state of the class? */
-    bool m_constSpecifier = FALSE;
+    bool m_constSpecifier = false;
     /*! Is the member volatile? */
-    bool m_volatileSpecifier = FALSE;
+    bool m_volatileSpecifier = false;
     /*! Is this a pure virtual member? */
-    bool m_pureSpecifier = FALSE;
+    bool m_pureSpecifier = false;
     /*! C++11 style Trailing return type? */
-    QCString m_trailingReturnType;
+    DString m_trailingReturnType;
     /*! method with =delete */
-    bool m_isDeleted = FALSE;
+    bool m_isDeleted = false;
     /*! C++11 ref qualifier */
     RefQualifierType m_refQualifier = RefQualifierType::None;
     /*! is it an explicit empty list */
-    bool m_noParameters = FALSE;
+    bool m_noParameters = false;
 };
 
 using ArgumentLists = std::vector<ArgumentList>;

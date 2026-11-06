@@ -39,7 +39,7 @@ Entry::Entry() : section(EntryType::makeEmpty()), program(static_cast<size_t>(0)
   mGrpId = -1;
   hasTagInfo = false;
   relatesType = RelatesType::Simple;
-  hidden = FALSE;
+  hidden = false;
   groupDocType = GROUPDOC_NORMAL;
   reset();
 }
@@ -67,6 +67,7 @@ Entry::Entry(const Entry &e) : section(e.section)
   virt        = e.virt;
   args        = e.args;
   bitfields   = e.bitfields;
+  attributes  = e.attributes;
   argList     = e.argList;
   tArgLists   = e.tArgLists;
   program.str(e.program.str());
@@ -98,6 +99,7 @@ Entry::Entry(const Entry &e) : section(e.section)
   startLine   = e.startLine;
   startColumn = e.startColumn;
   sli         = e.sli;
+  rqli        = e.rqli;
   lang        = e.lang;
   hidden      = e.hidden;
   artificial  = e.artificial;
@@ -185,6 +187,7 @@ void Entry::reset()
   type.clear();
   args.clear();
   bitfields.clear();
+  attributes.clear();
   exception.clear();
   program.str(std::string());
   includeFile.clear();
@@ -236,6 +239,7 @@ void Entry::reset()
   tArgLists.clear();
   typeConstr.reset();
   sli.clear();
+  rqli.clear();
   req.clear();
   m_fileDef = nullptr;
   qualifiers.clear();

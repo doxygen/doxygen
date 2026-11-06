@@ -20,10 +20,10 @@
 #ifndef LEX_NO_INPUT_FILENAME
 #define YY_FATAL_ERROR(msg)                                          \
 {                                                                    \
-  QCString msg1 = msg;                                               \
+  DString msg1 = msg;                                               \
   msg1 += "\n    lexical analyzer: ";                                \
   msg1 += getLexerFILE();                                            \
-  if (!static_cast<yyguts_t*>(yyscanner)->yyextra_r->fileName.isEmpty()) \
+  if (!static_cast<yyguts_t*>(yyscanner)->yyextra_r->fileName.empty()) \
   {                                                                  \
     msg1 += " (for: ";                                               \
     msg1 += static_cast<yyguts_t*>(yyscanner)->yyextra_r->fileName;  \
@@ -35,7 +35,7 @@
 #else
 #define YY_FATAL_ERROR(msg)                                          \
 {                                                                    \
-  QCString msg1 = msg;                                               \
+  DString msg1 = msg;                                               \
   msg1 += "\n    lexical analyzer: ";                                \
   msg1 += getLexerFILE();                                            \
   msg1 += "\n";                                                      \
@@ -45,7 +45,7 @@
 #else
 #define YY_FATAL_ERROR(msg)                                          \
 {                                                                    \
-  QCString msg1 = msg;                                               \
+  DString msg1 = msg;                                               \
   msg1 += "\n    lexical analyzer: ";                                \
   msg1 += getLexerFILE();                                            \
   msg1 += "\n";                                                      \

@@ -37,7 +37,7 @@ DocVisitor::~DocVisitor()
 {
 }
 
-CodeParserInterface &DocVisitor::getCodeParser(const QCString &extension)
+CodeParserInterface &DocVisitor::getCodeParser(const DString &extension)
 {
   std::string ext = extension.str();
   // for each extension we create a code parser once per visitor, so that

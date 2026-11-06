@@ -17,8 +17,8 @@
 
 #include <QObject>
 #include <QStringList>
+#include <QLabel>
 
-class QLabel;
 class QLineEdit;
 class QPushButton;
 class QListWidget;
@@ -53,6 +53,8 @@ class InputStrList : public QObject, public Input
     bool isDefault();
     void writeValue(QTextStream &t,TextCodecAdapter *codec,bool convert);
     void setTemplateDocs(const QString &docs) { m_tdocs = docs; }
+    void setText(const QString &txt) { m_lab->setText(txt); }
+    void setToolTip(const QString &txt) { m_lab->setToolTip(txt); }
     bool isEmpty();
 
   public slots:

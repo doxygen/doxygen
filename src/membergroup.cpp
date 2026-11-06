@@ -29,8 +29,8 @@
 #include "entry.h"
 #include "md5.h"
 
-MemberGroup::MemberGroup(const Definition *container,int id,const QCString &hdr,
-                         const QCString &d,const QCString &docFile,int docLine,
+MemberGroup::MemberGroup(const Definition *container,int id,const DString &hdr,
+                         const DString &d,const DString &docFile,int docLine,
                          MemberListContainer con)
   : m_container(container),
     memberList(std::make_unique<MemberList>(MemberListType::MemberGroup(),con)),
@@ -50,8 +50,8 @@ void MemberGroup::insertMember(MemberDef *md)
   if (inSameSection && firstMd &&
       firstMd->getSectionList(m_container)!=md->getSectionList(m_container))
   {
-    //printf("inSameSection=FALSE\n");
-    inSameSection=FALSE;
+    //printf("inSameSection=false\n");
+    inSameSection=false;
   }
   else if (inDeclSection==nullptr)
   {
@@ -87,27 +87,27 @@ void MemberGroup::writeDeclarations(OutputList &ol,
                bool showInline) const
 {
   //printf("MemberGroup::writeDeclarations() %s\n",qPrint(grpHeader));
-  QCString ldoc = doc;
-  memberList->writeDeclarations(ol,cd,nd,fd,gd,mod,grpHeader,ldoc,FALSE,showInline);
+  DString ldoc = doc;
+  memberList->writeDeclarations(ol,cd,nd,fd,gd,mod,grpHeader,ldoc,false,showInline);
 }
 
 void MemberGroup::writePlainDeclarations(OutputList &ol,bool inGroup,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
-               int indentLevel,const ClassDef *inheritedFrom,const QCString &inheritId
+               int indentLevel,const ClassDef *inheritedFrom,const DString &inheritId
               ) const
 {
   //printf("MemberGroup::writePlainDeclarations() memberList->count()=%d\n",memberList->count());
   memberList->writePlainDeclarations(ol,inGroup,cd,nd,fd,gd,mod,indentLevel,inheritedFrom,inheritId);
 }
 
-void MemberGroup::writeDocumentation(OutputList &ol,const QCString &scopeName,
+void MemberGroup::writeDocumentation(OutputList &ol,const DString &scopeName,
                const Definition *container,bool showEnumValues,bool showInline) const
 {
   //printf("MemberGroup::writeDocumentation() %s\n",qPrint(grpHeader));
-  memberList->writeDocumentation(ol,scopeName,container,QCString(),memberList->listType().toLabel(),showEnumValues,showInline);
+  memberList->writeDocumentation(ol,scopeName,container,DString(),memberList->listType().toLabel(),showEnumValues,showInline);
 }
 
-void MemberGroup::writeDocumentationPage(OutputList &ol,const QCString &scopeName,
+void MemberGroup::writeDocumentationPage(OutputList &ol,const DString &scopeName,
                const DefinitionMutable *container) const
 {
   memberList->writeDocumentationPage(ol,scopeName,container);
@@ -120,7 +120,7 @@ void MemberGroup::setAnonymousEnumType()
 
 void MemberGroup::addGroupedInheritedMembers(OutputList &ol,const ClassDef *cd,
                MemberListType lt,
-               const ClassDef *inheritedFrom,const QCString &inheritId) const
+               const ClassDef *inheritedFrom,const DString &inheritId) const
 {
   //printf("** addGroupedInheritedMembers()\n");
   for (const auto &md : *memberList)
@@ -213,9 +213,9 @@ void MemberGroup::distributeMemberGroupDocumentation()
   {
     //printf("checking md=%s\n",qPrint(md->name()));
     // find the first member of the group with documentation
-    if (!smd->documentation().isEmpty()       ||
-        !smd->briefDescription().isEmpty()    ||
-        !smd->inbodyDocumentation().isEmpty()
+    if (!smd->documentation().empty()       ||
+        !smd->briefDescription().empty()    ||
+        !smd->inbodyDocumentation().empty()
        )
     {
       //printf("found it!\n");
@@ -229,9 +229,9 @@ void MemberGroup::distributeMemberGroupDocumentation()
     for (const auto &iomd : *memberList)
     {
       MemberDefMutable *omd = toMemberDefMutable(iomd);
-      if (omd && md!=omd && omd->documentation().isEmpty() &&
-                            omd->briefDescription().isEmpty() &&
-                            omd->inbodyDocumentation().isEmpty()
+      if (omd && md!=omd && omd->documentation().empty() &&
+                            omd->briefDescription().empty() &&
+                            omd->inbodyDocumentation().empty()
          )
       {
         //printf("Copying documentation to member %s\n",qPrint(omd->name()));
@@ -264,9 +264,14 @@ int MemberGroup::numDocEnumValues() const
   return memberList->numDocEnumValues();
 }
 
-void MemberGroup::addListReferences(Definition *def)
+void MemberGroup::addListReferences(const Definition *def)
 {
   memberList->addListReferences(def);
+}
+
+void MemberGroup::addRequirementReferences(const Definition *def)
+{
+  memberList->addRequirementReferences(def);
 }
 
 void MemberGroup::findSectionsInDocumentation(const Definition *d)
@@ -280,6 +285,11 @@ void MemberGroup::setRefItems(const RefItemVector &sli)
   m_xrefListItems.insert(m_xrefListItems.end(), sli.cbegin(), sli.cend());
 }
 
+void MemberGroup::setRequirementReferences(const RequirementRefs &rqli)
+{
+  m_requirementRefs.insert(m_requirementRefs.end(), rqli.cbegin(), rqli.cend());
+}
+
 void MemberGroup::writeTagFile(TextStream &tagFile,bool qualifiedName)
 {
   memberList->writeTagFile(tagFile,qualifiedName);
@@ -291,3 +301,10 @@ void MemberGroupInfo::setRefItems(const RefItemVector &sli)
 {
   m_sli.insert(m_sli.end(), sli.cbegin(), sli.cend());
 }
+
+void MemberGroupInfo::setRequirementReferences(const RequirementRefs &rqli)
+{
+  m_rqli.insert(m_rqli.end(), rqli.cbegin(), rqli.cend());
+}
+
+

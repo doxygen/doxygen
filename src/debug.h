@@ -17,7 +17,7 @@
 #define DEBUG_H
 
 #include <cstdint>
-#include "qcstring.h"
+#include "dstring.h"
 #include "construct.h"
 #include "message.h"
 
@@ -48,6 +48,7 @@ class Debug
                      Sections          =             0x04'0000ULL,
                      Stderr            =             0x08'0000ULL,
                      Layout            =             0x10'0000ULL,
+                     Mermaid           =             0x20'0000ULL,
                      Lex               = 0x0000'FFFF'FF00'0000ULL, // all scanners combined
                      Lex_code          = 0x0000'0000'0100'0000ULL,
                      Lex_commentcnv    = 0x0000'0000'0200'0000ULL,
@@ -78,7 +79,7 @@ class Debug
       print_(mask,prio,fmt,fmt::make_format_args(args...));
     }
 
-    static bool setFlagStr(const QCString &label);
+    static bool setFlagStr(const DString &label);
     static void setFlag(const DebugMask mask);
     static void clearFlag(const DebugMask mask);
     static bool isFlagSet(const DebugMask mask);
@@ -103,8 +104,8 @@ class DebugLex
   private:
 
     Debug::DebugMask m_mask;
-    QCString m_lexName;
-    QCString m_fileName;
+    DString m_lexName;
+    DString m_fileName;
 };
 
 

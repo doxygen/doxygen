@@ -21,7 +21,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "qcstring.h"
+#include "dstring.h"
 #include "containers.h"
 
 class FileDef;
@@ -30,19 +30,19 @@ class FileDef;
 class Define
 {
   public:
-    QCString name;
-    QCString definition;
-    QCString fileName;
-    QCString args;
+    DString name;
+    DString definition;
+    DString fileName;
+    DString args;
     FileDef *fileDef = nullptr;
     int lineNr = 1;
     int columnNr = 1;
     int nargs = -1;
-    bool undef = FALSE;
-    bool varArgs = FALSE;
-    bool isPredefined = FALSE;
-    bool nonRecursive = FALSE;
-    bool expandAsDefined = FALSE;
+    bool undef = false;
+    bool varArgs = false;
+    bool isPredefined = false;
+    bool nonRecursive = false;
+    bool expandAsDefined = false;
 };
 
 /** List of all macro definitions */

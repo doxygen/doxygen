@@ -24,10 +24,10 @@
 #include "dir.h"
 #include "vhdldocgen.h"
 
-QCString DotGfxHierarchyTable::getBaseName() const
+DString DotGfxHierarchyTable::getBaseName() const
 {
-  QCString baseName;
-  if (m_prefix.isEmpty())
+  DString baseName;
+  if (m_prefix.empty())
     baseName.sprintf("inherit_graph_%d", m_graphId);
   else
     baseName.sprintf("%sinherit_graph_%d",qPrint(m_prefix), m_graphId);
@@ -50,30 +50,30 @@ void DotGfxHierarchyTable::computeTheGraph()
   {
     if (node->subgraphId()==m_rootSubgraphNode->subgraphId())
     {
-      node->write(md5stream,GraphType::Hierarchy,GraphOutputFormat::BITMAP,FALSE,TRUE,TRUE);
+      node->write(md5stream,GraphType::Hierarchy,GraphOutputFormat::BITMAP,false,true,true);
     }
   }
   writeGraphFooter(md5stream);
   m_theGraph = md5stream.str();
 }
 
-QCString DotGfxHierarchyTable::getMapLabel() const
+DString DotGfxHierarchyTable::getMapLabel() const
 {
-  return escapeCharsInString(m_rootSubgraphNode->label(),FALSE);
+  return escapeCharsInString(m_rootSubgraphNode->label(),false);
 }
 
 void DotGfxHierarchyTable::createGraph(DotNode *n,TextStream &out,
-  const QCString &path,const QCString &fileName,int id)
+  const DString &path,const DString &fileName,int id)
 {
   m_rootSubgraphNode = n;
   m_graphId = id;
-  m_noDivTag = TRUE;
-  m_zoomable = FALSE;
-  DotGraph::writeGraph(out, GraphOutputFormat::BITMAP, EmbeddedOutputFormat::Html, path, fileName, "", TRUE, 0);
+  m_noDivTag = true;
+  m_zoomable = false;
+  DotGraph::writeGraph(out, GraphOutputFormat::BITMAP, EmbeddedOutputFormat::Html, path, fileName, "", true, 0);
 }
 
 void DotGfxHierarchyTable::writeGraph(TextStream &out,
-  const QCString &path,const QCString &fileName)
+  const DString &path,const DString &fileName)
 {
   //printf("DotGfxHierarchyTable::writeGraph(%s)\n",name);
   //printf("m_rootNodes=%p count=%d\n",m_rootNodes,m_rootNodes->count());
@@ -92,7 +92,7 @@ void DotGfxHierarchyTable::writeGraph(TextStream &out,
 
   int count=0;
   std::stable_sort(m_rootSubgraphs.begin(),m_rootSubgraphs.end(),
-            [](auto n1,auto n2) { return qstricmp_sort(n1->label(),n2->label())<0; });
+            [](auto n1,auto n2) { return dstricmp_sort(n1->label(),n2->label())<0; });
   for (auto n : m_rootSubgraphs)
   {
     out << "<tr><td>";
@@ -139,16 +139,16 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,const ClassDef *cd,ClassDefSe
       }
       else
       {
-        QCString tmp_url="";
+        DString tmp_url="";
         if (bClass->isLinkable() && !bClass->isHidden())
         {
           tmp_url=bClass->getReference()+"$"+bClass->getOutputFileBase();
-          if (!bClass->anchor().isEmpty())
+          if (!bClass->anchor().empty())
           {
             tmp_url+="#"+bClass->anchor();
           }
         }
-        QCString tooltip = bClass->briefDescriptionAsTooltip();
+        DString tooltip = bClass->briefDescriptionAsTooltip();
         auto bn = std::make_unique<DotNode>(this,
             bClass->displayName(),
             tooltip,
@@ -195,17 +195,17 @@ void DotGfxHierarchyTable::addClassList(const ClassLinkedMap &cl,ClassDefSet &vi
       cd->isVisibleInHierarchy()
       ) // root node in the forest
     {
-      QCString tmp_url="";
+      DString tmp_url="";
       if (cd->isLinkable() && !cd->isHidden())
       {
         tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
-        if (!cd->anchor().isEmpty())
+        if (!cd->anchor().empty())
         {
           tmp_url+="#"+cd->anchor();
         }
       }
       //printf("Inserting root class %s\n",qPrint(cd->name()));
-      QCString tooltip = cd->briefDescriptionAsTooltip();
+      DString tooltip = cd->briefDescriptionAsTooltip();
       auto n = std::make_unique<DotNode>(this,
         cd->displayName(),
         tooltip,
@@ -223,7 +223,7 @@ void DotGfxHierarchyTable::addClassList(const ClassLinkedMap &cl,ClassDefSet &vi
   }
 }
 
-DotGfxHierarchyTable::DotGfxHierarchyTable(const QCString &prefix,ClassDef::CompoundType ct)
+DotGfxHierarchyTable::DotGfxHierarchyTable(const DString &prefix,ClassDef::CompoundType ct)
   : m_prefix(prefix)
   , m_classType(ct)
 {
@@ -235,17 +235,17 @@ DotGfxHierarchyTable::DotGfxHierarchyTable(const QCString &prefix,ClassDef::Comp
   // m_usedNodes now contains all nodes in the graph
 
   // color the graph into a set of independent subgraphs
-  bool done=FALSE;
+  bool done=false;
   int curColor=0;
   while (!done) // there are still nodes to color
   {
-    done=TRUE; // we are done unless there are still uncolored nodes
+    done=true; // we are done unless there are still uncolored nodes
     for (auto n : m_rootNodes)
     {
       if (n->subgraphId()==-1) // not yet colored
       {
         //printf("Starting at node %s (%p): %d\n",qPrint(n->label()),n,curColor);
-        done=FALSE; // still uncolored nodes
+        done=false; // still uncolored nodes
         n->setSubgraphId(curColor);
         n->markAsVisible();
         n->colorConnectedNodes(curColor);

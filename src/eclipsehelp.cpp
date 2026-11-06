@@ -27,7 +27,7 @@ struct EclipseHelp::Private
   int openTags = 0;
 
   std::ofstream tocstream;
-  QCString pathprefix;
+  DString pathprefix;
 
   /* -- formatting helpers */
   void indent()
@@ -42,7 +42,7 @@ struct EclipseHelp::Private
     if (endtag)
     {
       tocstream << "/>\n";
-      endtag = FALSE;
+      endtag = false;
     }
   }
   void openedTag()
@@ -50,7 +50,7 @@ struct EclipseHelp::Private
     if (endtag)
     {
       tocstream << ">\n";
-      endtag = FALSE;
+      endtag = false;
       ++openTags;
     }
   }
@@ -68,7 +68,7 @@ EclipseHelp::~EclipseHelp() = default;
 void EclipseHelp::initialize()
 {
   // -- open the contents file
-  QCString name = Config_getString(HTML_OUTPUT) + "/toc.xml";
+  DString name = Config_getString(HTML_OUTPUT) + "/toc.xml";
   p->tocstream = Portable::openOutputStream(name);
   if (!p->tocstream.is_open())
   {
@@ -76,8 +76,8 @@ void EclipseHelp::initialize()
   }
 
   // -- write the opening tag
-  QCString title = Config_getString(PROJECT_NAME);
-  if (title.isEmpty())
+  DString title = Config_getString(PROJECT_NAME);
+  if (title.empty())
   {
     title = "Doxygen generated documentation";
   }
@@ -104,11 +104,11 @@ void EclipseHelp::finalize()
   // -- close the content file
   p->tocstream.close();
 
-  QCString name = Config_getString(HTML_OUTPUT) + "/plugin.xml";
+  DString name = Config_getString(HTML_OUTPUT) + "/plugin.xml";
   std::ofstream t = Portable::openOutputStream(name);
   if (t.is_open())
   {
-    QCString docId = Config_getString(ECLIPSE_DOC_ID);
+    DString docId = Config_getString(ECLIPSE_DOC_ID);
     t << "<plugin name=\""  << docId << "\" id=\"" << docId << "\"\n";
     t << "        version=\"1.0.0\" provider-name=\"Doxygen\">\n";
     t << "  <extension point=\"org.eclipse.help.toc\">\n";
@@ -161,20 +161,20 @@ void EclipseHelp::decContentsDepth()
  */
 void EclipseHelp::addContentsItem(
     bool /* isDir */,
-    const QCString &name,
-    const QCString & /* ref */,
-    const QCString &file,
-    const QCString &anchor,
+    const DString &name,
+    const DString & /* ref */,
+    const DString &file,
+    const DString &anchor,
     bool /* separateIndex */,
     bool /* addToNavIndex */,
     const Definition * /*def*/,
-    const QCString & /* nameAsHtml */)
+    const DString & /* nameAsHtml */)
 {
   // -- write the topic tag
   p->closedTag();
-  if (!file.isEmpty())
+  if (!file.empty())
   {
-    QCString fn = file;
+    DString fn = file;
     addHtmlExtensionIfMissing(fn);
     switch (file[0]) // check for special markers (user defined URLs)
     {
@@ -186,19 +186,19 @@ void EclipseHelp::addContentsItem(
         p->indent();
         p->tocstream << "<topic label=\"" << convertToXML(name) << "\"";
         p->tocstream << " href=\"" << convertToXML(p->pathprefix) << &file[1] << "\"";
-        p->endtag = TRUE;
+        p->endtag = true;
 	break;
 
       default:
         p->indent();
         p->tocstream << "<topic label=\"" << convertToXML(name) << "\"";
         p->tocstream << " href=\"" << convertToXML(p->pathprefix) << fn;
-        if (!anchor.isEmpty())
+        if (!anchor.empty())
         {
           p->tocstream << "#" << anchor;
         }
         p->tocstream << "\"";
-        p->endtag = TRUE;
+        p->endtag = true;
 	break;
     }
   }
@@ -206,27 +206,27 @@ void EclipseHelp::addContentsItem(
   {
     p->indent();
     p->tocstream << "<topic label=\"" << convertToXML(name) << "\"";
-    p->endtag = TRUE;
+    p->endtag = true;
   }
 }
 
 void EclipseHelp::addIndexItem(
     const Definition * /* context */,
     const MemberDef * /* md */,
-    const QCString & /* sectionAnchor */,
-    const QCString & /* title */)
+    const DString & /* sectionAnchor */,
+    const DString & /* title */)
 {
 }
 
-void EclipseHelp::addIndexFile(const QCString & /* name */)
+void EclipseHelp::addIndexFile(const DString & /* name */)
 {
 }
 
-void EclipseHelp::addImageFile(const QCString & /* name */)
+void EclipseHelp::addImageFile(const DString & /* name */)
 {
 }
 
-void EclipseHelp::addStyleSheetFile(const QCString & /* name */)
+void EclipseHelp::addStyleSheetFile(const DString & /* name */)
 {
 }
 

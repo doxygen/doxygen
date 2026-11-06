@@ -51,10 +51,10 @@ bool ClassLinkedRefMap::declVisible(const ClassDef::CompoundType *filter) const
 }
 
 void ClassLinkedRefMap::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *filter,
-                                      const QCString &header,bool localNames) const
+                                      const DString &header,bool localNames) const
 {
   bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
-  bool found=FALSE;
+  bool found=false;
   for (const auto &cd : *this)
   {
     //printf("  ClassLinkedRefMap::writeDeclaration for %s\n",cd->name().data());
@@ -79,13 +79,13 @@ void ClassLinkedRefMap::writeDocumentation(OutputList &ol,const Definition * con
   bool inlineSimpleClasses = Config_getBool(INLINE_SIMPLE_STRUCTS);
   if (!inlineGroupedClasses && !inlineSimpleClasses) return;
 
-  bool found=FALSE;
+  bool found=false;
 
   for (const auto &cd : *this)
   {
-    //printf("%s:writeDocumentation() %p linkable=%d embedded=%d container=%p partOfGroups=%zu\n",
-    //  cd->name().data(),cd->getOuterScope(),cd->isLinkableInProject(),cd->isEmbeddedInOuterScope(),
-    //  container,cd->partOfGroups()->size());
+    //printf("%s:writeDocumentation() %p linkable=%d embedded=%d container=%p partOfGroups=%zu anonymous=%d\n",
+    //  cd->name().data(),(void*)cd->getOuterScope(),cd->isLinkableInProject(),cd->isEmbeddedInOuterScope(),
+    //  (void*)container,cd->partOfGroups().size(),cd->isAnonymous());
 
     if (!cd->isAnonymous() &&
         cd->isLinkableInProject() &&
@@ -102,7 +102,7 @@ void ClassLinkedRefMap::writeDocumentation(OutputList &ol,const Definition * con
         ol.parseText(fortranOpt?theTranslator->trTypeDocumentation():
             theTranslator->trClassDocumentation());
         ol.endGroupHeader();
-        found=TRUE;
+        found=true;
       }
       cd->writeInlineDocumentation(ol);
     }

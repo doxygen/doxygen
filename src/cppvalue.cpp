@@ -64,7 +64,7 @@ CPPValue CPPValue::parseBinary(const std::string &token)
 
 CPPValue CPPValue::parseCharacter(const std::string &token) // does not work for '\n' and the alike
 {
-  assert(token.length()>0);
+  assert(!token.empty());
   if (token[1]=='\\')
   {
     assert(token.length()>1);

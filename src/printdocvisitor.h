@@ -28,7 +28,7 @@
 class PrintDocVisitor
 {
   public:
-    PrintDocVisitor() : m_indent(0), m_needsEnter(FALSE), m_insidePre(FALSE) {}
+    PrintDocVisitor() : m_indent(0), m_needsEnter(false), m_insidePre(false) {}
 
     //--------------------------------------
 
@@ -57,14 +57,14 @@ class PrintDocVisitor
     void operator()(const DocSymbol &s)
     {
       indent_leaf();
-      const char *res = HtmlEntityMapper::instance().utf8(s.symbol(),TRUE);
+      const char *res = HtmlEntityMapper::instance().utf8(s.symbol(),true);
       if (res)
       {
         printf("%s",res);
       }
       else
       {
-        printf("print: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance().html(s.symbol(),TRUE));
+        printf("print: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance().html(s.symbol(),true));
       }
     }
     void operator()(const DocEmoji &s)
@@ -174,6 +174,7 @@ class PrintDocVisitor
         case DocVerbatim::Dot: printf("<dot>"); break;
         case DocVerbatim::Msc: printf("<msc>"); break;
         case DocVerbatim::PlantUML: printf("<plantuml>"); break;
+        case DocVerbatim::Mermaid: printf("<mermaid>"); break;
       }
       printf("%s",qPrint(s.text()));
       switch(s.type())
@@ -191,6 +192,7 @@ class PrintDocVisitor
         case DocVerbatim::Dot: printf("</dot>"); break;
         case DocVerbatim::Msc: printf("</msc>"); break;
         case DocVerbatim::PlantUML: printf("</plantuml>"); break;
+        case DocVerbatim::Mermaid: printf("</mermaid>"); break;
       }
     }
     void operator()(const DocAnchor &a)
@@ -255,8 +257,8 @@ class PrintDocVisitor
     {
       indent_leaf();
       auto opt = cite.option();
-      QCString txt;
-      if (!cite.file().isEmpty())
+      DString txt;
+      if (!cite.file().empty())
       {
         txt = cite.getText();
       }
@@ -625,6 +627,14 @@ class PrintDocVisitor
       indent_post();
       printf("</plantumlfile>\n");
     }
+    void operator()(const DocMermaidFile &df)
+    {
+      indent_pre();
+      printf("<mermaidfile src=\"%s\">\n",qPrint(df.name()));
+      visitChildren(df);
+      indent_post();
+      printf("</mermaidfile>\n");
+    }
     void operator()(const DocLink &lnk)
     {
       indent_pre();
@@ -754,12 +764,12 @@ class PrintDocVisitor
     {
       if (m_needsEnter) printf("\n");
       for (int i=0;i<m_indent;i++) printf(".");
-      m_needsEnter=FALSE;
+      m_needsEnter=false;
     }
     void indent_leaf()
     {
       if (!m_needsEnter) indent();
-      m_needsEnter=TRUE;
+      m_needsEnter=true;
     }
     void indent_pre()
     {

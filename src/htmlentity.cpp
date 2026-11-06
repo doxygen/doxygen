@@ -345,7 +345,7 @@ HtmlEntityMapper &HtmlEntityMapper::instance()
 /*! @brief Access routine to the UTF8 code of the HTML entity
  *
  * @param symb Code of the requested HTML entity
- * @param useInPrintf If TRUE the result will be escaped such that it can be
+ * @param useInPrintf If true the result will be escaped such that it can be
  *                    used in a printf string pattern
  * @return the UTF8 code of the HTML entity,
  *         in case the UTF code is unknown \c nullptr is returned.
@@ -365,7 +365,7 @@ const char *HtmlEntityMapper::utf8(HtmlEntityMapper::SymType symb,bool useInPrin
 /*! @brief Access routine to the html code of the HTML entity
  *
  * @param symb        Code of the requested HTML entity
- * @param useInPrintf If TRUE the result will be escaped such that it can be
+ * @param useInPrintf If true the result will be escaped such that it can be
  *                    used in a printf string pattern
  * @return the html representation of the HTML entity,
  *         in case the html code is unknown \c nullptr is returned.
@@ -455,7 +455,7 @@ const HtmlEntityMapper::PerlSymb *HtmlEntityMapper::perl(HtmlEntityMapper::SymTy
  * @return the code for the requested HTML entity name,
  *         in case the requested HTML item does not exist `HtmlEntityMapper::Sym_unknown` is returned.
  */
-HtmlEntityMapper::SymType HtmlEntityMapper::name2sym(const QCString &symName) const
+HtmlEntityMapper::SymType HtmlEntityMapper::name2sym(const DString &symName) const
 {
   auto it = m_name2sym.find(symName.str());
   return it!=m_name2sym.end() ? it->second : HtmlEntityMapper::Sym_Unknown;
@@ -465,8 +465,8 @@ void HtmlEntityMapper::writeXMLSchema(TextStream &t)
 {
   for (size_t i=0;i<g_htmlEntities.size();i++)
   {
-    QCString bareName = g_htmlEntities[i].xml;
-    if (!bareName.isEmpty() && bareName.at(0)=='<' && bareName.endsWith("/>"))
+    DString bareName = g_htmlEntities[i].xml;
+    if (!bareName.empty() && bareName.at(0)=='<' && bareName.endsWith("/>"))
     {
       bareName = bareName.mid(1,bareName.length()-3); // strip < and />
       t << "      <xsd:element name=\"" << bareName << "\" type=\"docEmptyType\" />\n";

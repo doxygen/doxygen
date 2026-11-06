@@ -1013,6 +1013,8 @@ class DoxCompoundKind(str, Enum):
     EXAMPLE='example'
     DIR='dir'
     CONCEPT='concept'
+    REQUIREMENT='requirement'
+    REQUIREMENTS='requirements'
 
 
 class DoxGraphRelation(str, Enum):
@@ -1129,6 +1131,11 @@ class DoxPlantumlEngine(str, Enum):
     REGEX='regex'
     EBNF='ebnf'
     FILES='files'
+    CHART='chart'
+    NWDIAG='nwdiag'
+    PACKETDIAG='packetdiag'
+    PROJECT='project'
+    SPRITES='sprites'
 
 
 class DoxProtectionKind(str, Enum):
@@ -1378,7 +1385,7 @@ class compounddefType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, id=None, kind=None, language=None, prot=None, final=None, inline=None, sealed=None, abstract=None, compoundname=None, title=None, basecompoundref=None, derivedcompoundref=None, includes=None, includedby=None, incdepgraph=None, invincdepgraph=None, innermodule=None, innerdir=None, innerfile=None, innerclass=None, innerconcept=None, innernamespace=None, innerpage=None, innergroup=None, qualifier=None, templateparamlist=None, sectiondef=None, tableofcontents=None, requiresclause=None, initializer=None, briefdescription=None, detaileddescription=None, exports=None, inheritancegraph=None, collaborationgraph=None, programlisting=None, location=None, listofallmembers=None, gds_collector_=None, **kwargs_):
+    def __init__(self, id=None, kind=None, language=None, prot=None, final=None, inline=None, sealed=None, abstract=None, compoundname=None, title=None, basecompoundref=None, derivedcompoundref=None, includes=None, includedby=None, incdepgraph=None, invincdepgraph=None, innermodule=None, innerdir=None, innerfile=None, innerclass=None, innerconcept=None, innernamespace=None, innerpage=None, innergroup=None, qualifier=None, templateparamlist=None, sectiondef=None, tableofcontents=None, requiresclause=None, initializer=None, conceptparts=None, briefdescription=None, detaileddescription=None, exports=None, inheritancegraph=None, collaborationgraph=None, programlisting=None, satisfies=None, verifies=None, location=None, listofallmembers=None, requirementslist=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -1486,6 +1493,8 @@ class compounddefType(GeneratedsSuper):
         self.requiresclause_nsprefix_ = None
         self.initializer = initializer
         self.initializer_nsprefix_ = None
+        self.conceptparts = conceptparts
+        self.conceptparts_nsprefix_ = None
         self.briefdescription = briefdescription
         self.briefdescription_nsprefix_ = None
         self.detaileddescription = detaileddescription
@@ -1498,10 +1507,16 @@ class compounddefType(GeneratedsSuper):
         self.collaborationgraph_nsprefix_ = None
         self.programlisting = programlisting
         self.programlisting_nsprefix_ = None
+        self.satisfies = satisfies
+        self.satisfies_nsprefix_ = None
+        self.verifies = verifies
+        self.verifies_nsprefix_ = None
         self.location = location
         self.location_nsprefix_ = None
         self.listofallmembers = listofallmembers
         self.listofallmembers_nsprefix_ = None
+        self.requirementslist = requirementslist
+        self.requirementslist_nsprefix_ = None
     def factory(*args_, **kwargs_):
         if CurrentSubclassModule_ is not None:
             subclass = getSubclassFromModule_(
@@ -1689,6 +1704,10 @@ class compounddefType(GeneratedsSuper):
         return self.initializer
     def set_initializer(self, initializer):
         self.initializer = initializer
+    def get_conceptparts(self):
+        return self.conceptparts
+    def set_conceptparts(self, conceptparts):
+        self.conceptparts = conceptparts
     def get_briefdescription(self):
         return self.briefdescription
     def set_briefdescription(self, briefdescription):
@@ -1713,6 +1732,14 @@ class compounddefType(GeneratedsSuper):
         return self.programlisting
     def set_programlisting(self, programlisting):
         self.programlisting = programlisting
+    def get_satisfies(self):
+        return self.satisfies
+    def set_satisfies(self, satisfies):
+        self.satisfies = satisfies
+    def get_verifies(self):
+        return self.verifies
+    def set_verifies(self, verifies):
+        self.verifies = verifies
     def get_location(self):
         return self.location
     def set_location(self, location):
@@ -1721,6 +1748,10 @@ class compounddefType(GeneratedsSuper):
         return self.listofallmembers
     def set_listofallmembers(self, listofallmembers):
         self.listofallmembers = listofallmembers
+    def get_requirementslist(self):
+        return self.requirementslist
+    def set_requirementslist(self, requirementslist):
+        self.requirementslist = requirementslist
     def get_id(self):
         return self.id
     def set_id(self, id):
@@ -1761,7 +1792,7 @@ class compounddefType(GeneratedsSuper):
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s is not of the correct base simple type (str)' % {"value": value, "lineno": lineno, })
                 return False
             value = value
-            enumerations = ['class', 'struct', 'union', 'interface', 'protocol', 'category', 'exception', 'service', 'singleton', 'module', 'type', 'file', 'namespace', 'group', 'page', 'example', 'dir', 'concept']
+            enumerations = ['class', 'struct', 'union', 'interface', 'protocol', 'category', 'exception', 'service', 'singleton', 'module', 'type', 'file', 'namespace', 'group', 'page', 'example', 'dir', 'concept', 'requirement', 'requirements']
             if value not in enumerations:
                 lineno = self.gds_get_node_lineno_()
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s does not match xsd enumeration restriction on DoxCompoundKind' % {"value" : encode_str_2_3(value), "lineno": lineno} )
@@ -1829,14 +1860,18 @@ class compounddefType(GeneratedsSuper):
             self.tableofcontents is not None or
             self.requiresclause is not None or
             self.initializer is not None or
+            self.conceptparts is not None or
             self.briefdescription is not None or
             self.detaileddescription is not None or
             self.exports is not None or
             self.inheritancegraph is not None or
             self.collaborationgraph is not None or
             self.programlisting is not None or
+            self.satisfies is not None or
+            self.verifies is not None or
             self.location is not None or
-            self.listofallmembers is not None
+            self.listofallmembers is not None or
+            self.requirementslist is not None
         ):
             return True
         else:
@@ -1963,6 +1998,9 @@ class compounddefType(GeneratedsSuper):
         if self.initializer is not None:
             namespaceprefix_ = self.initializer_nsprefix_ + ':' if (UseCapturedNS_ and self.initializer_nsprefix_) else ''
             self.initializer.export(outfile, level, namespaceprefix_, namespacedef_='', name_='initializer', pretty_print=pretty_print)
+        if self.conceptparts is not None:
+            namespaceprefix_ = self.conceptparts_nsprefix_ + ':' if (UseCapturedNS_ and self.conceptparts_nsprefix_) else ''
+            self.conceptparts.export(outfile, level, namespaceprefix_, namespacedef_='', name_='conceptparts', pretty_print=pretty_print)
         if self.briefdescription is not None:
             namespaceprefix_ = self.briefdescription_nsprefix_ + ':' if (UseCapturedNS_ and self.briefdescription_nsprefix_) else ''
             self.briefdescription.export(outfile, level, namespaceprefix_, namespacedef_='', name_='briefdescription', pretty_print=pretty_print)
@@ -1981,12 +2019,21 @@ class compounddefType(GeneratedsSuper):
         if self.programlisting is not None:
             namespaceprefix_ = self.programlisting_nsprefix_ + ':' if (UseCapturedNS_ and self.programlisting_nsprefix_) else ''
             self.programlisting.export(outfile, level, namespaceprefix_, namespacedef_='', name_='programlisting', pretty_print=pretty_print)
+        if self.satisfies is not None:
+            namespaceprefix_ = self.satisfies_nsprefix_ + ':' if (UseCapturedNS_ and self.satisfies_nsprefix_) else ''
+            self.satisfies.export(outfile, level, namespaceprefix_, namespacedef_='', name_='satisfies', pretty_print=pretty_print)
+        if self.verifies is not None:
+            namespaceprefix_ = self.verifies_nsprefix_ + ':' if (UseCapturedNS_ and self.verifies_nsprefix_) else ''
+            self.verifies.export(outfile, level, namespaceprefix_, namespacedef_='', name_='verifies', pretty_print=pretty_print)
         if self.location is not None:
             namespaceprefix_ = self.location_nsprefix_ + ':' if (UseCapturedNS_ and self.location_nsprefix_) else ''
             self.location.export(outfile, level, namespaceprefix_, namespacedef_='', name_='location', pretty_print=pretty_print)
         if self.listofallmembers is not None:
             namespaceprefix_ = self.listofallmembers_nsprefix_ + ':' if (UseCapturedNS_ and self.listofallmembers_nsprefix_) else ''
             self.listofallmembers.export(outfile, level, namespaceprefix_, namespacedef_='', name_='listofallmembers', pretty_print=pretty_print)
+        if self.requirementslist is not None:
+            namespaceprefix_ = self.requirementslist_nsprefix_ + ':' if (UseCapturedNS_ and self.requirementslist_nsprefix_) else ''
+            self.requirementslist.export(outfile, level, namespaceprefix_, namespacedef_='', name_='requirementslist', pretty_print=pretty_print)
     def build(self, node, gds_collector_=None):
         self.gds_collector_ = gds_collector_
         if SaveElementTreeNode:
@@ -2152,13 +2199,20 @@ class compounddefType(GeneratedsSuper):
             obj_.build(child_, gds_collector_=gds_collector_)
             self.initializer = obj_
             obj_.original_tagname_ = 'initializer'
+        elif nodeName_ == 'conceptparts':
+            obj_ = conceptParts.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.conceptparts = obj_
+            obj_.original_tagname_ = 'conceptparts'
         elif nodeName_ == 'briefdescription':
-            obj_ = descriptionType.factory(parent_object_=self)
+            class_obj_ = self.get_class_obj_(child_, descriptionType)
+            obj_ = class_obj_.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
             self.briefdescription = obj_
             obj_.original_tagname_ = 'briefdescription'
         elif nodeName_ == 'detaileddescription':
-            obj_ = descriptionType.factory(parent_object_=self)
+            class_obj_ = self.get_class_obj_(child_, descriptionType)
+            obj_ = class_obj_.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
             self.detaileddescription = obj_
             obj_.original_tagname_ = 'detaileddescription'
@@ -2182,6 +2236,16 @@ class compounddefType(GeneratedsSuper):
             obj_.build(child_, gds_collector_=gds_collector_)
             self.programlisting = obj_
             obj_.original_tagname_ = 'programlisting'
+        elif nodeName_ == 'satisfies':
+            obj_ = requirementRefsType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.satisfies = obj_
+            obj_.original_tagname_ = 'satisfies'
+        elif nodeName_ == 'verifies':
+            obj_ = requirementRefsType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.verifies = obj_
+            obj_.original_tagname_ = 'verifies'
         elif nodeName_ == 'location':
             obj_ = locationType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -2192,6 +2256,11 @@ class compounddefType(GeneratedsSuper):
             obj_.build(child_, gds_collector_=gds_collector_)
             self.listofallmembers = obj_
             obj_.original_tagname_ = 'listofallmembers'
+        elif nodeName_ == 'requirementslist':
+            obj_ = requirementslistType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.requirementslist = obj_
+            obj_.original_tagname_ = 'requirementslist'
 # end class compounddefType
 
 
@@ -2295,6 +2364,301 @@ class listofallmembersType(GeneratedsSuper):
             self.member.append(obj_)
             obj_.original_tagname_ = 'member'
 # end class listofallmembersType
+
+
+class requirementslistType(GeneratedsSuper):
+    __hash__ = GeneratedsSuper.__hash__
+    subclass = None
+    superclass = None
+    def __init__(self, requirement=None, gds_collector_=None, **kwargs_):
+        self.gds_collector_ = gds_collector_
+        self.gds_elementtree_node_ = None
+        self.original_tagname_ = None
+        self.parent_object_ = kwargs_.get('parent_object_')
+        self.ns_prefix_ = None
+        if requirement is None:
+            self.requirement = []
+        else:
+            self.requirement = requirement
+        self.requirement_nsprefix_ = None
+    def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, requirementslistType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
+        if requirementslistType.subclass:
+            return requirementslistType.subclass(*args_, **kwargs_)
+        else:
+            return requirementslistType(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_ns_prefix_(self):
+        return self.ns_prefix_
+    def set_ns_prefix_(self, ns_prefix):
+        self.ns_prefix_ = ns_prefix
+    def get_requirement(self):
+        return self.requirement
+    def set_requirement(self, requirement):
+        self.requirement = requirement
+    def add_requirement(self, value):
+        self.requirement.append(value)
+    def insert_requirement_at(self, index, value):
+        self.requirement.insert(index, value)
+    def replace_requirement_at(self, index, value):
+        self.requirement[index] = value
+    def hasContent_(self):
+        if (
+            self.requirement
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='requirementslistType', pretty_print=True):
+        imported_ns_def_ = GenerateDSNamespaceDefs_.get('requirementslistType')
+        if imported_ns_def_ is not None:
+            namespacedef_ = imported_ns_def_
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None and name_ == 'requirementslistType':
+            name_ = self.original_tagname_
+        if UseCapturedNS_ and self.ns_prefix_:
+            namespaceprefix_ = self.ns_prefix_ + ':'
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespaceprefix_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespaceprefix_, name_='requirementslistType')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespaceprefix_, namespacedef_, name_='requirementslistType', pretty_print=pretty_print)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('</%s%s>%s' % (namespaceprefix_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='requirementslistType'):
+        pass
+    def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='requirementslistType', fromsubclass_=False, pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        for requirement_ in self.requirement:
+            namespaceprefix_ = self.requirement_nsprefix_ + ':' if (UseCapturedNS_ and self.requirement_nsprefix_) else ''
+            requirement_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='requirement', pretty_print=pretty_print)
+    def build(self, node, gds_collector_=None):
+        self.gds_collector_ = gds_collector_
+        if SaveElementTreeNode:
+            self.gds_elementtree_node_ = node
+        already_processed = set()
+        self.ns_prefix_ = node.prefix
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        pass
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
+        if nodeName_ == 'requirement':
+            obj_ = requirementType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.requirement.append(obj_)
+            obj_.original_tagname_ = 'requirement'
+# end class requirementslistType
+
+
+class requirementType(GeneratedsSuper):
+    __hash__ = GeneratedsSuper.__hash__
+    subclass = None
+    superclass = None
+    def __init__(self, refid=None, tagfile=None, page=None, title=None, location=None, satisfiedby=None, verifiedby=None, gds_collector_=None, **kwargs_):
+        self.gds_collector_ = gds_collector_
+        self.gds_elementtree_node_ = None
+        self.original_tagname_ = None
+        self.parent_object_ = kwargs_.get('parent_object_')
+        self.ns_prefix_ = None
+        self.refid = _cast(None, refid)
+        self.refid_nsprefix_ = None
+        self.tagfile = _cast(None, tagfile)
+        self.tagfile_nsprefix_ = None
+        self.page = _cast(None, page)
+        self.page_nsprefix_ = None
+        self.title = title
+        self.title_nsprefix_ = None
+        self.location = location
+        self.location_nsprefix_ = None
+        if satisfiedby is None:
+            self.satisfiedby = []
+        else:
+            self.satisfiedby = satisfiedby
+        self.satisfiedby_nsprefix_ = None
+        if verifiedby is None:
+            self.verifiedby = []
+        else:
+            self.verifiedby = verifiedby
+        self.verifiedby_nsprefix_ = None
+    def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, requirementType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
+        if requirementType.subclass:
+            return requirementType.subclass(*args_, **kwargs_)
+        else:
+            return requirementType(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_ns_prefix_(self):
+        return self.ns_prefix_
+    def set_ns_prefix_(self, ns_prefix):
+        self.ns_prefix_ = ns_prefix
+    def get_title(self):
+        return self.title
+    def set_title(self, title):
+        self.title = title
+    def get_location(self):
+        return self.location
+    def set_location(self, location):
+        self.location = location
+    def get_satisfiedby(self):
+        return self.satisfiedby
+    def set_satisfiedby(self, satisfiedby):
+        self.satisfiedby = satisfiedby
+    def add_satisfiedby(self, value):
+        self.satisfiedby.append(value)
+    def insert_satisfiedby_at(self, index, value):
+        self.satisfiedby.insert(index, value)
+    def replace_satisfiedby_at(self, index, value):
+        self.satisfiedby[index] = value
+    def get_verifiedby(self):
+        return self.verifiedby
+    def set_verifiedby(self, verifiedby):
+        self.verifiedby = verifiedby
+    def add_verifiedby(self, value):
+        self.verifiedby.append(value)
+    def insert_verifiedby_at(self, index, value):
+        self.verifiedby.insert(index, value)
+    def replace_verifiedby_at(self, index, value):
+        self.verifiedby[index] = value
+    def get_refid(self):
+        return self.refid
+    def set_refid(self, refid):
+        self.refid = refid
+    def get_tagfile(self):
+        return self.tagfile
+    def set_tagfile(self, tagfile):
+        self.tagfile = tagfile
+    def get_page(self):
+        return self.page
+    def set_page(self, page):
+        self.page = page
+    def hasContent_(self):
+        if (
+            self.title is not None or
+            self.location is not None or
+            self.satisfiedby or
+            self.verifiedby
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='requirementType', pretty_print=True):
+        imported_ns_def_ = GenerateDSNamespaceDefs_.get('requirementType')
+        if imported_ns_def_ is not None:
+            namespacedef_ = imported_ns_def_
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None and name_ == 'requirementType':
+            name_ = self.original_tagname_
+        if UseCapturedNS_ and self.ns_prefix_:
+            namespaceprefix_ = self.ns_prefix_ + ':'
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespaceprefix_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespaceprefix_, name_='requirementType')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespaceprefix_, namespacedef_, name_='requirementType', pretty_print=pretty_print)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('</%s%s>%s' % (namespaceprefix_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='requirementType'):
+        if self.refid is not None and 'refid' not in already_processed:
+            already_processed.add('refid')
+            outfile.write(' refid=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.refid), input_name='refid')), ))
+        if self.tagfile is not None and 'tagfile' not in already_processed:
+            already_processed.add('tagfile')
+            outfile.write(' tagfile=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.tagfile), input_name='tagfile')), ))
+        if self.page is not None and 'page' not in already_processed:
+            already_processed.add('page')
+            outfile.write(' page=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.page), input_name='page')), ))
+    def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='requirementType', fromsubclass_=False, pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.title is not None:
+            namespaceprefix_ = self.title_nsprefix_ + ':' if (UseCapturedNS_ and self.title_nsprefix_) else ''
+            self.title.export(outfile, level, namespaceprefix_, namespacedef_='', name_='title', pretty_print=pretty_print)
+        if self.location is not None:
+            namespaceprefix_ = self.location_nsprefix_ + ':' if (UseCapturedNS_ and self.location_nsprefix_) else ''
+            self.location.export(outfile, level, namespaceprefix_, namespacedef_='', name_='location', pretty_print=pretty_print)
+        for satisfiedby_ in self.satisfiedby:
+            namespaceprefix_ = self.satisfiedby_nsprefix_ + ':' if (UseCapturedNS_ and self.satisfiedby_nsprefix_) else ''
+            satisfiedby_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='satisfiedby', pretty_print=pretty_print)
+        for verifiedby_ in self.verifiedby:
+            namespaceprefix_ = self.verifiedby_nsprefix_ + ':' if (UseCapturedNS_ and self.verifiedby_nsprefix_) else ''
+            verifiedby_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='verifiedby', pretty_print=pretty_print)
+    def build(self, node, gds_collector_=None):
+        self.gds_collector_ = gds_collector_
+        if SaveElementTreeNode:
+            self.gds_elementtree_node_ = node
+        already_processed = set()
+        self.ns_prefix_ = node.prefix
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('refid', node)
+        if value is not None and 'refid' not in already_processed:
+            already_processed.add('refid')
+            self.refid = value
+        value = find_attr_value_('tagfile', node)
+        if value is not None and 'tagfile' not in already_processed:
+            already_processed.add('tagfile')
+            self.tagfile = value
+        value = find_attr_value_('page', node)
+        if value is not None and 'page' not in already_processed:
+            already_processed.add('page')
+            self.page = value
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
+        if nodeName_ == 'title':
+            obj_ = docTitleType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.title = obj_
+            obj_.original_tagname_ = 'title'
+        elif nodeName_ == 'location':
+            obj_ = locationType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.location = obj_
+            obj_.original_tagname_ = 'location'
+        elif nodeName_ == 'satisfiedby':
+            obj_ = compoundRefType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.satisfiedby.append(obj_)
+            obj_.original_tagname_ = 'satisfiedby'
+        elif nodeName_ == 'verifiedby':
+            obj_ = compoundRefType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.verifiedby.append(obj_)
+            obj_.original_tagname_ = 'verifiedby'
+# end class requirementType
 
 
 class memberRefType(GeneratedsSuper):
@@ -3720,7 +4084,8 @@ class sectiondefType(GeneratedsSuper):
             self.header = value_
             self.header_nsprefix_ = child_.prefix
         elif nodeName_ == 'description':
-            obj_ = descriptionType.factory(parent_object_=self)
+            class_obj_ = self.get_class_obj_(child_, descriptionType)
+            obj_ = class_obj_.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
             self.description = obj_
             obj_.original_tagname_ = 'description'
@@ -3741,7 +4106,7 @@ class memberdefType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, kind=None, id=None, prot=None, static=None, extern=None, strong=None, const=None, explicit=None, inline=None, refqual=None, virt=None, volatile=None, mutable=None, thread_local=None, noexcept=None, noexceptexpression=None, nodiscard=None, constexpr=None, consteval=None, constinit=None, readable=None, writable=None, initonly=None, settable=None, privatesettable=None, protectedsettable=None, gettable=None, privategettable=None, protectedgettable=None, final=None, sealed=None, new=None, add=None, remove=None, raise_=None, optional=None, required=None, accessor=None, attribute=None, property=None, readonly=None, bound=None, removable=None, constrained=None, transient=None, maybevoid=None, maybedefault=None, maybeambiguous=None, templateparamlist=None, type_=None, definition=None, argsstring=None, name=None, qualifiedname=None, read=None, write=None, bitfield=None, reimplements=None, reimplementedby=None, qualifier=None, param=None, enumvalue=None, requiresclause=None, initializer=None, exceptions=None, briefdescription=None, detaileddescription=None, inbodydescription=None, location=None, references=None, referencedby=None, gds_collector_=None, **kwargs_):
+    def __init__(self, kind=None, id=None, prot=None, static=None, extern=None, strong=None, const=None, explicit=None, inline=None, refqual=None, virt=None, volatile=None, mutable=None, thread_local=None, noexcept=None, noexceptexpression=None, nodiscard=None, constexpr=None, consteval=None, constinit=None, readable=None, writable=None, initonly=None, settable=None, privatesettable=None, protectedsettable=None, gettable=None, privategettable=None, protectedgettable=None, final=None, sealed=None, new=None, add=None, remove=None, raise_=None, optional=None, required=None, accessor=None, attribute=None, property=None, readonly=None, bound=None, removable=None, constrained=None, transient=None, maybevoid=None, maybedefault=None, maybeambiguous=None, templateparamlist=None, type_=None, definition=None, argsstring=None, name=None, qualifiedname=None, read=None, write=None, bitfield=None, reimplements=None, reimplementedby=None, qualifier=None, param=None, enumvalue=None, requiresclause=None, initializer=None, exceptions=None, satisfies=None, verifies=None, briefdescription=None, detaileddescription=None, inbodydescription=None, location=None, references=None, referencedby=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -3892,6 +4257,10 @@ class memberdefType(GeneratedsSuper):
         self.initializer_nsprefix_ = None
         self.exceptions = exceptions
         self.exceptions_nsprefix_ = None
+        self.satisfies = satisfies
+        self.satisfies_nsprefix_ = None
+        self.verifies = verifies
+        self.verifies_nsprefix_ = None
         self.briefdescription = briefdescription
         self.briefdescription_nsprefix_ = None
         self.detaileddescription = detaileddescription
@@ -4023,6 +4392,14 @@ class memberdefType(GeneratedsSuper):
         return self.exceptions
     def set_exceptions(self, exceptions):
         self.exceptions = exceptions
+    def get_satisfies(self):
+        return self.satisfies
+    def set_satisfies(self, satisfies):
+        self.satisfies = satisfies
+    def get_verifies(self):
+        return self.verifies
+    def set_verifies(self, verifies):
+        self.verifies = verifies
     def get_briefdescription(self):
         return self.briefdescription
     def set_briefdescription(self, briefdescription):
@@ -4348,6 +4725,8 @@ class memberdefType(GeneratedsSuper):
             self.requiresclause is not None or
             self.initializer is not None or
             self.exceptions is not None or
+            self.satisfies is not None or
+            self.verifies is not None or
             self.briefdescription is not None or
             self.detaileddescription is not None or
             self.inbodydescription is not None or
@@ -4590,6 +4969,12 @@ class memberdefType(GeneratedsSuper):
         if self.exceptions is not None:
             namespaceprefix_ = self.exceptions_nsprefix_ + ':' if (UseCapturedNS_ and self.exceptions_nsprefix_) else ''
             self.exceptions.export(outfile, level, namespaceprefix_, namespacedef_='', name_='exceptions', pretty_print=pretty_print)
+        if self.satisfies is not None:
+            namespaceprefix_ = self.satisfies_nsprefix_ + ':' if (UseCapturedNS_ and self.satisfies_nsprefix_) else ''
+            self.satisfies.export(outfile, level, namespaceprefix_, namespacedef_='', name_='satisfies', pretty_print=pretty_print)
+        if self.verifies is not None:
+            namespaceprefix_ = self.verifies_nsprefix_ + ':' if (UseCapturedNS_ and self.verifies_nsprefix_) else ''
+            self.verifies.export(outfile, level, namespaceprefix_, namespacedef_='', name_='verifies', pretty_print=pretty_print)
         if self.briefdescription is not None:
             namespaceprefix_ = self.briefdescription_nsprefix_ + ':' if (UseCapturedNS_ and self.briefdescription_nsprefix_) else ''
             self.briefdescription.export(outfile, level, namespaceprefix_, namespacedef_='', name_='briefdescription', pretty_print=pretty_print)
@@ -4952,18 +5337,31 @@ class memberdefType(GeneratedsSuper):
             obj_.build(child_, gds_collector_=gds_collector_)
             self.exceptions = obj_
             obj_.original_tagname_ = 'exceptions'
+        elif nodeName_ == 'satisfies':
+            obj_ = requirementRefsType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.satisfies = obj_
+            obj_.original_tagname_ = 'satisfies'
+        elif nodeName_ == 'verifies':
+            obj_ = requirementRefsType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.verifies = obj_
+            obj_.original_tagname_ = 'verifies'
         elif nodeName_ == 'briefdescription':
-            obj_ = descriptionType.factory(parent_object_=self)
+            class_obj_ = self.get_class_obj_(child_, descriptionType)
+            obj_ = class_obj_.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
             self.briefdescription = obj_
             obj_.original_tagname_ = 'briefdescription'
         elif nodeName_ == 'detaileddescription':
-            obj_ = descriptionType.factory(parent_object_=self)
+            class_obj_ = self.get_class_obj_(child_, descriptionType)
+            obj_ = class_obj_.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
             self.detaileddescription = obj_
             obj_.original_tagname_ = 'detaileddescription'
         elif nodeName_ == 'inbodydescription':
-            obj_ = descriptionType.factory(parent_object_=self)
+            class_obj_ = self.get_class_obj_(child_, descriptionType)
+            obj_ = class_obj_.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
             self.inbodydescription = obj_
             obj_.original_tagname_ = 'inbodydescription'
@@ -4989,7 +5387,7 @@ class descriptionType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, title=None, para=None, internal=None, sect1=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, title=None, para=None, internal=None, sect1=None, valueOf_=None, mixedclass_=None, content_=None, extensiontype_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -5013,6 +5411,7 @@ class descriptionType(GeneratedsSuper):
             self.sect1 = sect1
         self.sect1_nsprefix_ = None
         self.valueOf_ = valueOf_
+        self.extensiontype_ = extensiontype_
         if mixedclass_ is None:
             self.mixedclass_ = MixedContainer
         else:
@@ -5073,6 +5472,8 @@ class descriptionType(GeneratedsSuper):
         self.sect1[index] = value
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def get_extensiontype_(self): return self.extensiontype_
+    def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
     def hasContent_(self):
         if (
             self.title is not None or
@@ -5109,6 +5510,14 @@ class descriptionType(GeneratedsSuper):
         else:
             outfile.write('/>%s' % (eol_, ))
     def exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='descriptionType'):
+        if self.extensiontype_ is not None and 'xsi:type' not in already_processed:
+            already_processed.add('xsi:type')
+            outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+            if ":" not in self.extensiontype_:
+                imported_ns_type_prefix_ = GenerateDSNamespaceTypePrefixes_.get(self.extensiontype_, '')
+                outfile.write(' xsi:type="%s%s"' % (imported_ns_type_prefix_, self.extensiontype_))
+            else:
+                outfile.write(' xsi:type="%s"' % self.extensiontype_)
         pass
     def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='descriptionType', fromsubclass_=False, pretty_print=True):
         if not fromsubclass_:
@@ -5148,7 +5557,10 @@ class descriptionType(GeneratedsSuper):
             self.buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
         return self
     def buildAttributes(self, node, attrs, already_processed):
-        pass
+        value = find_attr_value_('xsi:type', node)
+        if value is not None and 'xsi:type' not in already_processed:
+            already_processed.add('xsi:type')
+            self.extensiontype_ = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
         if nodeName_ == 'title' and child_.text is not None:
             valuestr_ = child_.text
@@ -5361,12 +5773,14 @@ class enumvalueType(GeneratedsSuper):
             self.initializer = obj_
             obj_.original_tagname_ = 'initializer'
         elif nodeName_ == 'briefdescription':
-            obj_ = descriptionType.factory(parent_object_=self)
+            class_obj_ = self.get_class_obj_(child_, descriptionType)
+            obj_ = class_obj_.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
             self.briefdescription = obj_
             obj_.original_tagname_ = 'briefdescription'
         elif nodeName_ == 'detaileddescription':
-            obj_ = descriptionType.factory(parent_object_=self)
+            class_obj_ = self.get_class_obj_(child_, descriptionType)
+            obj_ = class_obj_.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
             self.detaileddescription = obj_
             obj_.original_tagname_ = 'detaileddescription'
@@ -5473,6 +5887,364 @@ class templateparamlistType(GeneratedsSuper):
             self.param.append(obj_)
             obj_.original_tagname_ = 'param'
 # end class templateparamlistType
+
+
+class conceptParts(GeneratedsSuper):
+    __hash__ = GeneratedsSuper.__hash__
+    subclass = None
+    superclass = None
+    def __init__(self, codepart=None, docpart=None, gds_collector_=None, **kwargs_):
+        self.gds_collector_ = gds_collector_
+        self.gds_elementtree_node_ = None
+        self.original_tagname_ = None
+        self.parent_object_ = kwargs_.get('parent_object_')
+        self.ns_prefix_ = None
+        if codepart is None:
+            self.codepart = []
+        else:
+            self.codepart = codepart
+        self.codepart_nsprefix_ = None
+        if docpart is None:
+            self.docpart = []
+        else:
+            self.docpart = docpart
+        self.docpart_nsprefix_ = None
+    def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, conceptParts)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
+        if conceptParts.subclass:
+            return conceptParts.subclass(*args_, **kwargs_)
+        else:
+            return conceptParts(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_ns_prefix_(self):
+        return self.ns_prefix_
+    def set_ns_prefix_(self, ns_prefix):
+        self.ns_prefix_ = ns_prefix
+    def get_codepart(self):
+        return self.codepart
+    def set_codepart(self, codepart):
+        self.codepart = codepart
+    def add_codepart(self, value):
+        self.codepart.append(value)
+    def insert_codepart_at(self, index, value):
+        self.codepart.insert(index, value)
+    def replace_codepart_at(self, index, value):
+        self.codepart[index] = value
+    def get_docpart(self):
+        return self.docpart
+    def set_docpart(self, docpart):
+        self.docpart = docpart
+    def add_docpart(self, value):
+        self.docpart.append(value)
+    def insert_docpart_at(self, index, value):
+        self.docpart.insert(index, value)
+    def replace_docpart_at(self, index, value):
+        self.docpart[index] = value
+    def hasContent_(self):
+        if (
+            self.codepart or
+            self.docpart
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='conceptParts', pretty_print=True):
+        imported_ns_def_ = GenerateDSNamespaceDefs_.get('conceptParts')
+        if imported_ns_def_ is not None:
+            namespacedef_ = imported_ns_def_
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None and name_ == 'conceptParts':
+            name_ = self.original_tagname_
+        if UseCapturedNS_ and self.ns_prefix_:
+            namespaceprefix_ = self.ns_prefix_ + ':'
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespaceprefix_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespaceprefix_, name_='conceptParts')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespaceprefix_, namespacedef_, name_='conceptParts', pretty_print=pretty_print)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('</%s%s>%s' % (namespaceprefix_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='conceptParts'):
+        pass
+    def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='conceptParts', fromsubclass_=False, pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        for codepart_ in self.codepart:
+            namespaceprefix_ = self.codepart_nsprefix_ + ':' if (UseCapturedNS_ and self.codepart_nsprefix_) else ''
+            codepart_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='codepart', pretty_print=pretty_print)
+        for docpart_ in self.docpart:
+            namespaceprefix_ = self.docpart_nsprefix_ + ':' if (UseCapturedNS_ and self.docpart_nsprefix_) else ''
+            docpart_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='docpart', pretty_print=pretty_print)
+    def build(self, node, gds_collector_=None):
+        self.gds_collector_ = gds_collector_
+        if SaveElementTreeNode:
+            self.gds_elementtree_node_ = node
+        already_processed = set()
+        self.ns_prefix_ = node.prefix
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        pass
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
+        if nodeName_ == 'codepart':
+            obj_ = conceptCodePart.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.codepart.append(obj_)
+            obj_.original_tagname_ = 'codepart'
+        elif nodeName_ == 'docpart':
+            obj_ = conceptDocPart.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.docpart.append(obj_)
+            obj_.original_tagname_ = 'docpart'
+# end class conceptParts
+
+
+class conceptCodePart(GeneratedsSuper):
+    __hash__ = GeneratedsSuper.__hash__
+    subclass = None
+    superclass = None
+    def __init__(self, line=None, programlisting=None, gds_collector_=None, **kwargs_):
+        self.gds_collector_ = gds_collector_
+        self.gds_elementtree_node_ = None
+        self.original_tagname_ = None
+        self.parent_object_ = kwargs_.get('parent_object_')
+        self.ns_prefix_ = None
+        self.line = _cast(int, line)
+        self.line_nsprefix_ = None
+        self.programlisting = programlisting
+        self.programlisting_nsprefix_ = None
+    def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, conceptCodePart)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
+        if conceptCodePart.subclass:
+            return conceptCodePart.subclass(*args_, **kwargs_)
+        else:
+            return conceptCodePart(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_ns_prefix_(self):
+        return self.ns_prefix_
+    def set_ns_prefix_(self, ns_prefix):
+        self.ns_prefix_ = ns_prefix
+    def get_programlisting(self):
+        return self.programlisting
+    def set_programlisting(self, programlisting):
+        self.programlisting = programlisting
+    def get_line(self):
+        return self.line
+    def set_line(self, line):
+        self.line = line
+    def hasContent_(self):
+        if (
+            self.programlisting is not None
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='conceptCodePart', pretty_print=True):
+        imported_ns_def_ = GenerateDSNamespaceDefs_.get('conceptCodePart')
+        if imported_ns_def_ is not None:
+            namespacedef_ = imported_ns_def_
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None and name_ == 'conceptCodePart':
+            name_ = self.original_tagname_
+        if UseCapturedNS_ and self.ns_prefix_:
+            namespaceprefix_ = self.ns_prefix_ + ':'
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespaceprefix_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespaceprefix_, name_='conceptCodePart')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespaceprefix_, namespacedef_, name_='conceptCodePart', pretty_print=pretty_print)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('</%s%s>%s' % (namespaceprefix_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='conceptCodePart'):
+        if self.line is not None and 'line' not in already_processed:
+            already_processed.add('line')
+            outfile.write(' line="%s"' % self.gds_format_integer(self.line, input_name='line'))
+    def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='conceptCodePart', fromsubclass_=False, pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.programlisting is not None:
+            namespaceprefix_ = self.programlisting_nsprefix_ + ':' if (UseCapturedNS_ and self.programlisting_nsprefix_) else ''
+            self.programlisting.export(outfile, level, namespaceprefix_, namespacedef_='', name_='programlisting', pretty_print=pretty_print)
+    def build(self, node, gds_collector_=None):
+        self.gds_collector_ = gds_collector_
+        if SaveElementTreeNode:
+            self.gds_elementtree_node_ = node
+        already_processed = set()
+        self.ns_prefix_ = node.prefix
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('line', node)
+        if value is not None and 'line' not in already_processed:
+            already_processed.add('line')
+            self.line = self.gds_parse_integer(value, node, 'line')
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
+        if nodeName_ == 'programlisting':
+            obj_ = listingType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.programlisting = obj_
+            obj_.original_tagname_ = 'programlisting'
+# end class conceptCodePart
+
+
+class conceptDocPart(descriptionType):
+    __hash__ = GeneratedsSuper.__hash__
+    subclass = None
+    superclass = descriptionType
+    def __init__(self, title=None, para=None, internal=None, sect1=None, line=None, col=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+        self.gds_collector_ = gds_collector_
+        self.gds_elementtree_node_ = None
+        self.original_tagname_ = None
+        self.parent_object_ = kwargs_.get('parent_object_')
+        self.ns_prefix_ = None
+        super(globals().get("conceptDocPart"), self).__init__(title, para, internal, sect1, valueOf_, mixedclass_, content_,  **kwargs_)
+        self.line = _cast(int, line)
+        self.line_nsprefix_ = None
+        self.col = _cast(int, col)
+        self.col_nsprefix_ = None
+        self.valueOf_ = valueOf_
+        if mixedclass_ is None:
+            self.mixedclass_ = MixedContainer
+        else:
+            self.mixedclass_ = mixedclass_
+        if content_ is None:
+            self.content_ = []
+        else:
+            self.content_ = content_
+        self.valueOf_ = valueOf_
+    def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, conceptDocPart)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
+        if conceptDocPart.subclass:
+            return conceptDocPart.subclass(*args_, **kwargs_)
+        else:
+            return conceptDocPart(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_ns_prefix_(self):
+        return self.ns_prefix_
+    def set_ns_prefix_(self, ns_prefix):
+        self.ns_prefix_ = ns_prefix
+    def get_line(self):
+        return self.line
+    def set_line(self, line):
+        self.line = line
+    def get_col(self):
+        return self.col
+    def set_col(self, col):
+        self.col = col
+    def get_valueOf_(self): return self.valueOf_
+    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def hasContent_(self):
+        if (
+            (1 if type(self.valueOf_) in [int,float] else self.valueOf_) or
+            self.content_ or
+            super(conceptDocPart, self).hasContent_()
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='conceptDocPart', pretty_print=True):
+        imported_ns_def_ = GenerateDSNamespaceDefs_.get('conceptDocPart')
+        if imported_ns_def_ is not None:
+            namespacedef_ = imported_ns_def_
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None and name_ == 'conceptDocPart':
+            name_ = self.original_tagname_
+        if UseCapturedNS_ and self.ns_prefix_:
+            namespaceprefix_ = self.ns_prefix_ + ':'
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespaceprefix_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespaceprefix_, name_='conceptDocPart')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespaceprefix_, namespacedef_, name_='conceptDocPart', pretty_print=pretty_print)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('</%s%s>%s' % (namespaceprefix_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='conceptDocPart'):
+        super(conceptDocPart, self).exportAttributes(outfile, level, already_processed, namespaceprefix_, name_='conceptDocPart')
+        if self.line is not None and 'line' not in already_processed:
+            already_processed.add('line')
+            outfile.write(' line="%s"' % self.gds_format_integer(self.line, input_name='line'))
+        if self.col is not None and 'col' not in already_processed:
+            already_processed.add('col')
+            outfile.write(' col="%s"' % self.gds_format_integer(self.col, input_name='col'))
+    def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='conceptDocPart', fromsubclass_=False, pretty_print=True):
+        super(conceptDocPart, self).exportChildren(outfile, level, namespaceprefix_, namespacedef_, name_, True, pretty_print=pretty_print)
+    def build(self, node, gds_collector_=None):
+        self.gds_collector_ = gds_collector_
+        if SaveElementTreeNode:
+            self.gds_elementtree_node_ = node
+        already_processed = set()
+        self.ns_prefix_ = node.prefix
+        self.buildAttributes(node, node.attrib, already_processed)
+        self.valueOf_ = get_all_text_(node)
+        if node.text is not None:
+            obj_ = self.mixedclass_(MixedContainer.CategoryText,
+                MixedContainer.TypeNone, '', node.text)
+            self.content_.append(obj_)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('line', node)
+        if value is not None and 'line' not in already_processed:
+            already_processed.add('line')
+            self.line = self.gds_parse_integer(value, node, 'line')
+        value = find_attr_value_('col', node)
+        if value is not None and 'col' not in already_processed:
+            already_processed.add('col')
+            self.col = self.gds_parse_integer(value, node, 'col')
+        super(conceptDocPart, self).buildAttributes(node, attrs, already_processed)
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
+        if not fromsubclass_ and child_.tail is not None:
+            obj_ = self.mixedclass_(MixedContainer.CategoryText,
+                MixedContainer.TypeNone, '', child_.tail)
+            self.content_.append(obj_)
+        super(conceptDocPart, self).buildChildren(child_, node, nodeName_, True)
+        pass
+# end class conceptDocPart
 
 
 class paramType(GeneratedsSuper):
@@ -5674,7 +6446,8 @@ class paramType(GeneratedsSuper):
             self.typeconstraint = obj_
             obj_.original_tagname_ = 'typeconstraint'
         elif nodeName_ == 'briefdescription':
-            obj_ = descriptionType.factory(parent_object_=self)
+            class_obj_ = self.get_class_obj_(child_, descriptionType)
+            obj_ = class_obj_.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
             self.briefdescription = obj_
             obj_.original_tagname_ = 'briefdescription'
@@ -9639,7 +10412,7 @@ class docTitleType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, mermaid=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -9765,6 +10538,11 @@ class docTitleType(GeneratedsSuper):
         else:
             self.plantuml = plantuml
         self.plantuml_nsprefix_ = None
+        if mermaid is None:
+            self.mermaid = []
+        else:
+            self.mermaid = mermaid
+        self.mermaid_nsprefix_ = None
         if anchor is None:
             self.anchor = []
         else:
@@ -10055,6 +10833,16 @@ class docTitleType(GeneratedsSuper):
         self.plantuml.insert(index, value)
     def replace_plantuml_at(self, index, value):
         self.plantuml[index] = value
+    def get_mermaid(self):
+        return self.mermaid
+    def set_mermaid(self, mermaid):
+        self.mermaid = mermaid
+    def add_mermaid(self, value):
+        self.mermaid.append(value)
+    def insert_mermaid_at(self, index, value):
+        self.mermaid.insert(index, value)
+    def replace_mermaid_at(self, index, value):
+        self.mermaid[index] = value
     def get_anchor(self):
         return self.anchor
     def set_anchor(self, anchor):
@@ -10133,6 +10921,7 @@ class docTitleType(GeneratedsSuper):
             self.dot or
             self.msc or
             self.plantuml or
+            self.mermaid or
             self.anchor or
             self.formula or
             self.ref or
@@ -10254,6 +11043,9 @@ class docTitleType(GeneratedsSuper):
         for plantuml_ in self.plantuml:
             namespaceprefix_ = self.plantuml_nsprefix_ + ':' if (UseCapturedNS_ and self.plantuml_nsprefix_) else ''
             plantuml_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='plantuml', pretty_print=pretty_print)
+        for mermaid_ in self.mermaid:
+            namespaceprefix_ = self.mermaid_nsprefix_ + ':' if (UseCapturedNS_ and self.mermaid_nsprefix_) else ''
+            mermaid_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='mermaid', pretty_print=pretty_print)
         for anchor_ in self.anchor:
             namespaceprefix_ = self.anchor_nsprefix_ + ':' if (UseCapturedNS_ and self.anchor_nsprefix_) else ''
             anchor_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='anchor', pretty_print=pretty_print)
@@ -10518,6 +11310,16 @@ class docTitleType(GeneratedsSuper):
                 self.add_plantuml(obj_.value)
             elif hasattr(self, 'set_plantuml'):
                 self.set_plantuml(obj_.value)
+        elif nodeName_ == 'mermaid':
+            obj_ = docMermaidType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'mermaid', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_mermaid'):
+                self.add_mermaid(obj_.value)
+            elif hasattr(self, 'set_mermaid'):
+                self.set_mermaid(obj_.value)
         elif nodeName_ == 'anchor':
             obj_ = docAnchorType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -10579,7 +11381,7 @@ class docSummaryType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, mermaid=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -10705,6 +11507,11 @@ class docSummaryType(GeneratedsSuper):
         else:
             self.plantuml = plantuml
         self.plantuml_nsprefix_ = None
+        if mermaid is None:
+            self.mermaid = []
+        else:
+            self.mermaid = mermaid
+        self.mermaid_nsprefix_ = None
         if anchor is None:
             self.anchor = []
         else:
@@ -10995,6 +11802,16 @@ class docSummaryType(GeneratedsSuper):
         self.plantuml.insert(index, value)
     def replace_plantuml_at(self, index, value):
         self.plantuml[index] = value
+    def get_mermaid(self):
+        return self.mermaid
+    def set_mermaid(self, mermaid):
+        self.mermaid = mermaid
+    def add_mermaid(self, value):
+        self.mermaid.append(value)
+    def insert_mermaid_at(self, index, value):
+        self.mermaid.insert(index, value)
+    def replace_mermaid_at(self, index, value):
+        self.mermaid[index] = value
     def get_anchor(self):
         return self.anchor
     def set_anchor(self, anchor):
@@ -11073,6 +11890,7 @@ class docSummaryType(GeneratedsSuper):
             self.dot or
             self.msc or
             self.plantuml or
+            self.mermaid or
             self.anchor or
             self.formula or
             self.ref or
@@ -11194,6 +12012,9 @@ class docSummaryType(GeneratedsSuper):
         for plantuml_ in self.plantuml:
             namespaceprefix_ = self.plantuml_nsprefix_ + ':' if (UseCapturedNS_ and self.plantuml_nsprefix_) else ''
             plantuml_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='plantuml', pretty_print=pretty_print)
+        for mermaid_ in self.mermaid:
+            namespaceprefix_ = self.mermaid_nsprefix_ + ':' if (UseCapturedNS_ and self.mermaid_nsprefix_) else ''
+            mermaid_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='mermaid', pretty_print=pretty_print)
         for anchor_ in self.anchor:
             namespaceprefix_ = self.anchor_nsprefix_ + ':' if (UseCapturedNS_ and self.anchor_nsprefix_) else ''
             anchor_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='anchor', pretty_print=pretty_print)
@@ -11458,6 +12279,16 @@ class docSummaryType(GeneratedsSuper):
                 self.add_plantuml(obj_.value)
             elif hasattr(self, 'set_plantuml'):
                 self.set_plantuml(obj_.value)
+        elif nodeName_ == 'mermaid':
+            obj_ = docMermaidType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'mermaid', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_mermaid'):
+                self.add_mermaid(obj_.value)
+            elif hasattr(self, 'set_mermaid'):
+                self.set_mermaid(obj_.value)
         elif nodeName_ == 'anchor':
             obj_ = docAnchorType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -11519,7 +12350,7 @@ class docParaType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, hruler=None, preformatted=None, programlisting=None, verbatim=None, javadocliteral=None, javadoccode=None, indexentry=None, orderedlist=None, itemizedlist=None, simplesect=None, title=None, variablelist=None, table=None, heading=None, dotfile=None, mscfile=None, diafile=None, plantumlfile=None, toclist=None, language=None, parameterlist=None, xrefsect=None, copydoc=None, details=None, blockquote=None, parblock=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, mermaid=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, hruler=None, preformatted=None, programlisting=None, verbatim=None, javadocliteral=None, javadoccode=None, indexentry=None, orderedlist=None, itemizedlist=None, simplesect=None, title=None, variablelist=None, table=None, heading=None, dotfile=None, mscfile=None, diafile=None, plantumlfile=None, mermaidfile=None, toclist=None, language=None, parameterlist=None, xrefsect=None, copydoc=None, details=None, blockquote=None, parblock=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -11645,6 +12476,11 @@ class docParaType(GeneratedsSuper):
         else:
             self.plantuml = plantuml
         self.plantuml_nsprefix_ = None
+        if mermaid is None:
+            self.mermaid = []
+        else:
+            self.mermaid = mermaid
+        self.mermaid_nsprefix_ = None
         if anchor is None:
             self.anchor = []
         else:
@@ -11760,6 +12596,11 @@ class docParaType(GeneratedsSuper):
         else:
             self.plantumlfile = plantumlfile
         self.plantumlfile_nsprefix_ = None
+        if mermaidfile is None:
+            self.mermaidfile = []
+        else:
+            self.mermaidfile = mermaidfile
+        self.mermaidfile_nsprefix_ = None
         if toclist is None:
             self.toclist = []
         else:
@@ -12065,6 +12906,16 @@ class docParaType(GeneratedsSuper):
         self.plantuml.insert(index, value)
     def replace_plantuml_at(self, index, value):
         self.plantuml[index] = value
+    def get_mermaid(self):
+        return self.mermaid
+    def set_mermaid(self, mermaid):
+        self.mermaid = mermaid
+    def add_mermaid(self, value):
+        self.mermaid.append(value)
+    def insert_mermaid_at(self, index, value):
+        self.mermaid.insert(index, value)
+    def replace_mermaid_at(self, index, value):
+        self.mermaid[index] = value
     def get_anchor(self):
         return self.anchor
     def set_anchor(self, anchor):
@@ -12295,6 +13146,16 @@ class docParaType(GeneratedsSuper):
         self.plantumlfile.insert(index, value)
     def replace_plantumlfile_at(self, index, value):
         self.plantumlfile[index] = value
+    def get_mermaidfile(self):
+        return self.mermaidfile
+    def set_mermaidfile(self, mermaidfile):
+        self.mermaidfile = mermaidfile
+    def add_mermaidfile(self, value):
+        self.mermaidfile.append(value)
+    def insert_mermaidfile_at(self, index, value):
+        self.mermaidfile.insert(index, value)
+    def replace_mermaidfile_at(self, index, value):
+        self.mermaidfile[index] = value
     def get_toclist(self):
         return self.toclist
     def set_toclist(self, toclist):
@@ -12403,6 +13264,7 @@ class docParaType(GeneratedsSuper):
             self.dot or
             self.msc or
             self.plantuml or
+            self.mermaid or
             self.anchor or
             self.formula or
             self.ref or
@@ -12426,6 +13288,7 @@ class docParaType(GeneratedsSuper):
             self.mscfile or
             self.diafile or
             self.plantumlfile or
+            self.mermaidfile or
             self.toclist or
             self.language or
             self.parameterlist or
@@ -12550,6 +13413,9 @@ class docParaType(GeneratedsSuper):
         for plantuml_ in self.plantuml:
             namespaceprefix_ = self.plantuml_nsprefix_ + ':' if (UseCapturedNS_ and self.plantuml_nsprefix_) else ''
             plantuml_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='plantuml', pretty_print=pretty_print)
+        for mermaid_ in self.mermaid:
+            namespaceprefix_ = self.mermaid_nsprefix_ + ':' if (UseCapturedNS_ and self.mermaid_nsprefix_) else ''
+            mermaid_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='mermaid', pretty_print=pretty_print)
         for anchor_ in self.anchor:
             namespaceprefix_ = self.anchor_nsprefix_ + ':' if (UseCapturedNS_ and self.anchor_nsprefix_) else ''
             anchor_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='anchor', pretty_print=pretty_print)
@@ -12622,6 +13488,9 @@ class docParaType(GeneratedsSuper):
         for plantumlfile_ in self.plantumlfile:
             namespaceprefix_ = self.plantumlfile_nsprefix_ + ':' if (UseCapturedNS_ and self.plantumlfile_nsprefix_) else ''
             plantumlfile_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='plantumlfile', pretty_print=pretty_print)
+        for mermaidfile_ in self.mermaidfile:
+            namespaceprefix_ = self.mermaidfile_nsprefix_ + ':' if (UseCapturedNS_ and self.mermaidfile_nsprefix_) else ''
+            mermaidfile_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='mermaidfile', pretty_print=pretty_print)
         for toclist_ in self.toclist:
             namespaceprefix_ = self.toclist_nsprefix_ + ':' if (UseCapturedNS_ and self.toclist_nsprefix_) else ''
             toclist_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='toclist', pretty_print=pretty_print)
@@ -12895,6 +13764,16 @@ class docParaType(GeneratedsSuper):
                 self.add_plantuml(obj_.value)
             elif hasattr(self, 'set_plantuml'):
                 self.set_plantuml(obj_.value)
+        elif nodeName_ == 'mermaid':
+            obj_ = docMermaidType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'mermaid', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_mermaid'):
+                self.add_mermaid(obj_.value)
+            elif hasattr(self, 'set_mermaid'):
+                self.set_mermaid(obj_.value)
         elif nodeName_ == 'anchor':
             obj_ = docAnchorType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -13119,6 +13998,16 @@ class docParaType(GeneratedsSuper):
                 self.add_plantumlfile(obj_.value)
             elif hasattr(self, 'set_plantumlfile'):
                 self.set_plantumlfile(obj_.value)
+        elif nodeName_ == 'mermaidfile':
+            obj_ = docImageFileType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'mermaidfile', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_mermaidfile'):
+                self.add_mermaidfile(obj_.value)
+            elif hasattr(self, 'set_mermaidfile'):
+                self.set_mermaidfile(obj_.value)
         elif nodeName_ == 'toclist':
             obj_ = docTocListType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -13210,7 +14099,7 @@ class docMarkupType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, hruler=None, preformatted=None, programlisting=None, verbatim=None, javadocliteral=None, javadoccode=None, indexentry=None, orderedlist=None, itemizedlist=None, simplesect=None, title=None, variablelist=None, table=None, heading=None, dotfile=None, mscfile=None, diafile=None, plantumlfile=None, toclist=None, language=None, parameterlist=None, xrefsect=None, copydoc=None, details=None, blockquote=None, parblock=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, mermaid=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, hruler=None, preformatted=None, programlisting=None, verbatim=None, javadocliteral=None, javadoccode=None, indexentry=None, orderedlist=None, itemizedlist=None, simplesect=None, title=None, variablelist=None, table=None, heading=None, dotfile=None, mscfile=None, diafile=None, plantumlfile=None, mermaidfile=None, toclist=None, language=None, parameterlist=None, xrefsect=None, copydoc=None, details=None, blockquote=None, parblock=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -13336,6 +14225,11 @@ class docMarkupType(GeneratedsSuper):
         else:
             self.plantuml = plantuml
         self.plantuml_nsprefix_ = None
+        if mermaid is None:
+            self.mermaid = []
+        else:
+            self.mermaid = mermaid
+        self.mermaid_nsprefix_ = None
         if anchor is None:
             self.anchor = []
         else:
@@ -13451,6 +14345,11 @@ class docMarkupType(GeneratedsSuper):
         else:
             self.plantumlfile = plantumlfile
         self.plantumlfile_nsprefix_ = None
+        if mermaidfile is None:
+            self.mermaidfile = []
+        else:
+            self.mermaidfile = mermaidfile
+        self.mermaidfile_nsprefix_ = None
         if toclist is None:
             self.toclist = []
         else:
@@ -13756,6 +14655,16 @@ class docMarkupType(GeneratedsSuper):
         self.plantuml.insert(index, value)
     def replace_plantuml_at(self, index, value):
         self.plantuml[index] = value
+    def get_mermaid(self):
+        return self.mermaid
+    def set_mermaid(self, mermaid):
+        self.mermaid = mermaid
+    def add_mermaid(self, value):
+        self.mermaid.append(value)
+    def insert_mermaid_at(self, index, value):
+        self.mermaid.insert(index, value)
+    def replace_mermaid_at(self, index, value):
+        self.mermaid[index] = value
     def get_anchor(self):
         return self.anchor
     def set_anchor(self, anchor):
@@ -13986,6 +14895,16 @@ class docMarkupType(GeneratedsSuper):
         self.plantumlfile.insert(index, value)
     def replace_plantumlfile_at(self, index, value):
         self.plantumlfile[index] = value
+    def get_mermaidfile(self):
+        return self.mermaidfile
+    def set_mermaidfile(self, mermaidfile):
+        self.mermaidfile = mermaidfile
+    def add_mermaidfile(self, value):
+        self.mermaidfile.append(value)
+    def insert_mermaidfile_at(self, index, value):
+        self.mermaidfile.insert(index, value)
+    def replace_mermaidfile_at(self, index, value):
+        self.mermaidfile[index] = value
     def get_toclist(self):
         return self.toclist
     def set_toclist(self, toclist):
@@ -14094,6 +15013,7 @@ class docMarkupType(GeneratedsSuper):
             self.dot or
             self.msc or
             self.plantuml or
+            self.mermaid or
             self.anchor or
             self.formula or
             self.ref or
@@ -14117,6 +15037,7 @@ class docMarkupType(GeneratedsSuper):
             self.mscfile or
             self.diafile or
             self.plantumlfile or
+            self.mermaidfile or
             self.toclist or
             self.language or
             self.parameterlist or
@@ -14241,6 +15162,9 @@ class docMarkupType(GeneratedsSuper):
         for plantuml_ in self.plantuml:
             namespaceprefix_ = self.plantuml_nsprefix_ + ':' if (UseCapturedNS_ and self.plantuml_nsprefix_) else ''
             plantuml_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='plantuml', pretty_print=pretty_print)
+        for mermaid_ in self.mermaid:
+            namespaceprefix_ = self.mermaid_nsprefix_ + ':' if (UseCapturedNS_ and self.mermaid_nsprefix_) else ''
+            mermaid_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='mermaid', pretty_print=pretty_print)
         for anchor_ in self.anchor:
             namespaceprefix_ = self.anchor_nsprefix_ + ':' if (UseCapturedNS_ and self.anchor_nsprefix_) else ''
             anchor_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='anchor', pretty_print=pretty_print)
@@ -14313,6 +15237,9 @@ class docMarkupType(GeneratedsSuper):
         for plantumlfile_ in self.plantumlfile:
             namespaceprefix_ = self.plantumlfile_nsprefix_ + ':' if (UseCapturedNS_ and self.plantumlfile_nsprefix_) else ''
             plantumlfile_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='plantumlfile', pretty_print=pretty_print)
+        for mermaidfile_ in self.mermaidfile:
+            namespaceprefix_ = self.mermaidfile_nsprefix_ + ':' if (UseCapturedNS_ and self.mermaidfile_nsprefix_) else ''
+            mermaidfile_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='mermaidfile', pretty_print=pretty_print)
         for toclist_ in self.toclist:
             namespaceprefix_ = self.toclist_nsprefix_ + ':' if (UseCapturedNS_ and self.toclist_nsprefix_) else ''
             toclist_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='toclist', pretty_print=pretty_print)
@@ -14586,6 +15513,16 @@ class docMarkupType(GeneratedsSuper):
                 self.add_plantuml(obj_.value)
             elif hasattr(self, 'set_plantuml'):
                 self.set_plantuml(obj_.value)
+        elif nodeName_ == 'mermaid':
+            obj_ = docMermaidType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'mermaid', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_mermaid'):
+                self.add_mermaid(obj_.value)
+            elif hasattr(self, 'set_mermaid'):
+                self.set_mermaid(obj_.value)
         elif nodeName_ == 'anchor':
             obj_ = docAnchorType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -14810,6 +15747,16 @@ class docMarkupType(GeneratedsSuper):
                 self.add_plantumlfile(obj_.value)
             elif hasattr(self, 'set_plantumlfile'):
                 self.set_plantumlfile(obj_.value)
+        elif nodeName_ == 'mermaidfile':
+            obj_ = docImageFileType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'mermaidfile', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_mermaidfile'):
+                self.add_mermaidfile(obj_.value)
+            elif hasattr(self, 'set_mermaidfile'):
+                self.set_mermaidfile(obj_.value)
         elif nodeName_ == 'toclist':
             obj_ = docTocListType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -14901,7 +15848,7 @@ class docURLLink(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, url=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, url=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, mermaid=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -15029,6 +15976,11 @@ class docURLLink(GeneratedsSuper):
         else:
             self.plantuml = plantuml
         self.plantuml_nsprefix_ = None
+        if mermaid is None:
+            self.mermaid = []
+        else:
+            self.mermaid = mermaid
+        self.mermaid_nsprefix_ = None
         if anchor is None:
             self.anchor = []
         else:
@@ -15319,6 +16271,16 @@ class docURLLink(GeneratedsSuper):
         self.plantuml.insert(index, value)
     def replace_plantuml_at(self, index, value):
         self.plantuml[index] = value
+    def get_mermaid(self):
+        return self.mermaid
+    def set_mermaid(self, mermaid):
+        self.mermaid = mermaid
+    def add_mermaid(self, value):
+        self.mermaid.append(value)
+    def insert_mermaid_at(self, index, value):
+        self.mermaid.insert(index, value)
+    def replace_mermaid_at(self, index, value):
+        self.mermaid[index] = value
     def get_anchor(self):
         return self.anchor
     def set_anchor(self, anchor):
@@ -15401,6 +16363,7 @@ class docURLLink(GeneratedsSuper):
             self.dot or
             self.msc or
             self.plantuml or
+            self.mermaid or
             self.anchor or
             self.formula or
             self.ref or
@@ -15524,6 +16487,9 @@ class docURLLink(GeneratedsSuper):
         for plantuml_ in self.plantuml:
             namespaceprefix_ = self.plantuml_nsprefix_ + ':' if (UseCapturedNS_ and self.plantuml_nsprefix_) else ''
             plantuml_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='plantuml', pretty_print=pretty_print)
+        for mermaid_ in self.mermaid:
+            namespaceprefix_ = self.mermaid_nsprefix_ + ':' if (UseCapturedNS_ and self.mermaid_nsprefix_) else ''
+            mermaid_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='mermaid', pretty_print=pretty_print)
         for anchor_ in self.anchor:
             namespaceprefix_ = self.anchor_nsprefix_ + ':' if (UseCapturedNS_ and self.anchor_nsprefix_) else ''
             anchor_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='anchor', pretty_print=pretty_print)
@@ -15791,6 +16757,16 @@ class docURLLink(GeneratedsSuper):
                 self.add_plantuml(obj_.value)
             elif hasattr(self, 'set_plantuml'):
                 self.set_plantuml(obj_.value)
+        elif nodeName_ == 'mermaid':
+            obj_ = docMermaidType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'mermaid', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_mermaid'):
+                self.add_mermaid(obj_.value)
+            elif hasattr(self, 'set_mermaid'):
+                self.set_mermaid(obj_.value)
         elif nodeName_ == 'anchor':
             obj_ = docAnchorType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -16819,7 +17795,7 @@ class docRefTextType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, refid=None, kindref=None, external=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, refid=None, kindref=None, external=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, mermaid=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -16951,6 +17927,11 @@ class docRefTextType(GeneratedsSuper):
         else:
             self.plantuml = plantuml
         self.plantuml_nsprefix_ = None
+        if mermaid is None:
+            self.mermaid = []
+        else:
+            self.mermaid = mermaid
+        self.mermaid_nsprefix_ = None
         if anchor is None:
             self.anchor = []
         else:
@@ -17241,6 +18222,16 @@ class docRefTextType(GeneratedsSuper):
         self.plantuml.insert(index, value)
     def replace_plantuml_at(self, index, value):
         self.plantuml[index] = value
+    def get_mermaid(self):
+        return self.mermaid
+    def set_mermaid(self, mermaid):
+        self.mermaid = mermaid
+    def add_mermaid(self, value):
+        self.mermaid.append(value)
+    def insert_mermaid_at(self, index, value):
+        self.mermaid.insert(index, value)
+    def replace_mermaid_at(self, index, value):
+        self.mermaid[index] = value
     def get_anchor(self):
         return self.anchor
     def set_anchor(self, anchor):
@@ -17344,6 +18335,7 @@ class docRefTextType(GeneratedsSuper):
             self.dot or
             self.msc or
             self.plantuml or
+            self.mermaid or
             self.anchor or
             self.formula or
             self.ref or
@@ -17473,6 +18465,9 @@ class docRefTextType(GeneratedsSuper):
         for plantuml_ in self.plantuml:
             namespaceprefix_ = self.plantuml_nsprefix_ + ':' if (UseCapturedNS_ and self.plantuml_nsprefix_) else ''
             plantuml_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='plantuml', pretty_print=pretty_print)
+        for mermaid_ in self.mermaid:
+            namespaceprefix_ = self.mermaid_nsprefix_ + ':' if (UseCapturedNS_ and self.mermaid_nsprefix_) else ''
+            mermaid_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='mermaid', pretty_print=pretty_print)
         for anchor_ in self.anchor:
             namespaceprefix_ = self.anchor_nsprefix_ + ':' if (UseCapturedNS_ and self.anchor_nsprefix_) else ''
             anchor_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='anchor', pretty_print=pretty_print)
@@ -17749,6 +18744,16 @@ class docRefTextType(GeneratedsSuper):
                 self.add_plantuml(obj_.value)
             elif hasattr(self, 'set_plantuml'):
                 self.set_plantuml(obj_.value)
+        elif nodeName_ == 'mermaid':
+            obj_ = docMermaidType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'mermaid', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_mermaid'):
+                self.add_mermaid(obj_.value)
+            elif hasattr(self, 'set_mermaid'):
+                self.set_mermaid(obj_.value)
         elif nodeName_ == 'anchor':
             obj_ = docAnchorType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -18337,7 +19342,7 @@ class docCaptionType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, id=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, id=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, mermaid=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -18465,6 +19470,11 @@ class docCaptionType(GeneratedsSuper):
         else:
             self.plantuml = plantuml
         self.plantuml_nsprefix_ = None
+        if mermaid is None:
+            self.mermaid = []
+        else:
+            self.mermaid = mermaid
+        self.mermaid_nsprefix_ = None
         if anchor is None:
             self.anchor = []
         else:
@@ -18755,6 +19765,16 @@ class docCaptionType(GeneratedsSuper):
         self.plantuml.insert(index, value)
     def replace_plantuml_at(self, index, value):
         self.plantuml[index] = value
+    def get_mermaid(self):
+        return self.mermaid
+    def set_mermaid(self, mermaid):
+        self.mermaid = mermaid
+    def add_mermaid(self, value):
+        self.mermaid.append(value)
+    def insert_mermaid_at(self, index, value):
+        self.mermaid.insert(index, value)
+    def replace_mermaid_at(self, index, value):
+        self.mermaid[index] = value
     def get_anchor(self):
         return self.anchor
     def set_anchor(self, anchor):
@@ -18837,6 +19857,7 @@ class docCaptionType(GeneratedsSuper):
             self.dot or
             self.msc or
             self.plantuml or
+            self.mermaid or
             self.anchor or
             self.formula or
             self.ref or
@@ -18960,6 +19981,9 @@ class docCaptionType(GeneratedsSuper):
         for plantuml_ in self.plantuml:
             namespaceprefix_ = self.plantuml_nsprefix_ + ':' if (UseCapturedNS_ and self.plantuml_nsprefix_) else ''
             plantuml_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='plantuml', pretty_print=pretty_print)
+        for mermaid_ in self.mermaid:
+            namespaceprefix_ = self.mermaid_nsprefix_ + ':' if (UseCapturedNS_ and self.mermaid_nsprefix_) else ''
+            mermaid_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='mermaid', pretty_print=pretty_print)
         for anchor_ in self.anchor:
             namespaceprefix_ = self.anchor_nsprefix_ + ':' if (UseCapturedNS_ and self.anchor_nsprefix_) else ''
             anchor_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='anchor', pretty_print=pretty_print)
@@ -19227,6 +20251,16 @@ class docCaptionType(GeneratedsSuper):
                 self.add_plantuml(obj_.value)
             elif hasattr(self, 'set_plantuml'):
                 self.set_plantuml(obj_.value)
+        elif nodeName_ == 'mermaid':
+            obj_ = docMermaidType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'mermaid', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_mermaid'):
+                self.add_mermaid(obj_.value)
+            elif hasattr(self, 'set_mermaid'):
+                self.set_mermaid(obj_.value)
         elif nodeName_ == 'anchor':
             obj_ = docAnchorType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -19288,7 +20322,7 @@ class docHeadingType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, level=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, level=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, mermaid=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -19416,6 +20450,11 @@ class docHeadingType(GeneratedsSuper):
         else:
             self.plantuml = plantuml
         self.plantuml_nsprefix_ = None
+        if mermaid is None:
+            self.mermaid = []
+        else:
+            self.mermaid = mermaid
+        self.mermaid_nsprefix_ = None
         if anchor is None:
             self.anchor = []
         else:
@@ -19706,6 +20745,16 @@ class docHeadingType(GeneratedsSuper):
         self.plantuml.insert(index, value)
     def replace_plantuml_at(self, index, value):
         self.plantuml[index] = value
+    def get_mermaid(self):
+        return self.mermaid
+    def set_mermaid(self, mermaid):
+        self.mermaid = mermaid
+    def add_mermaid(self, value):
+        self.mermaid.append(value)
+    def insert_mermaid_at(self, index, value):
+        self.mermaid.insert(index, value)
+    def replace_mermaid_at(self, index, value):
+        self.mermaid[index] = value
     def get_anchor(self):
         return self.anchor
     def set_anchor(self, anchor):
@@ -19803,6 +20852,7 @@ class docHeadingType(GeneratedsSuper):
             self.dot or
             self.msc or
             self.plantuml or
+            self.mermaid or
             self.anchor or
             self.formula or
             self.ref or
@@ -19926,6 +20976,9 @@ class docHeadingType(GeneratedsSuper):
         for plantuml_ in self.plantuml:
             namespaceprefix_ = self.plantuml_nsprefix_ + ':' if (UseCapturedNS_ and self.plantuml_nsprefix_) else ''
             plantuml_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='plantuml', pretty_print=pretty_print)
+        for mermaid_ in self.mermaid:
+            namespaceprefix_ = self.mermaid_nsprefix_ + ':' if (UseCapturedNS_ and self.mermaid_nsprefix_) else ''
+            mermaid_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='mermaid', pretty_print=pretty_print)
         for anchor_ in self.anchor:
             namespaceprefix_ = self.anchor_nsprefix_ + ':' if (UseCapturedNS_ and self.anchor_nsprefix_) else ''
             anchor_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='anchor', pretty_print=pretty_print)
@@ -20194,6 +21247,16 @@ class docHeadingType(GeneratedsSuper):
                 self.add_plantuml(obj_.value)
             elif hasattr(self, 'set_plantuml'):
                 self.set_plantuml(obj_.value)
+        elif nodeName_ == 'mermaid':
+            obj_ = docMermaidType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'mermaid', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_mermaid'):
+                self.add_mermaid(obj_.value)
+            elif hasattr(self, 'set_mermaid'):
+                self.set_mermaid(obj_.value)
         elif nodeName_ == 'anchor':
             obj_ = docAnchorType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -20255,7 +21318,7 @@ class docImageType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, type_=None, name=None, width=None, height=None, alt=None, inline=None, caption=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, type_=None, name=None, width=None, height=None, alt=None, inline=None, caption=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, mermaid=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -20395,6 +21458,11 @@ class docImageType(GeneratedsSuper):
         else:
             self.plantuml = plantuml
         self.plantuml_nsprefix_ = None
+        if mermaid is None:
+            self.mermaid = []
+        else:
+            self.mermaid = mermaid
+        self.mermaid_nsprefix_ = None
         if anchor is None:
             self.anchor = []
         else:
@@ -20685,6 +21753,16 @@ class docImageType(GeneratedsSuper):
         self.plantuml.insert(index, value)
     def replace_plantuml_at(self, index, value):
         self.plantuml[index] = value
+    def get_mermaid(self):
+        return self.mermaid
+    def set_mermaid(self, mermaid):
+        self.mermaid = mermaid
+    def add_mermaid(self, value):
+        self.mermaid.append(value)
+    def insert_mermaid_at(self, index, value):
+        self.mermaid.insert(index, value)
+    def replace_mermaid_at(self, index, value):
+        self.mermaid[index] = value
     def get_anchor(self):
         return self.anchor
     def set_anchor(self, anchor):
@@ -20817,6 +21895,7 @@ class docImageType(GeneratedsSuper):
             self.dot or
             self.msc or
             self.plantuml or
+            self.mermaid or
             self.anchor or
             self.formula or
             self.ref or
@@ -20958,6 +22037,9 @@ class docImageType(GeneratedsSuper):
         for plantuml_ in self.plantuml:
             namespaceprefix_ = self.plantuml_nsprefix_ + ':' if (UseCapturedNS_ and self.plantuml_nsprefix_) else ''
             plantuml_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='plantuml', pretty_print=pretty_print)
+        for mermaid_ in self.mermaid:
+            namespaceprefix_ = self.mermaid_nsprefix_ + ':' if (UseCapturedNS_ and self.mermaid_nsprefix_) else ''
+            mermaid_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='mermaid', pretty_print=pretty_print)
         for anchor_ in self.anchor:
             namespaceprefix_ = self.anchor_nsprefix_ + ':' if (UseCapturedNS_ and self.anchor_nsprefix_) else ''
             anchor_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='anchor', pretty_print=pretty_print)
@@ -21251,6 +22333,16 @@ class docImageType(GeneratedsSuper):
                 self.add_plantuml(obj_.value)
             elif hasattr(self, 'set_plantuml'):
                 self.set_plantuml(obj_.value)
+        elif nodeName_ == 'mermaid':
+            obj_ = docMermaidType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'mermaid', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_mermaid'):
+                self.add_mermaid(obj_.value)
+            elif hasattr(self, 'set_mermaid'):
+                self.set_mermaid(obj_.value)
         elif nodeName_ == 'anchor':
             obj_ = docAnchorType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -21312,7 +22404,7 @@ class docDotMscType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, name=None, width=None, height=None, caption=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, name=None, width=None, height=None, caption=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, mermaid=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -21446,6 +22538,11 @@ class docDotMscType(GeneratedsSuper):
         else:
             self.plantuml = plantuml
         self.plantuml_nsprefix_ = None
+        if mermaid is None:
+            self.mermaid = []
+        else:
+            self.mermaid = mermaid
+        self.mermaid_nsprefix_ = None
         if anchor is None:
             self.anchor = []
         else:
@@ -21736,6 +22833,16 @@ class docDotMscType(GeneratedsSuper):
         self.plantuml.insert(index, value)
     def replace_plantuml_at(self, index, value):
         self.plantuml[index] = value
+    def get_mermaid(self):
+        return self.mermaid
+    def set_mermaid(self, mermaid):
+        self.mermaid = mermaid
+    def add_mermaid(self, value):
+        self.mermaid.append(value)
+    def insert_mermaid_at(self, index, value):
+        self.mermaid.insert(index, value)
+    def replace_mermaid_at(self, index, value):
+        self.mermaid[index] = value
     def get_anchor(self):
         return self.anchor
     def set_anchor(self, anchor):
@@ -21830,6 +22937,7 @@ class docDotMscType(GeneratedsSuper):
             self.dot or
             self.msc or
             self.plantuml or
+            self.mermaid or
             self.anchor or
             self.formula or
             self.ref or
@@ -21962,6 +23070,9 @@ class docDotMscType(GeneratedsSuper):
         for plantuml_ in self.plantuml:
             namespaceprefix_ = self.plantuml_nsprefix_ + ':' if (UseCapturedNS_ and self.plantuml_nsprefix_) else ''
             plantuml_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='plantuml', pretty_print=pretty_print)
+        for mermaid_ in self.mermaid:
+            namespaceprefix_ = self.mermaid_nsprefix_ + ':' if (UseCapturedNS_ and self.mermaid_nsprefix_) else ''
+            mermaid_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='mermaid', pretty_print=pretty_print)
         for anchor_ in self.anchor:
             namespaceprefix_ = self.anchor_nsprefix_ + ':' if (UseCapturedNS_ and self.anchor_nsprefix_) else ''
             anchor_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='anchor', pretty_print=pretty_print)
@@ -22241,6 +23352,16 @@ class docDotMscType(GeneratedsSuper):
                 self.add_plantuml(obj_.value)
             elif hasattr(self, 'set_plantuml'):
                 self.set_plantuml(obj_.value)
+        elif nodeName_ == 'mermaid':
+            obj_ = docMermaidType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'mermaid', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_mermaid'):
+                self.add_mermaid(obj_.value)
+            elif hasattr(self, 'set_mermaid'):
+                self.set_mermaid(obj_.value)
         elif nodeName_ == 'anchor':
             obj_ = docAnchorType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -22304,7 +23425,7 @@ class docImageFileType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, name=None, width=None, height=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, name=None, width=None, height=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, mermaid=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -22436,6 +23557,11 @@ class docImageFileType(GeneratedsSuper):
         else:
             self.plantuml = plantuml
         self.plantuml_nsprefix_ = None
+        if mermaid is None:
+            self.mermaid = []
+        else:
+            self.mermaid = mermaid
+        self.mermaid_nsprefix_ = None
         if anchor is None:
             self.anchor = []
         else:
@@ -22726,6 +23852,16 @@ class docImageFileType(GeneratedsSuper):
         self.plantuml.insert(index, value)
     def replace_plantuml_at(self, index, value):
         self.plantuml[index] = value
+    def get_mermaid(self):
+        return self.mermaid
+    def set_mermaid(self, mermaid):
+        self.mermaid = mermaid
+    def add_mermaid(self, value):
+        self.mermaid.append(value)
+    def insert_mermaid_at(self, index, value):
+        self.mermaid.insert(index, value)
+    def replace_mermaid_at(self, index, value):
+        self.mermaid[index] = value
     def get_anchor(self):
         return self.anchor
     def set_anchor(self, anchor):
@@ -22816,6 +23952,7 @@ class docImageFileType(GeneratedsSuper):
             self.dot or
             self.msc or
             self.plantuml or
+            self.mermaid or
             self.anchor or
             self.formula or
             self.ref or
@@ -22945,6 +24082,9 @@ class docImageFileType(GeneratedsSuper):
         for plantuml_ in self.plantuml:
             namespaceprefix_ = self.plantuml_nsprefix_ + ':' if (UseCapturedNS_ and self.plantuml_nsprefix_) else ''
             plantuml_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='plantuml', pretty_print=pretty_print)
+        for mermaid_ in self.mermaid:
+            namespaceprefix_ = self.mermaid_nsprefix_ + ':' if (UseCapturedNS_ and self.mermaid_nsprefix_) else ''
+            mermaid_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='mermaid', pretty_print=pretty_print)
         for anchor_ in self.anchor:
             namespaceprefix_ = self.anchor_nsprefix_ + ':' if (UseCapturedNS_ and self.anchor_nsprefix_) else ''
             anchor_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='anchor', pretty_print=pretty_print)
@@ -23220,6 +24360,16 @@ class docImageFileType(GeneratedsSuper):
                 self.add_plantuml(obj_.value)
             elif hasattr(self, 'set_plantuml'):
                 self.set_plantuml(obj_.value)
+        elif nodeName_ == 'mermaid':
+            obj_ = docMermaidType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'mermaid', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_mermaid'):
+                self.add_mermaid(obj_.value)
+            elif hasattr(self, 'set_mermaid'):
+                self.set_mermaid(obj_.value)
         elif nodeName_ == 'anchor':
             obj_ = docAnchorType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -23281,7 +24431,7 @@ class docPlantumlType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, name=None, width=None, height=None, caption=None, engine=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, name=None, width=None, height=None, caption=None, engine=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, mermaid=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -23417,6 +24567,11 @@ class docPlantumlType(GeneratedsSuper):
         else:
             self.plantuml = plantuml
         self.plantuml_nsprefix_ = None
+        if mermaid is None:
+            self.mermaid = []
+        else:
+            self.mermaid = mermaid
+        self.mermaid_nsprefix_ = None
         if anchor is None:
             self.anchor = []
         else:
@@ -23707,6 +24862,16 @@ class docPlantumlType(GeneratedsSuper):
         self.plantuml.insert(index, value)
     def replace_plantuml_at(self, index, value):
         self.plantuml[index] = value
+    def get_mermaid(self):
+        return self.mermaid
+    def set_mermaid(self, mermaid):
+        self.mermaid = mermaid
+    def add_mermaid(self, value):
+        self.mermaid.append(value)
+    def insert_mermaid_at(self, index, value):
+        self.mermaid.insert(index, value)
+    def replace_mermaid_at(self, index, value):
+        self.mermaid[index] = value
     def get_anchor(self):
         return self.anchor
     def set_anchor(self, anchor):
@@ -23787,7 +24952,7 @@ class docPlantumlType(GeneratedsSuper):
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s is not of the correct base simple type (str)' % {"value": value, "lineno": lineno, })
                 return False
             value = value
-            enumerations = ['uml', 'bpm', 'wire', 'dot', 'ditaa', 'salt', 'math', 'latex', 'gantt', 'mindmap', 'wbs', 'yaml', 'creole', 'json', 'flow', 'board', 'git', 'hcl', 'regex', 'ebnf', 'files']
+            enumerations = ['uml', 'bpm', 'wire', 'dot', 'ditaa', 'salt', 'math', 'latex', 'gantt', 'mindmap', 'wbs', 'yaml', 'creole', 'json', 'flow', 'board', 'git', 'hcl', 'regex', 'ebnf', 'files', 'chart', 'nwdiag', 'packetdiag', 'project', 'sprites']
             if value not in enumerations:
                 lineno = self.gds_get_node_lineno_()
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s does not match xsd enumeration restriction on DoxPlantumlEngine' % {"value" : encode_str_2_3(value), "lineno": lineno} )
@@ -23818,6 +24983,7 @@ class docPlantumlType(GeneratedsSuper):
             self.dot or
             self.msc or
             self.plantuml or
+            self.mermaid or
             self.anchor or
             self.formula or
             self.ref or
@@ -23953,6 +25119,9 @@ class docPlantumlType(GeneratedsSuper):
         for plantuml_ in self.plantuml:
             namespaceprefix_ = self.plantuml_nsprefix_ + ':' if (UseCapturedNS_ and self.plantuml_nsprefix_) else ''
             plantuml_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='plantuml', pretty_print=pretty_print)
+        for mermaid_ in self.mermaid:
+            namespaceprefix_ = self.mermaid_nsprefix_ + ':' if (UseCapturedNS_ and self.mermaid_nsprefix_) else ''
+            mermaid_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='mermaid', pretty_print=pretty_print)
         for anchor_ in self.anchor:
             namespaceprefix_ = self.anchor_nsprefix_ + ':' if (UseCapturedNS_ and self.anchor_nsprefix_) else ''
             anchor_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='anchor', pretty_print=pretty_print)
@@ -24237,6 +25406,16 @@ class docPlantumlType(GeneratedsSuper):
                 self.add_plantuml(obj_.value)
             elif hasattr(self, 'set_plantuml'):
                 self.set_plantuml(obj_.value)
+        elif nodeName_ == 'mermaid':
+            obj_ = docMermaidType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'mermaid', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_mermaid'):
+                self.add_mermaid(obj_.value)
+            elif hasattr(self, 'set_mermaid'):
+                self.set_mermaid(obj_.value)
         elif nodeName_ == 'anchor':
             obj_ = docAnchorType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -24294,11 +25473,1030 @@ class docPlantumlType(GeneratedsSuper):
 # end class docPlantumlType
 
 
+class docMermaidType(GeneratedsSuper):
+    __hash__ = GeneratedsSuper.__hash__
+    subclass = None
+    superclass = None
+    def __init__(self, name=None, width=None, height=None, caption=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, mermaid=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+        self.gds_collector_ = gds_collector_
+        self.gds_elementtree_node_ = None
+        self.original_tagname_ = None
+        self.parent_object_ = kwargs_.get('parent_object_')
+        self.ns_prefix_ = None
+        self.name = _cast(None, name)
+        self.name_nsprefix_ = None
+        self.width = _cast(None, width)
+        self.width_nsprefix_ = None
+        self.height = _cast(None, height)
+        self.height_nsprefix_ = None
+        self.caption = _cast(None, caption)
+        self.caption_nsprefix_ = None
+        if ulink is None:
+            self.ulink = []
+        else:
+            self.ulink = ulink
+        self.ulink_nsprefix_ = None
+        if bold is None:
+            self.bold = []
+        else:
+            self.bold = bold
+        self.bold_nsprefix_ = None
+        if s is None:
+            self.s = []
+        else:
+            self.s = s
+        self.s_nsprefix_ = None
+        if strike is None:
+            self.strike = []
+        else:
+            self.strike = strike
+        self.strike_nsprefix_ = None
+        if underline is None:
+            self.underline = []
+        else:
+            self.underline = underline
+        self.underline_nsprefix_ = None
+        if emphasis is None:
+            self.emphasis = []
+        else:
+            self.emphasis = emphasis
+        self.emphasis_nsprefix_ = None
+        if computeroutput is None:
+            self.computeroutput = []
+        else:
+            self.computeroutput = computeroutput
+        self.computeroutput_nsprefix_ = None
+        if subscript is None:
+            self.subscript = []
+        else:
+            self.subscript = subscript
+        self.subscript_nsprefix_ = None
+        if superscript is None:
+            self.superscript = []
+        else:
+            self.superscript = superscript
+        self.superscript_nsprefix_ = None
+        if center is None:
+            self.center = []
+        else:
+            self.center = center
+        self.center_nsprefix_ = None
+        if small is None:
+            self.small = []
+        else:
+            self.small = small
+        self.small_nsprefix_ = None
+        if cite is None:
+            self.cite = []
+        else:
+            self.cite = cite
+        self.cite_nsprefix_ = None
+        if del_ is None:
+            self.del_ = []
+        else:
+            self.del_ = del_
+        self.del__nsprefix_ = None
+        if ins is None:
+            self.ins = []
+        else:
+            self.ins = ins
+        self.ins_nsprefix_ = None
+        if htmlonly is None:
+            self.htmlonly = []
+        else:
+            self.htmlonly = htmlonly
+        self.htmlonly_nsprefix_ = None
+        if manonly is None:
+            self.manonly = []
+        else:
+            self.manonly = manonly
+        self.manonly_nsprefix_ = None
+        if xmlonly is None:
+            self.xmlonly = []
+        else:
+            self.xmlonly = xmlonly
+        self.xmlonly_nsprefix_ = None
+        if rtfonly is None:
+            self.rtfonly = []
+        else:
+            self.rtfonly = rtfonly
+        self.rtfonly_nsprefix_ = None
+        if latexonly is None:
+            self.latexonly = []
+        else:
+            self.latexonly = latexonly
+        self.latexonly_nsprefix_ = None
+        if docbookonly is None:
+            self.docbookonly = []
+        else:
+            self.docbookonly = docbookonly
+        self.docbookonly_nsprefix_ = None
+        if image is None:
+            self.image = []
+        else:
+            self.image = image
+        self.image_nsprefix_ = None
+        if dot is None:
+            self.dot = []
+        else:
+            self.dot = dot
+        self.dot_nsprefix_ = None
+        if msc is None:
+            self.msc = []
+        else:
+            self.msc = msc
+        self.msc_nsprefix_ = None
+        if plantuml is None:
+            self.plantuml = []
+        else:
+            self.plantuml = plantuml
+        self.plantuml_nsprefix_ = None
+        if mermaid is None:
+            self.mermaid = []
+        else:
+            self.mermaid = mermaid
+        self.mermaid_nsprefix_ = None
+        if anchor is None:
+            self.anchor = []
+        else:
+            self.anchor = anchor
+        self.anchor_nsprefix_ = None
+        if formula is None:
+            self.formula = []
+        else:
+            self.formula = formula
+        self.formula_nsprefix_ = None
+        if ref is None:
+            self.ref = []
+        else:
+            self.ref = ref
+        self.ref_nsprefix_ = None
+        if emoji is None:
+            self.emoji = []
+        else:
+            self.emoji = emoji
+        self.emoji_nsprefix_ = None
+        if linebreak is None:
+            self.linebreak = []
+        else:
+            self.linebreak = linebreak
+        self.linebreak_nsprefix_ = None
+        self.valueOf_ = valueOf_
+        if mixedclass_ is None:
+            self.mixedclass_ = MixedContainer
+        else:
+            self.mixedclass_ = mixedclass_
+        if content_ is None:
+            self.content_ = []
+        else:
+            self.content_ = content_
+        self.valueOf_ = valueOf_
+    def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, docMermaidType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
+        if docMermaidType.subclass:
+            return docMermaidType.subclass(*args_, **kwargs_)
+        else:
+            return docMermaidType(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_ns_prefix_(self):
+        return self.ns_prefix_
+    def set_ns_prefix_(self, ns_prefix):
+        self.ns_prefix_ = ns_prefix
+    def get_ulink(self):
+        return self.ulink
+    def set_ulink(self, ulink):
+        self.ulink = ulink
+    def add_ulink(self, value):
+        self.ulink.append(value)
+    def insert_ulink_at(self, index, value):
+        self.ulink.insert(index, value)
+    def replace_ulink_at(self, index, value):
+        self.ulink[index] = value
+    def get_bold(self):
+        return self.bold
+    def set_bold(self, bold):
+        self.bold = bold
+    def add_bold(self, value):
+        self.bold.append(value)
+    def insert_bold_at(self, index, value):
+        self.bold.insert(index, value)
+    def replace_bold_at(self, index, value):
+        self.bold[index] = value
+    def get_s(self):
+        return self.s
+    def set_s(self, s):
+        self.s = s
+    def add_s(self, value):
+        self.s.append(value)
+    def insert_s_at(self, index, value):
+        self.s.insert(index, value)
+    def replace_s_at(self, index, value):
+        self.s[index] = value
+    def get_strike(self):
+        return self.strike
+    def set_strike(self, strike):
+        self.strike = strike
+    def add_strike(self, value):
+        self.strike.append(value)
+    def insert_strike_at(self, index, value):
+        self.strike.insert(index, value)
+    def replace_strike_at(self, index, value):
+        self.strike[index] = value
+    def get_underline(self):
+        return self.underline
+    def set_underline(self, underline):
+        self.underline = underline
+    def add_underline(self, value):
+        self.underline.append(value)
+    def insert_underline_at(self, index, value):
+        self.underline.insert(index, value)
+    def replace_underline_at(self, index, value):
+        self.underline[index] = value
+    def get_emphasis(self):
+        return self.emphasis
+    def set_emphasis(self, emphasis):
+        self.emphasis = emphasis
+    def add_emphasis(self, value):
+        self.emphasis.append(value)
+    def insert_emphasis_at(self, index, value):
+        self.emphasis.insert(index, value)
+    def replace_emphasis_at(self, index, value):
+        self.emphasis[index] = value
+    def get_computeroutput(self):
+        return self.computeroutput
+    def set_computeroutput(self, computeroutput):
+        self.computeroutput = computeroutput
+    def add_computeroutput(self, value):
+        self.computeroutput.append(value)
+    def insert_computeroutput_at(self, index, value):
+        self.computeroutput.insert(index, value)
+    def replace_computeroutput_at(self, index, value):
+        self.computeroutput[index] = value
+    def get_subscript(self):
+        return self.subscript
+    def set_subscript(self, subscript):
+        self.subscript = subscript
+    def add_subscript(self, value):
+        self.subscript.append(value)
+    def insert_subscript_at(self, index, value):
+        self.subscript.insert(index, value)
+    def replace_subscript_at(self, index, value):
+        self.subscript[index] = value
+    def get_superscript(self):
+        return self.superscript
+    def set_superscript(self, superscript):
+        self.superscript = superscript
+    def add_superscript(self, value):
+        self.superscript.append(value)
+    def insert_superscript_at(self, index, value):
+        self.superscript.insert(index, value)
+    def replace_superscript_at(self, index, value):
+        self.superscript[index] = value
+    def get_center(self):
+        return self.center
+    def set_center(self, center):
+        self.center = center
+    def add_center(self, value):
+        self.center.append(value)
+    def insert_center_at(self, index, value):
+        self.center.insert(index, value)
+    def replace_center_at(self, index, value):
+        self.center[index] = value
+    def get_small(self):
+        return self.small
+    def set_small(self, small):
+        self.small = small
+    def add_small(self, value):
+        self.small.append(value)
+    def insert_small_at(self, index, value):
+        self.small.insert(index, value)
+    def replace_small_at(self, index, value):
+        self.small[index] = value
+    def get_cite(self):
+        return self.cite
+    def set_cite(self, cite):
+        self.cite = cite
+    def add_cite(self, value):
+        self.cite.append(value)
+    def insert_cite_at(self, index, value):
+        self.cite.insert(index, value)
+    def replace_cite_at(self, index, value):
+        self.cite[index] = value
+    def get_del(self):
+        return self.del_
+    def set_del(self, del_):
+        self.del_ = del_
+    def add_del(self, value):
+        self.del_.append(value)
+    def insert_del_at(self, index, value):
+        self.del_.insert(index, value)
+    def replace_del_at(self, index, value):
+        self.del_[index] = value
+    def get_ins(self):
+        return self.ins
+    def set_ins(self, ins):
+        self.ins = ins
+    def add_ins(self, value):
+        self.ins.append(value)
+    def insert_ins_at(self, index, value):
+        self.ins.insert(index, value)
+    def replace_ins_at(self, index, value):
+        self.ins[index] = value
+    def get_htmlonly(self):
+        return self.htmlonly
+    def set_htmlonly(self, htmlonly):
+        self.htmlonly = htmlonly
+    def add_htmlonly(self, value):
+        self.htmlonly.append(value)
+    def insert_htmlonly_at(self, index, value):
+        self.htmlonly.insert(index, value)
+    def replace_htmlonly_at(self, index, value):
+        self.htmlonly[index] = value
+    def get_manonly(self):
+        return self.manonly
+    def set_manonly(self, manonly):
+        self.manonly = manonly
+    def add_manonly(self, value):
+        self.manonly.append(value)
+    def insert_manonly_at(self, index, value):
+        self.manonly.insert(index, value)
+    def replace_manonly_at(self, index, value):
+        self.manonly[index] = value
+    def get_xmlonly(self):
+        return self.xmlonly
+    def set_xmlonly(self, xmlonly):
+        self.xmlonly = xmlonly
+    def add_xmlonly(self, value):
+        self.xmlonly.append(value)
+    def insert_xmlonly_at(self, index, value):
+        self.xmlonly.insert(index, value)
+    def replace_xmlonly_at(self, index, value):
+        self.xmlonly[index] = value
+    def get_rtfonly(self):
+        return self.rtfonly
+    def set_rtfonly(self, rtfonly):
+        self.rtfonly = rtfonly
+    def add_rtfonly(self, value):
+        self.rtfonly.append(value)
+    def insert_rtfonly_at(self, index, value):
+        self.rtfonly.insert(index, value)
+    def replace_rtfonly_at(self, index, value):
+        self.rtfonly[index] = value
+    def get_latexonly(self):
+        return self.latexonly
+    def set_latexonly(self, latexonly):
+        self.latexonly = latexonly
+    def add_latexonly(self, value):
+        self.latexonly.append(value)
+    def insert_latexonly_at(self, index, value):
+        self.latexonly.insert(index, value)
+    def replace_latexonly_at(self, index, value):
+        self.latexonly[index] = value
+    def get_docbookonly(self):
+        return self.docbookonly
+    def set_docbookonly(self, docbookonly):
+        self.docbookonly = docbookonly
+    def add_docbookonly(self, value):
+        self.docbookonly.append(value)
+    def insert_docbookonly_at(self, index, value):
+        self.docbookonly.insert(index, value)
+    def replace_docbookonly_at(self, index, value):
+        self.docbookonly[index] = value
+    def get_image(self):
+        return self.image
+    def set_image(self, image):
+        self.image = image
+    def add_image(self, value):
+        self.image.append(value)
+    def insert_image_at(self, index, value):
+        self.image.insert(index, value)
+    def replace_image_at(self, index, value):
+        self.image[index] = value
+    def get_dot(self):
+        return self.dot
+    def set_dot(self, dot):
+        self.dot = dot
+    def add_dot(self, value):
+        self.dot.append(value)
+    def insert_dot_at(self, index, value):
+        self.dot.insert(index, value)
+    def replace_dot_at(self, index, value):
+        self.dot[index] = value
+    def get_msc(self):
+        return self.msc
+    def set_msc(self, msc):
+        self.msc = msc
+    def add_msc(self, value):
+        self.msc.append(value)
+    def insert_msc_at(self, index, value):
+        self.msc.insert(index, value)
+    def replace_msc_at(self, index, value):
+        self.msc[index] = value
+    def get_plantuml(self):
+        return self.plantuml
+    def set_plantuml(self, plantuml):
+        self.plantuml = plantuml
+    def add_plantuml(self, value):
+        self.plantuml.append(value)
+    def insert_plantuml_at(self, index, value):
+        self.plantuml.insert(index, value)
+    def replace_plantuml_at(self, index, value):
+        self.plantuml[index] = value
+    def get_mermaid(self):
+        return self.mermaid
+    def set_mermaid(self, mermaid):
+        self.mermaid = mermaid
+    def add_mermaid(self, value):
+        self.mermaid.append(value)
+    def insert_mermaid_at(self, index, value):
+        self.mermaid.insert(index, value)
+    def replace_mermaid_at(self, index, value):
+        self.mermaid[index] = value
+    def get_anchor(self):
+        return self.anchor
+    def set_anchor(self, anchor):
+        self.anchor = anchor
+    def add_anchor(self, value):
+        self.anchor.append(value)
+    def insert_anchor_at(self, index, value):
+        self.anchor.insert(index, value)
+    def replace_anchor_at(self, index, value):
+        self.anchor[index] = value
+    def get_formula(self):
+        return self.formula
+    def set_formula(self, formula):
+        self.formula = formula
+    def add_formula(self, value):
+        self.formula.append(value)
+    def insert_formula_at(self, index, value):
+        self.formula.insert(index, value)
+    def replace_formula_at(self, index, value):
+        self.formula[index] = value
+    def get_ref(self):
+        return self.ref
+    def set_ref(self, ref):
+        self.ref = ref
+    def add_ref(self, value):
+        self.ref.append(value)
+    def insert_ref_at(self, index, value):
+        self.ref.insert(index, value)
+    def replace_ref_at(self, index, value):
+        self.ref[index] = value
+    def get_emoji(self):
+        return self.emoji
+    def set_emoji(self, emoji):
+        self.emoji = emoji
+    def add_emoji(self, value):
+        self.emoji.append(value)
+    def insert_emoji_at(self, index, value):
+        self.emoji.insert(index, value)
+    def replace_emoji_at(self, index, value):
+        self.emoji[index] = value
+    def get_linebreak(self):
+        return self.linebreak
+    def set_linebreak(self, linebreak):
+        self.linebreak = linebreak
+    def add_linebreak(self, value):
+        self.linebreak.append(value)
+    def insert_linebreak_at(self, index, value):
+        self.linebreak.insert(index, value)
+    def replace_linebreak_at(self, index, value):
+        self.linebreak[index] = value
+    def get_name(self):
+        return self.name
+    def set_name(self, name):
+        self.name = name
+    def get_width(self):
+        return self.width
+    def set_width(self, width):
+        self.width = width
+    def get_height(self):
+        return self.height
+    def set_height(self, height):
+        self.height = height
+    def get_caption(self):
+        return self.caption
+    def set_caption(self, caption):
+        self.caption = caption
+    def get_valueOf_(self): return self.valueOf_
+    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def hasContent_(self):
+        if (
+            self.ulink or
+            self.bold or
+            self.s or
+            self.strike or
+            self.underline or
+            self.emphasis or
+            self.computeroutput or
+            self.subscript or
+            self.superscript or
+            self.center or
+            self.small or
+            self.cite or
+            self.del_ or
+            self.ins or
+            self.htmlonly or
+            self.manonly or
+            self.xmlonly or
+            self.rtfonly or
+            self.latexonly or
+            self.docbookonly or
+            self.image or
+            self.dot or
+            self.msc or
+            self.plantuml or
+            self.mermaid or
+            self.anchor or
+            self.formula or
+            self.ref or
+            self.emoji or
+            self.linebreak or
+            (1 if type(self.valueOf_) in [int,float] else self.valueOf_) or
+            self.content_
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='docMermaidType', pretty_print=True):
+        imported_ns_def_ = GenerateDSNamespaceDefs_.get('docMermaidType')
+        if imported_ns_def_ is not None:
+            namespacedef_ = imported_ns_def_
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None and name_ == 'docMermaidType':
+            name_ = self.original_tagname_
+        if UseCapturedNS_ and self.ns_prefix_:
+            namespaceprefix_ = self.ns_prefix_ + ':'
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespaceprefix_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespaceprefix_, name_='docMermaidType')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespaceprefix_, namespacedef_, name_='docMermaidType', pretty_print=pretty_print)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('</%s%s>%s' % (namespaceprefix_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='docMermaidType'):
+        if self.name is not None and 'name' not in already_processed:
+            already_processed.add('name')
+            outfile.write(' name=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.name), input_name='name')), ))
+        if self.width is not None and 'width' not in already_processed:
+            already_processed.add('width')
+            outfile.write(' width=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.width), input_name='width')), ))
+        if self.height is not None and 'height' not in already_processed:
+            already_processed.add('height')
+            outfile.write(' height=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.height), input_name='height')), ))
+        if self.caption is not None and 'caption' not in already_processed:
+            already_processed.add('caption')
+            outfile.write(' caption=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.caption), input_name='caption')), ))
+    def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='docMermaidType', fromsubclass_=False, pretty_print=True):
+        if not fromsubclass_:
+            for item_ in self.content_:
+                item_.export(outfile, level, item_.name, namespaceprefix_, pretty_print=pretty_print)
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        for ulink_ in self.ulink:
+            namespaceprefix_ = self.ulink_nsprefix_ + ':' if (UseCapturedNS_ and self.ulink_nsprefix_) else ''
+            ulink_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='ulink', pretty_print=pretty_print)
+        for bold_ in self.bold:
+            namespaceprefix_ = self.bold_nsprefix_ + ':' if (UseCapturedNS_ and self.bold_nsprefix_) else ''
+            bold_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='bold', pretty_print=pretty_print)
+        for s_ in self.s:
+            namespaceprefix_ = self.s_nsprefix_ + ':' if (UseCapturedNS_ and self.s_nsprefix_) else ''
+            s_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='s', pretty_print=pretty_print)
+        for strike_ in self.strike:
+            namespaceprefix_ = self.strike_nsprefix_ + ':' if (UseCapturedNS_ and self.strike_nsprefix_) else ''
+            strike_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='strike', pretty_print=pretty_print)
+        for underline_ in self.underline:
+            namespaceprefix_ = self.underline_nsprefix_ + ':' if (UseCapturedNS_ and self.underline_nsprefix_) else ''
+            underline_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='underline', pretty_print=pretty_print)
+        for emphasis_ in self.emphasis:
+            namespaceprefix_ = self.emphasis_nsprefix_ + ':' if (UseCapturedNS_ and self.emphasis_nsprefix_) else ''
+            emphasis_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='emphasis', pretty_print=pretty_print)
+        for computeroutput_ in self.computeroutput:
+            namespaceprefix_ = self.computeroutput_nsprefix_ + ':' if (UseCapturedNS_ and self.computeroutput_nsprefix_) else ''
+            computeroutput_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='computeroutput', pretty_print=pretty_print)
+        for subscript_ in self.subscript:
+            namespaceprefix_ = self.subscript_nsprefix_ + ':' if (UseCapturedNS_ and self.subscript_nsprefix_) else ''
+            subscript_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='subscript', pretty_print=pretty_print)
+        for superscript_ in self.superscript:
+            namespaceprefix_ = self.superscript_nsprefix_ + ':' if (UseCapturedNS_ and self.superscript_nsprefix_) else ''
+            superscript_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='superscript', pretty_print=pretty_print)
+        for center_ in self.center:
+            namespaceprefix_ = self.center_nsprefix_ + ':' if (UseCapturedNS_ and self.center_nsprefix_) else ''
+            center_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='center', pretty_print=pretty_print)
+        for small_ in self.small:
+            namespaceprefix_ = self.small_nsprefix_ + ':' if (UseCapturedNS_ and self.small_nsprefix_) else ''
+            small_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='small', pretty_print=pretty_print)
+        for cite_ in self.cite:
+            namespaceprefix_ = self.cite_nsprefix_ + ':' if (UseCapturedNS_ and self.cite_nsprefix_) else ''
+            cite_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='cite', pretty_print=pretty_print)
+        for del_ in self.del_:
+            namespaceprefix_ = self.del__nsprefix_ + ':' if (UseCapturedNS_ and self.del__nsprefix_) else ''
+            del_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='del', pretty_print=pretty_print)
+        for ins_ in self.ins:
+            namespaceprefix_ = self.ins_nsprefix_ + ':' if (UseCapturedNS_ and self.ins_nsprefix_) else ''
+            ins_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='ins', pretty_print=pretty_print)
+        for htmlonly_ in self.htmlonly:
+            namespaceprefix_ = self.htmlonly_nsprefix_ + ':' if (UseCapturedNS_ and self.htmlonly_nsprefix_) else ''
+            htmlonly_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='htmlonly', pretty_print=pretty_print)
+        for manonly_ in self.manonly:
+            namespaceprefix_ = self.manonly_nsprefix_ + ':' if (UseCapturedNS_ and self.manonly_nsprefix_) else ''
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%smanonly>%s</%smanonly>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(manonly_), input_name='manonly')), namespaceprefix_ , eol_))
+        for xmlonly_ in self.xmlonly:
+            namespaceprefix_ = self.xmlonly_nsprefix_ + ':' if (UseCapturedNS_ and self.xmlonly_nsprefix_) else ''
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sxmlonly>%s</%sxmlonly>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(xmlonly_), input_name='xmlonly')), namespaceprefix_ , eol_))
+        for rtfonly_ in self.rtfonly:
+            namespaceprefix_ = self.rtfonly_nsprefix_ + ':' if (UseCapturedNS_ and self.rtfonly_nsprefix_) else ''
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%srtfonly>%s</%srtfonly>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(rtfonly_), input_name='rtfonly')), namespaceprefix_ , eol_))
+        for latexonly_ in self.latexonly:
+            namespaceprefix_ = self.latexonly_nsprefix_ + ':' if (UseCapturedNS_ and self.latexonly_nsprefix_) else ''
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%slatexonly>%s</%slatexonly>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(latexonly_), input_name='latexonly')), namespaceprefix_ , eol_))
+        for docbookonly_ in self.docbookonly:
+            namespaceprefix_ = self.docbookonly_nsprefix_ + ':' if (UseCapturedNS_ and self.docbookonly_nsprefix_) else ''
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sdocbookonly>%s</%sdocbookonly>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(docbookonly_), input_name='docbookonly')), namespaceprefix_ , eol_))
+        for image_ in self.image:
+            namespaceprefix_ = self.image_nsprefix_ + ':' if (UseCapturedNS_ and self.image_nsprefix_) else ''
+            image_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='image', pretty_print=pretty_print)
+        for dot_ in self.dot:
+            namespaceprefix_ = self.dot_nsprefix_ + ':' if (UseCapturedNS_ and self.dot_nsprefix_) else ''
+            dot_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='dot', pretty_print=pretty_print)
+        for msc_ in self.msc:
+            namespaceprefix_ = self.msc_nsprefix_ + ':' if (UseCapturedNS_ and self.msc_nsprefix_) else ''
+            msc_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='msc', pretty_print=pretty_print)
+        for plantuml_ in self.plantuml:
+            namespaceprefix_ = self.plantuml_nsprefix_ + ':' if (UseCapturedNS_ and self.plantuml_nsprefix_) else ''
+            plantuml_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='plantuml', pretty_print=pretty_print)
+        for mermaid_ in self.mermaid:
+            namespaceprefix_ = self.mermaid_nsprefix_ + ':' if (UseCapturedNS_ and self.mermaid_nsprefix_) else ''
+            mermaid_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='mermaid', pretty_print=pretty_print)
+        for anchor_ in self.anchor:
+            namespaceprefix_ = self.anchor_nsprefix_ + ':' if (UseCapturedNS_ and self.anchor_nsprefix_) else ''
+            anchor_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='anchor', pretty_print=pretty_print)
+        for formula_ in self.formula:
+            namespaceprefix_ = self.formula_nsprefix_ + ':' if (UseCapturedNS_ and self.formula_nsprefix_) else ''
+            formula_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='formula', pretty_print=pretty_print)
+        for ref_ in self.ref:
+            namespaceprefix_ = self.ref_nsprefix_ + ':' if (UseCapturedNS_ and self.ref_nsprefix_) else ''
+            ref_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='ref', pretty_print=pretty_print)
+        for emoji_ in self.emoji:
+            namespaceprefix_ = self.emoji_nsprefix_ + ':' if (UseCapturedNS_ and self.emoji_nsprefix_) else ''
+            emoji_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='emoji', pretty_print=pretty_print)
+        for linebreak_ in self.linebreak:
+            namespaceprefix_ = self.linebreak_nsprefix_ + ':' if (UseCapturedNS_ and self.linebreak_nsprefix_) else ''
+            linebreak_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='linebreak', pretty_print=pretty_print)
+    def build(self, node, gds_collector_=None):
+        self.gds_collector_ = gds_collector_
+        if SaveElementTreeNode:
+            self.gds_elementtree_node_ = node
+        already_processed = set()
+        self.ns_prefix_ = node.prefix
+        self.buildAttributes(node, node.attrib, already_processed)
+        self.valueOf_ = get_all_text_(node)
+        if node.text is not None:
+            obj_ = self.mixedclass_(MixedContainer.CategoryText,
+                MixedContainer.TypeNone, '', node.text)
+            self.content_.append(obj_)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('name', node)
+        if value is not None and 'name' not in already_processed:
+            already_processed.add('name')
+            self.name = value
+        value = find_attr_value_('width', node)
+        if value is not None and 'width' not in already_processed:
+            already_processed.add('width')
+            self.width = value
+        value = find_attr_value_('height', node)
+        if value is not None and 'height' not in already_processed:
+            already_processed.add('height')
+            self.height = value
+        value = find_attr_value_('caption', node)
+        if value is not None and 'caption' not in already_processed:
+            already_processed.add('caption')
+            self.caption = value
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
+        if nodeName_ == 'ulink':
+            obj_ = docURLLink.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'ulink', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_ulink'):
+                self.add_ulink(obj_.value)
+            elif hasattr(self, 'set_ulink'):
+                self.set_ulink(obj_.value)
+        elif nodeName_ == 'bold':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'bold', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_bold'):
+                self.add_bold(obj_.value)
+            elif hasattr(self, 'set_bold'):
+                self.set_bold(obj_.value)
+        elif nodeName_ == 's':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 's', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_s'):
+                self.add_s(obj_.value)
+            elif hasattr(self, 'set_s'):
+                self.set_s(obj_.value)
+        elif nodeName_ == 'strike':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'strike', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_strike'):
+                self.add_strike(obj_.value)
+            elif hasattr(self, 'set_strike'):
+                self.set_strike(obj_.value)
+        elif nodeName_ == 'underline':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'underline', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_underline'):
+                self.add_underline(obj_.value)
+            elif hasattr(self, 'set_underline'):
+                self.set_underline(obj_.value)
+        elif nodeName_ == 'emphasis':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'emphasis', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_emphasis'):
+                self.add_emphasis(obj_.value)
+            elif hasattr(self, 'set_emphasis'):
+                self.set_emphasis(obj_.value)
+        elif nodeName_ == 'computeroutput':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'computeroutput', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_computeroutput'):
+                self.add_computeroutput(obj_.value)
+            elif hasattr(self, 'set_computeroutput'):
+                self.set_computeroutput(obj_.value)
+        elif nodeName_ == 'subscript':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'subscript', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_subscript'):
+                self.add_subscript(obj_.value)
+            elif hasattr(self, 'set_subscript'):
+                self.set_subscript(obj_.value)
+        elif nodeName_ == 'superscript':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'superscript', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_superscript'):
+                self.add_superscript(obj_.value)
+            elif hasattr(self, 'set_superscript'):
+                self.set_superscript(obj_.value)
+        elif nodeName_ == 'center':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'center', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_center'):
+                self.add_center(obj_.value)
+            elif hasattr(self, 'set_center'):
+                self.set_center(obj_.value)
+        elif nodeName_ == 'small':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'small', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_small'):
+                self.add_small(obj_.value)
+            elif hasattr(self, 'set_small'):
+                self.set_small(obj_.value)
+        elif nodeName_ == 'cite':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'cite', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_cite'):
+                self.add_cite(obj_.value)
+            elif hasattr(self, 'set_cite'):
+                self.set_cite(obj_.value)
+        elif nodeName_ == 'del':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'del', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_del'):
+                self.add_del(obj_.value)
+            elif hasattr(self, 'set_del'):
+                self.set_del(obj_.value)
+        elif nodeName_ == 'ins':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'ins', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_ins'):
+                self.add_ins(obj_.value)
+            elif hasattr(self, 'set_ins'):
+                self.set_ins(obj_.value)
+        elif nodeName_ == 'htmlonly':
+            obj_ = docHtmlOnlyType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'htmlonly', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_htmlonly'):
+                self.add_htmlonly(obj_.value)
+            elif hasattr(self, 'set_htmlonly'):
+                self.set_htmlonly(obj_.value)
+        elif nodeName_ == 'manonly' and child_.text is not None:
+            valuestr_ = child_.text
+            valuestr_ = self.gds_parse_string(valuestr_, node, 'manonly')
+            valuestr_ = self.gds_validate_string(valuestr_, node, 'manonly')
+            obj_ = self.mixedclass_(MixedContainer.CategorySimple,
+                MixedContainer.TypeString, 'manonly', valuestr_)
+            self.content_.append(obj_)
+            self.manonly_nsprefix_ = child_.prefix
+        elif nodeName_ == 'xmlonly' and child_.text is not None:
+            valuestr_ = child_.text
+            valuestr_ = self.gds_parse_string(valuestr_, node, 'xmlonly')
+            valuestr_ = self.gds_validate_string(valuestr_, node, 'xmlonly')
+            obj_ = self.mixedclass_(MixedContainer.CategorySimple,
+                MixedContainer.TypeString, 'xmlonly', valuestr_)
+            self.content_.append(obj_)
+            self.xmlonly_nsprefix_ = child_.prefix
+        elif nodeName_ == 'rtfonly' and child_.text is not None:
+            valuestr_ = child_.text
+            valuestr_ = self.gds_parse_string(valuestr_, node, 'rtfonly')
+            valuestr_ = self.gds_validate_string(valuestr_, node, 'rtfonly')
+            obj_ = self.mixedclass_(MixedContainer.CategorySimple,
+                MixedContainer.TypeString, 'rtfonly', valuestr_)
+            self.content_.append(obj_)
+            self.rtfonly_nsprefix_ = child_.prefix
+        elif nodeName_ == 'latexonly' and child_.text is not None:
+            valuestr_ = child_.text
+            valuestr_ = self.gds_parse_string(valuestr_, node, 'latexonly')
+            valuestr_ = self.gds_validate_string(valuestr_, node, 'latexonly')
+            obj_ = self.mixedclass_(MixedContainer.CategorySimple,
+                MixedContainer.TypeString, 'latexonly', valuestr_)
+            self.content_.append(obj_)
+            self.latexonly_nsprefix_ = child_.prefix
+        elif nodeName_ == 'docbookonly' and child_.text is not None:
+            valuestr_ = child_.text
+            valuestr_ = self.gds_parse_string(valuestr_, node, 'docbookonly')
+            valuestr_ = self.gds_validate_string(valuestr_, node, 'docbookonly')
+            obj_ = self.mixedclass_(MixedContainer.CategorySimple,
+                MixedContainer.TypeString, 'docbookonly', valuestr_)
+            self.content_.append(obj_)
+            self.docbookonly_nsprefix_ = child_.prefix
+        elif nodeName_ == 'image':
+            obj_ = docImageType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'image', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_image'):
+                self.add_image(obj_.value)
+            elif hasattr(self, 'set_image'):
+                self.set_image(obj_.value)
+        elif nodeName_ == 'dot':
+            obj_ = docDotMscType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'dot', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_dot'):
+                self.add_dot(obj_.value)
+            elif hasattr(self, 'set_dot'):
+                self.set_dot(obj_.value)
+        elif nodeName_ == 'msc':
+            obj_ = docDotMscType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'msc', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_msc'):
+                self.add_msc(obj_.value)
+            elif hasattr(self, 'set_msc'):
+                self.set_msc(obj_.value)
+        elif nodeName_ == 'plantuml':
+            obj_ = docPlantumlType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'plantuml', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_plantuml'):
+                self.add_plantuml(obj_.value)
+            elif hasattr(self, 'set_plantuml'):
+                self.set_plantuml(obj_.value)
+        elif nodeName_ == 'mermaid':
+            obj_ = docMermaidType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'mermaid', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_mermaid'):
+                self.add_mermaid(obj_.value)
+            elif hasattr(self, 'set_mermaid'):
+                self.set_mermaid(obj_.value)
+        elif nodeName_ == 'anchor':
+            obj_ = docAnchorType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'anchor', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_anchor'):
+                self.add_anchor(obj_.value)
+            elif hasattr(self, 'set_anchor'):
+                self.set_anchor(obj_.value)
+        elif nodeName_ == 'formula':
+            obj_ = docFormulaType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'formula', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_formula'):
+                self.add_formula(obj_.value)
+            elif hasattr(self, 'set_formula'):
+                self.set_formula(obj_.value)
+        elif nodeName_ == 'ref':
+            obj_ = docRefTextType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'ref', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_ref'):
+                self.add_ref(obj_.value)
+            elif hasattr(self, 'set_ref'):
+                self.set_ref(obj_.value)
+        elif nodeName_ == 'emoji':
+            obj_ = docEmojiType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'emoji', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_emoji'):
+                self.add_emoji(obj_.value)
+            elif hasattr(self, 'set_emoji'):
+                self.set_emoji(obj_.value)
+        elif nodeName_ == 'linebreak':
+            obj_ = docEmptyType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'linebreak', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_linebreak'):
+                self.add_linebreak(obj_.value)
+            elif hasattr(self, 'set_linebreak'):
+                self.set_linebreak(obj_.value)
+        if not fromsubclass_ and child_.tail is not None:
+            obj_ = self.mixedclass_(MixedContainer.CategoryText,
+                MixedContainer.TypeNone, '', child_.tail)
+            self.content_.append(obj_)
+# end class docMermaidType
+
+
 class docTocItemType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, id=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, id=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, mermaid=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -24426,6 +26624,11 @@ class docTocItemType(GeneratedsSuper):
         else:
             self.plantuml = plantuml
         self.plantuml_nsprefix_ = None
+        if mermaid is None:
+            self.mermaid = []
+        else:
+            self.mermaid = mermaid
+        self.mermaid_nsprefix_ = None
         if anchor is None:
             self.anchor = []
         else:
@@ -24716,6 +26919,16 @@ class docTocItemType(GeneratedsSuper):
         self.plantuml.insert(index, value)
     def replace_plantuml_at(self, index, value):
         self.plantuml[index] = value
+    def get_mermaid(self):
+        return self.mermaid
+    def set_mermaid(self, mermaid):
+        self.mermaid = mermaid
+    def add_mermaid(self, value):
+        self.mermaid.append(value)
+    def insert_mermaid_at(self, index, value):
+        self.mermaid.insert(index, value)
+    def replace_mermaid_at(self, index, value):
+        self.mermaid[index] = value
     def get_anchor(self):
         return self.anchor
     def set_anchor(self, anchor):
@@ -24798,6 +27011,7 @@ class docTocItemType(GeneratedsSuper):
             self.dot or
             self.msc or
             self.plantuml or
+            self.mermaid or
             self.anchor or
             self.formula or
             self.ref or
@@ -24921,6 +27135,9 @@ class docTocItemType(GeneratedsSuper):
         for plantuml_ in self.plantuml:
             namespaceprefix_ = self.plantuml_nsprefix_ + ':' if (UseCapturedNS_ and self.plantuml_nsprefix_) else ''
             plantuml_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='plantuml', pretty_print=pretty_print)
+        for mermaid_ in self.mermaid:
+            namespaceprefix_ = self.mermaid_nsprefix_ + ':' if (UseCapturedNS_ and self.mermaid_nsprefix_) else ''
+            mermaid_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='mermaid', pretty_print=pretty_print)
         for anchor_ in self.anchor:
             namespaceprefix_ = self.anchor_nsprefix_ + ':' if (UseCapturedNS_ and self.anchor_nsprefix_) else ''
             anchor_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='anchor', pretty_print=pretty_print)
@@ -25188,6 +27405,16 @@ class docTocItemType(GeneratedsSuper):
                 self.add_plantuml(obj_.value)
             elif hasattr(self, 'set_plantuml'):
                 self.set_plantuml(obj_.value)
+        elif nodeName_ == 'mermaid':
+            obj_ = docMermaidType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'mermaid', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_mermaid'):
+                self.add_mermaid(obj_.value)
+            elif hasattr(self, 'set_mermaid'):
+                self.set_mermaid(obj_.value)
         elif nodeName_ == 'anchor':
             obj_ = docAnchorType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -25697,7 +27924,8 @@ class docParamListItem(GeneratedsSuper):
             self.parameternamelist.append(obj_)
             obj_.original_tagname_ = 'parameternamelist'
         elif nodeName_ == 'parameterdescription':
-            obj_ = descriptionType.factory(parent_object_=self)
+            class_obj_ = self.get_class_obj_(child_, descriptionType)
+            obj_ = class_obj_.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
             self.parameterdescription = obj_
             obj_.original_tagname_ = 'parameterdescription'
@@ -26226,7 +28454,8 @@ class docXRefSectType(GeneratedsSuper):
             self.xreftitle.append(value_)
             self.xreftitle_nsprefix_ = child_.prefix
         elif nodeName_ == 'xrefdescription':
-            obj_ = descriptionType.factory(parent_object_=self)
+            class_obj_ = self.get_class_obj_(child_, descriptionType)
+            obj_ = class_obj_.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
             self.xrefdescription = obj_
             obj_.original_tagname_ = 'xrefdescription'
@@ -27261,6 +29490,200 @@ class docEmojiType(GeneratedsSuper):
 # end class docEmojiType
 
 
+class requirementRefsType(GeneratedsSuper):
+    __hash__ = GeneratedsSuper.__hash__
+    subclass = None
+    superclass = None
+    def __init__(self, requirement=None, gds_collector_=None, **kwargs_):
+        self.gds_collector_ = gds_collector_
+        self.gds_elementtree_node_ = None
+        self.original_tagname_ = None
+        self.parent_object_ = kwargs_.get('parent_object_')
+        self.ns_prefix_ = None
+        if requirement is None:
+            self.requirement = []
+        else:
+            self.requirement = requirement
+        self.requirement_nsprefix_ = None
+    def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, requirementRefsType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
+        if requirementRefsType.subclass:
+            return requirementRefsType.subclass(*args_, **kwargs_)
+        else:
+            return requirementRefsType(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_ns_prefix_(self):
+        return self.ns_prefix_
+    def set_ns_prefix_(self, ns_prefix):
+        self.ns_prefix_ = ns_prefix
+    def get_requirement(self):
+        return self.requirement
+    def set_requirement(self, requirement):
+        self.requirement = requirement
+    def add_requirement(self, value):
+        self.requirement.append(value)
+    def insert_requirement_at(self, index, value):
+        self.requirement.insert(index, value)
+    def replace_requirement_at(self, index, value):
+        self.requirement[index] = value
+    def hasContent_(self):
+        if (
+            self.requirement
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='requirementRefsType', pretty_print=True):
+        imported_ns_def_ = GenerateDSNamespaceDefs_.get('requirementRefsType')
+        if imported_ns_def_ is not None:
+            namespacedef_ = imported_ns_def_
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None and name_ == 'requirementRefsType':
+            name_ = self.original_tagname_
+        if UseCapturedNS_ and self.ns_prefix_:
+            namespaceprefix_ = self.ns_prefix_ + ':'
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespaceprefix_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespaceprefix_, name_='requirementRefsType')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespaceprefix_, namespacedef_, name_='requirementRefsType', pretty_print=pretty_print)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('</%s%s>%s' % (namespaceprefix_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='requirementRefsType'):
+        pass
+    def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='requirementRefsType', fromsubclass_=False, pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        for requirement_ in self.requirement:
+            namespaceprefix_ = self.requirement_nsprefix_ + ':' if (UseCapturedNS_ and self.requirement_nsprefix_) else ''
+            requirement_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='requirement', pretty_print=pretty_print)
+    def build(self, node, gds_collector_=None):
+        self.gds_collector_ = gds_collector_
+        if SaveElementTreeNode:
+            self.gds_elementtree_node_ = node
+        already_processed = set()
+        self.ns_prefix_ = node.prefix
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        pass
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
+        if nodeName_ == 'requirement':
+            obj_ = requirementRefType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.requirement.append(obj_)
+            obj_.original_tagname_ = 'requirement'
+# end class requirementRefsType
+
+
+class requirementRefType(GeneratedsSuper):
+    __hash__ = GeneratedsSuper.__hash__
+    subclass = None
+    superclass = None
+    def __init__(self, refid=None, valueOf_=None, gds_collector_=None, **kwargs_):
+        self.gds_collector_ = gds_collector_
+        self.gds_elementtree_node_ = None
+        self.original_tagname_ = None
+        self.parent_object_ = kwargs_.get('parent_object_')
+        self.ns_prefix_ = None
+        self.refid = _cast(None, refid)
+        self.refid_nsprefix_ = None
+        self.valueOf_ = valueOf_
+    def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, requirementRefType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
+        if requirementRefType.subclass:
+            return requirementRefType.subclass(*args_, **kwargs_)
+        else:
+            return requirementRefType(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_ns_prefix_(self):
+        return self.ns_prefix_
+    def set_ns_prefix_(self, ns_prefix):
+        self.ns_prefix_ = ns_prefix
+    def get_refid(self):
+        return self.refid
+    def set_refid(self, refid):
+        self.refid = refid
+    def get_valueOf_(self): return self.valueOf_
+    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def hasContent_(self):
+        if (
+            (1 if type(self.valueOf_) in [int,float] else self.valueOf_)
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='requirementRefType', pretty_print=True):
+        imported_ns_def_ = GenerateDSNamespaceDefs_.get('requirementRefType')
+        if imported_ns_def_ is not None:
+            namespacedef_ = imported_ns_def_
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None and name_ == 'requirementRefType':
+            name_ = self.original_tagname_
+        if UseCapturedNS_ and self.ns_prefix_:
+            namespaceprefix_ = self.ns_prefix_ + ':'
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespaceprefix_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespaceprefix_, name_='requirementRefType')
+        if self.hasContent_():
+            outfile.write('>')
+            outfile.write(self.convert_unicode(self.valueOf_))
+            self.exportChildren(outfile, level + 1, namespaceprefix_, namespacedef_, name_='requirementRefType', pretty_print=pretty_print)
+            outfile.write('</%s%s>%s' % (namespaceprefix_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='requirementRefType'):
+        if self.refid is not None and 'refid' not in already_processed:
+            already_processed.add('refid')
+            outfile.write(' refid=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.refid), input_name='refid')), ))
+    def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='requirementRefType', fromsubclass_=False, pretty_print=True):
+        pass
+    def build(self, node, gds_collector_=None):
+        self.gds_collector_ = gds_collector_
+        if SaveElementTreeNode:
+            self.gds_elementtree_node_ = node
+        already_processed = set()
+        self.ns_prefix_ = node.prefix
+        self.buildAttributes(node, node.attrib, already_processed)
+        self.valueOf_ = get_all_text_(node)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('refid', node)
+        if value is not None and 'refid' not in already_processed:
+            already_processed.add('refid')
+            self.refid = value
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
+        pass
+# end class requirementRefType
+
+
 GDSClassesMapping = {
     'doxygen': DoxygenType,
 }
@@ -27464,6 +29887,9 @@ __all__ = [
     "codelineType",
     "compoundRefType",
     "compounddefType",
+    "conceptCodePart",
+    "conceptDocPart",
+    "conceptParts",
     "descriptionType",
     "docAnchorType",
     "docBlockQuoteType",
@@ -27491,6 +29917,7 @@ __all__ = [
     "docListItemType",
     "docListType",
     "docMarkupType",
+    "docMermaidType",
     "docParBlockType",
     "docParaType",
     "docParamListItem",
@@ -27536,6 +29963,10 @@ __all__ = [
     "refType",
     "referenceType",
     "reimplementType",
+    "requirementRefType",
+    "requirementRefsType",
+    "requirementType",
+    "requirementslistType",
     "sectiondefType",
     "spType",
     "tableofcontentsKindType",

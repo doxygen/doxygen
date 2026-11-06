@@ -22,6 +22,7 @@
 
 #include "types.h"
 #include "reflist.h"
+#include "requirement.h"
 
 #define DOX_NOGROUP -1
 
@@ -43,29 +44,29 @@ class MemberGroup
 {
   public:
     //MemberGroup();
-    MemberGroup(const Definition *container,int id,const QCString &header,
-                const QCString &docs,const QCString &docFile,int docLine,MemberListContainer con);
-    QCString header() const { return grpHeader; }
+    MemberGroup(const Definition *container,int id,const DString &header,
+                const DString &docs,const DString &docFile,int docLine,MemberListContainer con);
+    DString header() const { return grpHeader; }
     int groupId() const { return grpId; }
     void insertMember(MemberDef *md);
     void setAnchors();
     void writePlainDeclarations(OutputList &ol,bool inGroup,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
-               int indentLevel, const ClassDef *inheritedFrom,const QCString &inheritId) const;
+               int indentLevel, const ClassDef *inheritedFrom,const DString &inheritId) const;
     void writeDeclarations(OutputList &ol,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
-               bool showInline=FALSE) const;
-    void writeDocumentation(OutputList &ol,const QCString &scopeName,
+               bool showInline=false) const;
+    void writeDocumentation(OutputList &ol,const DString &scopeName,
                const Definition *container,bool showEnumValues,bool showInline) const;
-    void writeDocumentationPage(OutputList &ol,const QCString &scopeName,
+    void writeDocumentationPage(OutputList &ol,const DString &scopeName,
                const DefinitionMutable *container) const;
     void writeTagFile(TextStream &,bool qualifiedName=false);
     void addGroupedInheritedMembers(OutputList &ol,const ClassDef *cd,
                MemberListType lt,
-               const ClassDef *inheritedFrom,const QCString &inheritId) const;
+               const ClassDef *inheritedFrom,const DString &inheritId) const;
     void setAnonymousEnumType();
 
-    const QCString &documentation() const { return doc; }
+    const DString &documentation() const { return doc; }
     bool allMembersInSameSection() const { return inSameSection; }
     void addToDeclarationSection();
     void countDecMembers();
@@ -81,11 +82,13 @@ class MemberGroup
     const Definition *memberContainer() const;
 
     int countInheritableMembers(const ClassDef *inheritedFrom) const;
-    void addListReferences(Definition *d);
+    void addListReferences(const Definition *def);
+    void addRequirementReferences(const Definition *def);
     void setRefItems(const RefItemVector &sli);
+    void setRequirementReferences(const RequirementRefs &rqli);
     const MemberList &members() const { return *memberList.get(); }
 
-    QCString docFile() const { return m_docFile; }
+    DString docFile() const { return m_docFile; }
     int docLine() const { return m_docLine; }
 
   private:
@@ -93,20 +96,21 @@ class MemberGroup
     std::unique_ptr<MemberList> memberList;      // list of all members in the group
     MemberList *inDeclSection = nullptr;
     int grpId = 0;
-    QCString grpHeader;
-    QCString fileName;           // base name of the generated file
-    QCString doc;
+    DString grpHeader;
+    DString fileName;           // base name of the generated file
+    DString doc;
     bool inSameSection = true;
-    QCString m_docFile;
+    DString m_docFile;
     int m_docLine;
     RefItemVector m_xrefListItems;
+    RequirementRefs m_requirementRefs;
 };
 
-class MemberGroupRefList : public std::vector<MemberGroup *>
+class MemberGroupRefList final : public std::vector<MemberGroup *>
 {
 };
 
-class MemberGroupList : public std::vector< std::unique_ptr<MemberGroup> >
+class MemberGroupList final : public std::vector< std::unique_ptr<MemberGroup> >
 {
 };
 
@@ -114,12 +118,14 @@ class MemberGroupList : public std::vector< std::unique_ptr<MemberGroup> >
 struct MemberGroupInfo
 {
   void setRefItems(const RefItemVector &sli);
-  QCString header;
-  QCString doc;
-  QCString docFile;
+  void setRequirementReferences(const RequirementRefs &rqli);
+  DString header;
+  DString doc;
+  DString docFile;
   int docLine = -1;
-  QCString compoundName;
+  DString compoundName;
   RefItemVector m_sli;
+  RequirementRefs m_rqli;
 };
 
 using MemberGroupInfoMap = std::unordered_map< int,std::unique_ptr<MemberGroupInfo> >;

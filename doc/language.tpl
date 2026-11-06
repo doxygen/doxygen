@@ -155,13 +155,13 @@ of the translator adapter classes:
      * used in the documentation of a group before the list of
      * links to documented files.  This is possibly localized.
      */
-    virtual QCString trFiles()
+    virtual DString trFiles()
     { return "Files"; }
 
     /*! This is the localized implementation of newer equivalent
      * using the obsolete method trFiles().
      */
-    virtual QCString trFile(bool first_capital, bool singular)
+    virtual DString trFile(bool first_capital, bool singular)
     {
       if (first_capital && !singular)
         return trFiles();  // possibly localized, obsolete method
@@ -341,7 +341,7 @@ really obsolete translators brings too much maintenance and
 run-time overhead.
 
 \htmlonly
-Go to the <a href="perlmod.html">next</a> section or return to the
+Go to the <a href="i18n_guide.html">next</a> section or return to the
  <a href="index.html">index</a>.
 \endhtmlonly
 

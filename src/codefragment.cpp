@@ -40,8 +40,8 @@ struct CodeFragmentManager::Private
 
   struct FragmentInfo
   {
-    QCString fileContents;
-    QCString fileContentsTrimLeft;
+    DString fileContents;
+    DString fileContentsTrimLeft;
     FragmentInfo() { recorderCodeList.add<OutputCodeRecorder>(); }
     void findBlockMarkers();
     OutputCodeList recorderCodeList;
@@ -58,7 +58,7 @@ void CodeFragmentManager::Private::FragmentInfo::findBlockMarkers()
 {
   AUTO_TRACE("findBlockMarkers() size={}",fileContents.size());
   // give fileContents and a list of candidate [XYZ] labels with/without trim left flag (from commentscan?)
-  if (fileContents.length()==0) return;
+  if (fileContents.empty()) return;
 
   // find the potential snippet blocks (can also be other array like stuff in the file)
   const char *s=fileContents.data();
@@ -119,13 +119,13 @@ void CodeFragmentManager::Private::FragmentInfo::findBlockMarkers()
         // so we need to advance startPos with 2 to be at the start of line2, unless we are already at the first line.
         startPos+=2;
       }
-      //printf("result=[%s]\n",qPrint(QCString(startPos).left(20)));
+      //printf("result=[%s]\n",qPrint(DString(startPos).left(20)));
     }
     else
     {
       //printf("gotoLine(pos=%p,start=%d,target=%d) forward\n",(void*)startPos,startLine,targetLine);
       while (startLine<targetLine && (cc=*startPos++)) { if (cc=='\n') startLine++; }
-      //printf("result=[%s]\n",qPrint(QCString(startPos).left(20)));
+      //printf("result=[%s]\n",qPrint(DString(startPos).left(20)));
     }
     return startPos;
   };
@@ -192,7 +192,7 @@ CodeFragmentManager &CodeFragmentManager::instance()
   return m;
 }
 
-static QCString readTextFileByName(const QCString &file)
+static DString readTextFileByName(const DString &file)
 {
   AUTO_TRACE("file={}",file);
   if (Portable::isAbsolutePath(file))
@@ -200,10 +200,11 @@ static QCString readTextFileByName(const QCString &file)
     FileInfo fi(file.str());
     if (fi.exists())
     {
-      return fileToString(file,Config_getBool(FILTER_SOURCE_FILES));
+      size_t indent=0;
+      return detab(fileToString(file,Config_getBool(FILTER_SOURCE_FILES)),indent);
     }
   }
-  const StringVector &examplePathList = Config_getList(EXAMPLE_PATH);
+  StringVector examplePathList = Config_getList(EXAMPLE_PATH);
   for (const auto &s : examplePathList)
   {
     std::string absFileName = s+(Portable::pathSeparator()+file).str();
@@ -233,14 +234,14 @@ static QCString readTextFileByName(const QCString &file)
   {
     err("included file {} is not found. Check your EXAMPLE_PATH\n",file);
   }
-  return QCString();
+  return DString();
 }
 
 
 void CodeFragmentManager::parseCodeFragment(OutputCodeList & codeOutList,
-                                            const QCString & fileName,
-                                            const QCString & blockId,
-                                            const QCString & scopeName,
+                                            const DString &  fileName,
+                                            const DString &  blockId,
+                                            const DString &  scopeName,
                                             bool             showLineNumbers,
                                             bool             trimLeft,
                                             bool             stripCodeComments
@@ -276,7 +277,7 @@ void CodeFragmentManager::parseCodeFragment(OutputCodeList & codeOutList,
     bool needs2PassParsing =
         Doxygen::parseSourcesNeeded &&                // we need to parse (filtered) sources for cross-references
         !filterSourceFiles &&                         // but user wants to show sources as-is
-        !getFileFilter(fileName,TRUE).isEmpty();     // and there is a filter used while parsing
+        !getFileFilter(fileName,true).empty();     // and there is a filter used while parsing
     codeFragment->fileContents = readTextFileByName(fileName);
     //printf("fileContents=[%s]\n",qPrint(codeFragment->fileContents));
     if (needs2PassParsing)
@@ -292,7 +293,7 @@ void CodeFragmentManager::parseCodeFragment(OutputCodeList & codeOutList,
                       );
     }
     codeFragment->findBlockMarkers();
-    if (codeFragment->fileContents.length()>0) // parse the normal version
+    if (!codeFragment->fileContents.empty()) // parse the normal version
     {
       intf->parseCode(codeFragment->recorderCodeList,
           scopeName,
@@ -315,7 +316,7 @@ void CodeFragmentManager::parseCodeFragment(OutputCodeList & codeOutList,
     int endLine   = marker->lines[1];
     int indent    = marker->indent;
     AUTO_TRACE_ADD("replay(start={},end={},indent={}) fileContentsTrimLeft.empty()={}",
-        startLine,endLine,indent,codeFragment->fileContentsTrimLeft.isEmpty());
+        startLine,endLine,indent,codeFragment->fileContentsTrimLeft.empty());
     auto recorder = codeFragment->recorderCodeList.get<OutputCodeRecorder>(OutputType::Recorder);
     recorder->replay(codeOutList,
                     startLine+1,

@@ -24,20 +24,20 @@
 #include "dotfilepatcher.h"
 #include "dotnode.h"
 
-void DotLegendGraph::writeGraph(const QCString &path)
+void DotLegendGraph::writeGraph(const DString &path)
 {
   TextStream ts;
-  DotGraph::writeGraph(ts, GraphOutputFormat::BITMAP, EmbeddedOutputFormat::Html, path, "", "", FALSE, 0);
+  DotGraph::writeGraph(ts, GraphOutputFormat::BITMAP, EmbeddedOutputFormat::Html, path, "", "", false, 0);
 
   if (getDotImageExtension()=="svg")
   {
     DotManager::instance()->
       createFilePatcher(absBaseName()+Config_getString(HTML_FILE_EXTENSION))->
-      addSVGObject("graph_legend", absImgName(),QCString());
+      addSVGObject("graph_legend", absImgName(),DString());
   }
 }
 
-QCString DotLegendGraph::getBaseName() const
+DString DotLegendGraph::getBaseName() const
 {
   return "graph_legend";
 }
@@ -47,7 +47,7 @@ void DotLegendGraph::computeTheGraph()
   TextStream md5stream;
   writeGraphHeader(md5stream,theTranslator->trLegendTitle());
 
-  DotNode{this,"Inherited", "", "", TRUE}.setNodeId(9).writeBox(md5stream, GraphType::CallGraph, GraphOutputFormat::BITMAP, false);
+  DotNode{this,"Inherited", "", "", true}.setNodeId(9).writeBox(md5stream, GraphType::CallGraph, GraphOutputFormat::BITMAP, false);
   md5stream << "  Node10 -> Node9 [dir=\"back\",color=\"steelblue1\",style=\"solid\" tooltip=\" \"];\n";
   DotNode{this,"PublicBase", "", DotNode::placeholderUrl}.setNodeId(10).markHasDocumentation().writeBox(md5stream, GraphType::CallGraph, GraphOutputFormat::BITMAP, false);
   md5stream << "  Node11 -> Node10 [dir=\"back\",color=\"steelblue1\",style=\"solid\" tooltip=\" \"];\n";
@@ -68,7 +68,7 @@ void DotLegendGraph::computeTheGraph()
   m_theGraph = md5stream.str();
 }
 
-QCString DotLegendGraph::getMapLabel() const
+DString DotLegendGraph::getMapLabel() const
 {
   return "";
 }

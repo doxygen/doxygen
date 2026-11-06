@@ -22,10 +22,10 @@
 #include <memory>
 
 class ArgumentList;
-class QCString;
+class DString;
 
 std::unique_ptr<ArgumentList> stringToArgumentList(SrcLangExt lang,
-                                                   const QCString &argsString,
-                                                   QCString *extraTypeChars=nullptr);
+                                                   const DString &argsString,
+                                                   DString *extraTypeChars=nullptr);
 
 #endif

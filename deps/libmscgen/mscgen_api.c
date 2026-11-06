@@ -386,7 +386,7 @@ static unsigned int computeLabelLines(Context          *ctx,
     while (label != NULL)
     {
         /* First split around user specified lines with literal '\n' */
-        char *nextLine = strstr(label, "\\n");
+        const char *nextLine = strstr(label, "\\n");
         if (nextLine)
         {
             const int lineLen = (int)(nextLine - label);

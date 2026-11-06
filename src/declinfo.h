@@ -19,16 +19,16 @@
 #define DECLINFO_H
 
 #include <stdio.h>
-#include "qcstring.h"
+#include "dstring.h"
 #include "types.h"
 
-extern void parseFuncDecl(const QCString &decl,
+extern void parseFuncDecl(const DString &decl,
                           const SrcLangExt lang,
-                          QCString &clName,
-                          QCString &type,
-                          QCString &name,
-                          QCString &args,
-                          QCString &funcTempList,
-                          QCString &exceptions
+                          DString &clName,
+                          DString &type,
+                          DString &name,
+                          DString &args,
+                          DString &funcTempList,
+                          DString &exceptions
                          );
 #endif

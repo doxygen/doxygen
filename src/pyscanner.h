@@ -31,18 +31,18 @@
  *
  * This is the Python language parser for doxygen.
  */
-class PythonOutlineParser : public OutlineParserInterface
+class PythonOutlineParser final : public OutlineParserInterface
 {
   public:
     PythonOutlineParser();
    ~PythonOutlineParser() override;
     NON_COPYABLE(PythonOutlineParser)
-    void parseInput(const QCString &fileName,
+    void parseInput(const DString &fileName,
                     const char *fileBuf,
                     const std::shared_ptr<Entry> &root,
                     ClangTUParser *clangParser) override;
-    bool needsPreprocessing(const QCString &extension) const override;
-    void parsePrototype(const QCString &text) override;
+    bool needsPreprocessing(const DString &extension) const override;
+    void parsePrototype(const DString &text) override;
   private:
     struct Private;
     std::unique_ptr<Private> p;

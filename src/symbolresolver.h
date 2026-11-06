@@ -18,7 +18,7 @@
 
 #include <memory>
 
-#include "qcstring.h"
+#include "dstring.h"
 #include "classdef.h"
 #include "construct.h"
 
@@ -47,7 +47,7 @@ class SymbolResolver
      *  getTemplateSpec(), and getResolvedType() are set as well.
      */
     const ClassDef *resolveClass(const Definition *scope,
-                                 const QCString &name,
+                                 const DString &name,
                                  bool maybeUnlinkable=false,
                                  bool mayBeHidden=false);
 
@@ -55,7 +55,7 @@ class SymbolResolver
      *  the class object or a nullptr if the symbol is immutable.
      */
     ClassDefMutable *resolveClassMutable(const Definition *scope,
-                                         const QCString &name,
+                                         const DString &name,
                                          bool mayBeUnlinkable=false,
                                          bool mayBeHidden=false)
     {
@@ -71,8 +71,8 @@ class SymbolResolver
      *  @param onlyLinkable Only search linkable definitions
      */
     const Definition *resolveSymbol(const Definition *scope,
-                                    const QCString &name,
-                                    const QCString &args=QCString(),
+                                    const DString &name,
+                                    const DString &args=DString(),
                                     bool checkCV=false,
                                     bool insideCode=false,
                                     bool onlyLinkable=false
@@ -92,15 +92,22 @@ class SymbolResolver
      */
     int isAccessibleFromWithExpScope(const Definition *scope,
                                      const Definition *item,
-                                     const QCString &explicitScopePart
+                                     const DString &explicitScopePart
                                     );
 
     /** Sets or updates the file scope using when resolving symbols. */
     void setFileScope(const FileDef *fd);
 
+    /** Clear the type lookup cache for the current thread */
+    enum class ClearScope { All, Classes, Unresolved };
+    static void clearTypeLookupCache(ClearScope scope);
+
+    /** Show usage of the type lookup cache */
+    static void showCacheUsage();
+
     // getters
 
-    /** In case a call to resolveClass() resolves to a type member (e.g. an enum)
+    /** In case a call to resolveClass() resolves to a type member (e.g\. an enum)
      *  this method will return it.
      */
     const MemberDef *getTypedef() const;
@@ -108,12 +115,12 @@ class SymbolResolver
     /** In case a call to resolveClass() points to a template specialization, the
      *  template part is return via this method.
      */
-    QCString   getTemplateSpec() const;
+    DString   getTemplateSpec() const;
 
     /** In case a call to resolveClass() points to a typedef or using declaration.
      *  The type name it resolved to is returned via this method.
      */
-    QCString   getResolvedType() const;
+    DString   getResolvedType() const;
 
   private:
     struct Private;

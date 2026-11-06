@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="struct_old_config" kind="struct" language="C++" prot="public">
+    <compoundname>OldConfig</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="struct_old_config_1aae8289d87fb83f0283ee5ec665eee909" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int OldConfig::x</definition>
+        <argsstring/>
+        <name>x</name>
+        <qualifiedname>OldConfig::x</qualifiedname>
+        <briefdescription>
+          <para>an x </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="122_deprecated.cpp" line="10" column="9" bodyfile="122_deprecated.cpp" bodystart="10" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>Deprecating an entire struct. </para>
+    </briefdescription>
+    <detaileddescription>
+      <para>
+        <xrefsect id="deprecated_1_deprecated000001">
+          <xreftitle>Deprecated</xreftitle>
+          <xrefdescription>
+            <para>Use NewConfig instead</para>
+          </xrefdescription>
+        </xrefsect>
+      </para>
+    </detaileddescription>
+    <location file="122_deprecated.cpp" line="8" column="1" bodyfile="122_deprecated.cpp" bodystart="8" bodyend="11"/>
+    <listofallmembers>
+      <member refid="struct_old_config_1aae8289d87fb83f0283ee5ec665eee909" prot="public" virt="non-virtual">
+        <scope>OldConfig</scope>
+        <name>x</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

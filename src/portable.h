@@ -8,7 +8,7 @@
 #include <fstream>
 
 #include "containers.h"
-#include "qcstring.h"
+#include "dstring.h"
 
 class Buf;
 
@@ -18,31 +18,31 @@ class Buf;
 
 namespace Portable
 {
-  int            system(const QCString &command,const QCString &args,bool commandHasConsole=true);
+  int            system(const DString &command,const DString &args,bool commandHasConsole=true);
   uint32_t       pid();
-  QCString       getenv(const QCString &variable);
-  void           setenv(const QCString &variable,const QCString &value);
-  void           unsetenv(const QCString &variable);
-  FILE *         fopen(const QCString &fileName,const QCString &mode);
+  DString       getenv(const DString &variable);
+  void           setenv(const DString &variable,const DString &value);
+  void           unsetenv(const DString &variable);
+  FILE *         fopen(const DString &fileName,const DString &mode);
   int            fclose(FILE *f);
-  void           unlink(const QCString &fileName);
-  QCString       pathSeparator();
-  QCString       pathListSeparator();
+  void           unlink(const DString &fileName);
+  DString       pathSeparator();
+  DString       pathListSeparator();
   const char *   ghostScriptCommand();
   const char *   commandExtension();
   bool           fileSystemIsCaseSensitive();
-  FILE *         popen(const QCString &name,const QCString &type);
+  FILE *         popen(const DString &name,const DString &type);
   int            pclose(FILE *stream);
   double         getSysElapsedTime();
-  bool           isAbsolutePath(const QCString &fileName);
+  bool           isAbsolutePath(const DString &fileName);
   void           correctPath(const StringVector &list);
   void           setShortDir();
   const char *   strnstr(const char *haystack, const char *needle, size_t haystack_len);
   const char *   devNull();
-  bool           checkForExecutable(const QCString &fileName);
-  size_t         recodeUtf8StringToW(const QCString &inputStr,uint16_t **buf);
-  std::ofstream  openOutputStream(const QCString &name,bool append=false);
-  std::ifstream  openInputStream(const QCString &name,bool binary=false,bool openAtEnd=false);
+  bool           checkForExecutable(const DString &fileName);
+  size_t         recodeUtf8StringToW(const DString &inputStr,uint16_t **buf);
+  std::ofstream  openOutputStream(const DString &name,bool append=false);
+  std::ifstream  openInputStream(const DString &name,bool binary=false,bool openAtEnd=false);
 }
 
 

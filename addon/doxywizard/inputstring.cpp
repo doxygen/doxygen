@@ -70,7 +70,7 @@ InputString::InputString( QGridLayout *layout,int &row,
       if (m==StringFile || m==StringImage || m==StringFileDir)
       {
         m_brFile = m_br->addAction(QIcon(QString::fromLatin1(":/images/file.svg")),QString(),this,SLOT(browseFile()));
-        m_brFile->setToolTip(tr("Browse to a file"));
+        m_brFile->setToolTip(DoxygenWizard::msgBrowseToFile());
         if (m==StringImage)
         {
           m_im = new QLabel;
@@ -83,7 +83,7 @@ InputString::InputString( QGridLayout *layout,int &row,
       if (m==StringDir || m==StringFileDir)
       {
         m_brDir = m_br->addAction(QIcon(QString::fromLatin1(":/images/folder.svg")),QString(),this,SLOT(browseDir()));
-        m_brDir->setToolTip(tr("Browse to a folder"));
+        m_brDir->setToolTip(DoxygenWizard::msgBrowseToFolder());
       }
       rowLayout->addWidget( m_br);
       layout->addLayout( rowLayout, m==StringImage?row-1:row, 1, 1, 2 );
@@ -143,14 +143,14 @@ void InputString::updateDefault()
     {
       if (m_str.isEmpty())
       {
-        m_im->setText(tr("No Project logo selected."));
+        m_im->setText(DoxygenWizard::msgNoProjectLogoSelected());
       }
       else
       {
         QFile Fout(m_str);
         if(!Fout.exists())
         {
-          m_im->setText(tr("Sorry, cannot find file(")+m_str+QString::fromLatin1(");"));
+          m_im->setText(DoxygenWizard::msgFileNotFound(m_str));
         }
         else
         {
@@ -161,7 +161,7 @@ void InputString::updateDefault()
           }
           else
           {
-            m_im->setText(tr("Sorry, no preview available (")+m_str+QString::fromLatin1(");"));
+            m_im->setText(DoxygenWizard::msgNoPreviewAvailable(m_str));
           }
         }
       }

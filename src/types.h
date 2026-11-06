@@ -16,7 +16,7 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-#include "qcstring.h"
+#include "dstring.h"
 
 /** @file
  *  @brief This file contains a number of basic enums and types.
@@ -253,8 +253,8 @@ struct Grouping
     return "???";
   }
 
-  Grouping( const QCString &gn, GroupPri_t p ) : groupname(gn), pri(p) {}
-  QCString groupname;   //!< name of the group
+  Grouping( const DString &gn, GroupPri_t p ) : groupname(gn), pri(p) {}
+  DString groupname;   //!< name of the group
   GroupPri_t pri;       //!< priority of this definition
 
 };
@@ -548,25 +548,65 @@ constexpr const char *codeSymbolType2Str(CodeSymbolType type) noexcept
 }
 
 
-enum class MemberType
-{
-  Define,
-  Function,
-  Variable,
-  Typedef,
-  Enumeration,
-  EnumValue,
-  Signal,
-  Slot,
-  Friend,
-  DCOP,
-  Property,
-  Event,
-  Interface,
-  Service,
-  Sequence,
-  Dictionary
+#define MEMBERTYPE_SPECIFICATIONS \
+  MEMBERTYPE(Define,      define,     false) \
+  MEMBERTYPE(Function,    function,   true) \
+  MEMBERTYPE(Variable,    variable,   false) \
+  MEMBERTYPE(Typedef,     typedef,    false) \
+  MEMBERTYPE(Enumeration, enum,       false) \
+  MEMBERTYPE(EnumValue,   enumvalue,  false) \
+  MEMBERTYPE(Signal,      signal,     true) \
+  MEMBERTYPE(Slot,        slot,       true) \
+  MEMBERTYPE(Friend,      friend,     true) \
+  MEMBERTYPE(DCOP,        dcop,       true) \
+  MEMBERTYPE(Property,    property,   false) \
+  MEMBERTYPE(Event,       event,      false) \
+  MEMBERTYPE(Interface,   interface,  false) \
+  MEMBERTYPE(Service,     service,    false) \
+  MEMBERTYPE(Sequence,    sequence,   false) \
+  MEMBERTYPE(Dictionary,  dictionary, false)
+
+enum class MemberType {
+#define MEMBERTYPE(x,y,z) x,
+  MEMBERTYPE_SPECIFICATIONS
+#undef MEMBERTYPE
 };
+
+[[maybe_unused]] static constexpr const char *to_string(MemberType mt) noexcept
+{
+  const char *result = "Unknown";
+  switch (mt)
+  {
+#define MEMBERTYPE(x,y,z) case MemberType::x: result = #x; break;
+    MEMBERTYPE_SPECIFICATIONS
+#undef MEMBERTYPE
+  }
+  return result;
+}
+
+[[maybe_unused]] static constexpr const char *to_string_lower(MemberType mt) noexcept
+{
+  const char *result = "unknown";
+  switch (mt)
+  {
+#define MEMBERTYPE(x,y,z) case MemberType::x: result = #y; break;
+  MEMBERTYPE_SPECIFICATIONS
+#undef MEMBERTYPE
+  }
+  return result;
+}
+
+[[maybe_unused]] static constexpr bool to_isFunction(MemberType mt) noexcept
+{
+  bool result = false;
+  switch (mt)
+  {
+#define MEMBERTYPE(x,y,z) case MemberType::x: result = z; break;
+  MEMBERTYPE_SPECIFICATIONS
+#undef MEMBERTYPE
+  }
+  return result;
+}
 
 enum class FortranFormat
 {
@@ -644,7 +684,7 @@ class LocalToc
 /* 50 */ TSPEC(Default)           TSPEC(Delete)          TSPEC(NoExcept)          TSPEC(Attribute)    TSPEC(Property)           \
 /* 55 */ TSPEC(Readonly)          TSPEC(Bound)           TSPEC(Constrained)       TSPEC(Transient)    TSPEC(MaybeVoid)          \
 /* 60 */ TSPEC(MaybeDefault)      TSPEC(MaybeAmbiguous)  TSPEC(Published)         TSPEC(ConstEval)    TSPEC(ConstInit)          \
-/* 65 */ TSPEC(NoDiscard)         TSPEC(ThreadLocal)
+/* 65 */ TSPEC(NoDiscard)         TSPEC(ThreadLocal)     TSPEC(DeprDoc)           TSPEC(DeprAttr)
 // clang-format on
 
 /** Wrapper class for a number of boolean properties.
@@ -765,6 +805,8 @@ enum class VhdlSpecifier
  ETYPE(Class,              Compound|Scope)  \
  ETYPE(Namespace,          Scope)           \
  ETYPE(Concept,            None)            \
+ ETYPE(ConceptCodePart,    None)            \
+ ETYPE(ConceptDocPart,     None)            \
  ETYPE(ClassDoc,           CompoundDoc|Doc) \
  ETYPE(StructDoc,          CompoundDoc|Doc) \
  ETYPE(UnionDoc,           CompoundDoc|Doc) \
@@ -788,6 +830,7 @@ enum class VhdlSpecifier
  ETYPE(FileDoc,            Doc)             \
  ETYPE(DefineDoc,          Doc)             \
  ETYPE(GroupDoc,           Doc)             \
+ ETYPE(RequirementDoc,     Doc)             \
  ETYPE(MainpageDoc,        Doc)             \
  ETYPE(MemberGrp,          Doc)             \
  ETYPE(PackageDoc,         Doc)             \

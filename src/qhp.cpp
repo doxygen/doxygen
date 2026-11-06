@@ -53,12 +53,12 @@ class QhpSectionTree
       // constructor for dir node
       Node(Node *parent_) : type(Type::Dir), parent(parent_) {}
       // constructor for section node
-      Node(Node *parent_, const QCString &title_,const QCString &ref_)
+      Node(Node *parent_, const DString &title_,const DString &ref_)
                           : type(Type::Section), parent(parent_), title(title_), ref(ref_) {}
       Type type;
       Node *parent = nullptr;
-      QCString title;
-      QCString ref;
+      DString title;
+      DString ref;
       std::vector<std::unique_ptr<Node>> children;
     };
 
@@ -120,7 +120,7 @@ class QhpSectionTree
     }
 
   public:
-    void addSection(const QCString &title,const QCString &ref)
+    void addSection(const DString &title,const DString &ref)
     {
       m_current->children.push_back(std::make_unique<Node>(m_current,title,ref));
     }
@@ -158,19 +158,19 @@ class Qhp::Private
     QhpSectionTree sectionTree;
 };
 
-static QCString getFullProjectName()
+static DString getFullProjectName()
 {
-  QCString projectName = Config_getString(PROJECT_NAME);
-  QCString versionText = Config_getString(PROJECT_NUMBER);
-  if (projectName.isEmpty()) projectName="Root";
-  if (!versionText.isEmpty()) projectName+=" "+versionText;
+  DString projectName = Config_getString(PROJECT_NAME);
+  DString versionText = Config_getString(PROJECT_NUMBER);
+  if (projectName.empty()) projectName="Root";
+  if (!versionText.empty()) projectName+=" "+versionText;
   return projectName;
 }
 
-static QCString makeFileName(const QCString & withoutExtension)
+static DString makeFileName(const DString & withoutExtension)
 {
-  QCString result=withoutExtension;
-  if (!result.isEmpty())
+  DString result=withoutExtension;
+  if (!result.empty())
   {
     if (result.at(0)=='!') // relative URL -> strip marker
     {
@@ -184,12 +184,12 @@ static QCString makeFileName(const QCString & withoutExtension)
   return result;
 }
 
-static QCString makeRef(const QCString & withoutExtension, const QCString & anchor)
+static DString makeRef(const DString & withoutExtension, const DString & anchor)
 {
   //printf("QHP::makeRef(%s,%s)\n",withoutExtension,anchor);
-  if (withoutExtension.isEmpty()) return QCString();
-  QCString result = makeFileName(withoutExtension);
-  if (anchor.isEmpty()) return result;
+  if (withoutExtension.empty()) return DString();
+  DString result = makeFileName(withoutExtension);
+  if (anchor.empty()) return result;
   return result+"#"+anchor;
 }
 
@@ -211,7 +211,7 @@ void Qhp::initialize()
       <filterAttribute>1.0</filterAttribute>
   ..
   */
-  QCString fileName = Config_getString(HTML_OUTPUT) + "/" + qhpFileName;
+  DString fileName = Config_getString(HTML_OUTPUT) + "/" + qhpFileName;
   p->docFile = Portable::openOutputStream(fileName);
   if (!p->docFile.is_open())
   {
@@ -227,8 +227,8 @@ void Qhp::initialize()
   p->doc << "<virtualFolder>" << convertToXML(Config_getString(QHP_VIRTUAL_FOLDER)) << "</virtualFolder>\n";
 
   // Add custom filter
-  QCString filterName = Config_getString(QHP_CUST_FILTER_NAME);
-  if (!filterName.isEmpty())
+  DString filterName = Config_getString(QHP_CUST_FILTER_NAME);
+  if (!filterName.empty())
   {
     writeIndent(p->doc,1);
     p->doc << "<customFilter name=\"" << convertToXML(filterName) << "\">\n";
@@ -311,9 +311,9 @@ void Qhp::decContentsDepth()
   p->sectionTree.decLevel();
 }
 
-void Qhp::addContentsItem(bool /* isDir */, const QCString & name, const QCString & /*ref*/,
-                          const QCString & file, const QCString &anchor, bool /* separateIndex */,
-                          bool /* addToNavIndex */, const Definition * /*def*/, const QCString & /*nameAsHtml*/)
+void Qhp::addContentsItem(bool /* isDir */, const DString & name, const DString & /*ref*/,
+                          const DString & file, const DString &anchor, bool /* separateIndex */,
+                          bool /* addToNavIndex */, const Definition * /*def*/, const DString & /*nameAsHtml*/)
 {
   /*
   <toc>
@@ -325,16 +325,16 @@ void Qhp::addContentsItem(bool /* isDir */, const QCString & name, const QCStrin
   </toc>
   */
 
-  QCString f = file;
-  if (!f.isEmpty() && f.at(0)=='^') return; // absolute URL not supported
+  DString f = file;
+  if (!f.empty() && f.at(0)=='^') return; // absolute URL not supported
 
-  if (f.isEmpty())
+  if (f.empty())
   {
     f = "doxygen_blank";
     addHtmlExtensionIfMissing(f);
     std::call_once(g_blankWritten,[this,&f]()
     {
-      QCString fileName = Config_getString(HTML_OUTPUT) + "/" + f;
+      DString fileName = Config_getString(HTML_OUTPUT) + "/" + f;
       std::ofstream blankFile = Portable::openOutputStream(fileName); // we just need an empty file
       if (!blankFile.is_open())
       {
@@ -360,14 +360,13 @@ void Qhp::addContentsItem(bool /* isDir */, const QCString & name, const QCStrin
       addFile(f);
     });
   }
-  QCString finalRef = makeRef(f, anchor);
+  DString finalRef = makeRef(f, anchor);
   p->sectionTree.addSection(name,finalRef);
 }
 
 void Qhp::addIndexItem(const Definition *context,const MemberDef *md,
-                       const QCString &sectionAnchor,const QCString &word)
+                       const DString &sectionAnchor,const DString &word)
 {
-  (void)word;
   //printf("addIndexItem(%s %s %s\n",
   //       context?context->name().data():"<none>",
   //       md?md->name().data():"<none>",
@@ -375,16 +374,17 @@ void Qhp::addIndexItem(const Definition *context,const MemberDef *md,
 
   if (context && md) // member
   {
-    QCString cfname  = md->getOutputFileBase();
-    QCString argStr  = md->argsString();
-    QCString level1  = context->name();
-    QCString level2  = !word.isEmpty() ? word : md->name();
-    QCString anchor  = !sectionAnchor.isEmpty() ? sectionAnchor : md->anchor();
-    QCString ref;
+    if (sectionAnchor.empty() && !md->hasDocumentation()) return;
+    DString cfname  = md->getOutputFileBase();
+    DString argStr  = md->argsString();
+    DString level1  = context->name();
+    DString level2  = !word.empty() ? word : md->name();
+    DString anchor  = !sectionAnchor.empty() ? sectionAnchor : md->anchor();
+    DString ref;
 
     // <keyword name="foo" id="MyApplication::foo" ref="doc.html#foo"/>
     ref = makeRef(cfname, anchor);
-    QCString id = level1+"::"+level2;
+    DString id = level1+"::"+level2;
     writeIndent(p->index,3);
     p->index << "<keyword name=\"" << convertToXML(level2 + argStr) << "\""
                           " id=\"" << convertToXML(id + "_" + anchor) << "\""
@@ -393,9 +393,9 @@ void Qhp::addIndexItem(const Definition *context,const MemberDef *md,
   else if (context) // container
   {
     // <keyword name="Foo" id="Foo" ref="doc.html#Foo"/>
-    QCString contRef = context->getOutputFileBase();
-    QCString level1  = !word.isEmpty() ? word : context->name();
-    QCString ref = makeRef(contRef,sectionAnchor);
+    DString contRef = context->getOutputFileBase();
+    DString level1  = !word.empty() ? word : context->name();
+    DString ref = makeRef(contRef,sectionAnchor);
     writeIndent(p->index,3);
     p->index << "<keyword name=\"" << convertToXML(level1) << "\""
              <<           " id=\"" << convertToXML(level1 +"_" + sectionAnchor) << "\""
@@ -403,39 +403,39 @@ void Qhp::addIndexItem(const Definition *context,const MemberDef *md,
   }
 }
 
-void Qhp::addFile(const QCString & fileName)
+void Qhp::addFile(const DString & fileName)
 {
   p->files.insert(("<file>" + convertToXML(fileName) + "</file>").str());
 }
 
-void Qhp::addIndexFile(const QCString & fileName)
+void Qhp::addIndexFile(const DString & fileName)
 {
   addFile(fileName);
 }
 
-void Qhp::addImageFile(const QCString &fileName)
+void Qhp::addImageFile(const DString &fileName)
 {
   addFile(fileName);
 }
 
-void Qhp::addStyleSheetFile(const QCString &fileName)
+void Qhp::addStyleSheetFile(const DString &fileName)
 {
   addFile(fileName);
 }
 
-QCString Qhp::getQchFileName()
+DString Qhp::getQchFileName()
 {
-  QCString const & qchFile = Config_getString(QCH_FILE);
-  if (!qchFile.isEmpty())
+  DString qchFile = Config_getString(QCH_FILE);
+  if (!qchFile.empty())
   {
     return qchFile;
   }
 
-  QCString const & projectName = Config_getString(PROJECT_NAME);
-  QCString const & versionText = Config_getString(PROJECT_NUMBER);
+  DString projectName = Config_getString(PROJECT_NAME);
+  DString versionText = Config_getString(PROJECT_NUMBER);
 
-  return QCString("../qch/")
-      + (projectName.isEmpty() ? QCString("index") : projectName)
-      + (versionText.isEmpty() ? QCString("") : QCString("-") + versionText)
-      + QCString(".qch");
+  return DString("../qch/")
+      + (projectName.empty() ? DString("index") : projectName)
+      + (versionText.empty() ? DString("") : DString("-") + versionText)
+      + DString(".qch");
 }

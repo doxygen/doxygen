@@ -682,7 +682,8 @@ however this will render as bold:
 
 \subsection mddox_code_spans Code Spans Limits
 
-Note that unlike standard Markdown, Doxygen leaves the following untouched.
+Note that unlike standard Markdown (thus when \ref cfg_markdown_strict "MARKDOWN_STRICT" is set to `NO`),
+Doxygen leaves the following untouched.
 
     A `cool' word in a `nice' sentence.
 

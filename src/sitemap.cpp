@@ -45,7 +45,7 @@ Sitemap::~Sitemap() = default;
 
 void Sitemap::initialize()
 {
-  QCString fileName = Config_getString(HTML_OUTPUT) + "/" + sitemapFileName;
+  DString fileName = Config_getString(HTML_OUTPUT) + "/" + sitemapFileName;
 
   p->docFile = Portable::openOutputStream(fileName);
   if (!p->docFile.is_open())
@@ -69,10 +69,10 @@ void Sitemap::finalize()
   p->docFile.close();
 }
 
-void Sitemap::addIndexFile(const QCString & fileName)
+void Sitemap::addIndexFile(const DString & fileName)
 {
-  QCString fn = fileName;
-  QCString sitemapUrl = Config_getString(SITEMAP_URL);
+  DString fn = fileName;
+  DString sitemapUrl = Config_getString(SITEMAP_URL);
   addHtmlExtensionIfMissing(fn);
   p->doc << "  <url>\n";
   p->doc << "    <loc>" << convertToXML(sitemapUrl + fn) << "</loc>\n";
@@ -94,7 +94,7 @@ Crawlmap::~Crawlmap() = default;
 
 void Crawlmap::initialize()
 {
-  QCString fileName = Config_getString(HTML_OUTPUT) + "/" + crawlFileName;
+  DString fileName = Config_getString(HTML_OUTPUT) + "/" + crawlFileName;
   addHtmlExtensionIfMissing(fileName);
   p->crawlFile = Portable::openOutputStream(fileName);
   if (!p->crawlFile.is_open())
@@ -130,19 +130,19 @@ void Crawlmap::finalize()
   p->crawlFile.close();
 }
 
-void Crawlmap::addIndexFile(const QCString & fileName)
+void Crawlmap::addIndexFile(const DString & fileName)
 {
-  QCString fn = fileName;
+  DString fn = fileName;
   addHtmlExtensionIfMissing(fn);
   p->crawlLinks.push_back(fn.str());
 }
 
-void Crawlmap::addContentsItem(bool, const QCString &, const QCString & ref,
-                               const QCString & file, const QCString & anchor,
+void Crawlmap::addContentsItem(bool, const DString &, const DString & ref,
+                               const DString & file, const DString & anchor,
                                bool ,bool ,
-                               const Definition *, const QCString &)
+                               const Definition *, const DString &)
 {
-  if (!file.isEmpty() && ref.isEmpty())      // made file optional param and
+  if (!file.empty() && ref.empty())      // made file optional param and
                                              // don't place links in crawl file imported
                                              // by tags
   {
@@ -153,11 +153,11 @@ void Crawlmap::addContentsItem(bool, const QCString &, const QCString & ref,
     }
     else
     {
-      QCString currFile = file;
+      DString currFile = file;
       addHtmlExtensionIfMissing(currFile);
-      QCString currAnc = anchor;
+      DString currAnc = anchor;
       link += currFile.data();
-      if (!currAnc.isEmpty())
+      if (!currAnc.empty())
       {
         link += "#";
         link += currAnc.str();
@@ -167,10 +167,10 @@ void Crawlmap::addContentsItem(bool, const QCString &, const QCString & ref,
   }
 }
 
-static QCString makeFileName(const QCString & withoutExtension)
+static DString makeFileName(const DString & withoutExtension)
 {
-  QCString result=withoutExtension;
-  if (!result.isEmpty())
+  DString result=withoutExtension;
+  if (!result.empty())
   {
     if (result.at(0)=='!') // relative URL -> strip marker
     {
@@ -184,28 +184,29 @@ static QCString makeFileName(const QCString & withoutExtension)
   return result;
 }
 
-static QCString makeRef(const QCString & withoutExtension, const QCString & anchor)
+static DString makeRef(const DString & withoutExtension, const DString & anchor)
 {
-  if (withoutExtension.isEmpty()) return QCString();
-  QCString result = makeFileName(withoutExtension);
-  if (anchor.isEmpty()) return result;
+  if (withoutExtension.empty()) return DString();
+  DString result = makeFileName(withoutExtension);
+  if (anchor.empty()) return result;
   return result+"#"+anchor;
 }
 
 void Crawlmap::addIndexItem(const Definition *context, const MemberDef *md,
-                            const QCString &sectionAnchor, const QCString &title)
+                            const DString &sectionAnchor, const DString &title)
 {
   if (context && md) // member
   {
-    QCString cfname  = md->getOutputFileBase();
-    QCString anchor  = !sectionAnchor.isEmpty() ? sectionAnchor : md->anchor();
-    QCString ref     = makeRef(cfname, anchor);
+    if (sectionAnchor.empty() && !md->hasDocumentation()) return;
+    DString cfname  = md->getOutputFileBase();
+    DString anchor  = !sectionAnchor.empty() ? sectionAnchor : md->anchor();
+    DString ref     = makeRef(cfname, anchor);
     p->crawlLinks.push_back(ref.str());
   }
   else if (context) // container
   {
-    QCString contRef = context->getOutputFileBase();
-    QCString ref = makeRef(contRef,sectionAnchor);
+    DString contRef = context->getOutputFileBase();
+    DString ref = makeRef(contRef,sectionAnchor);
     p->crawlLinks.push_back(ref.str());
   }
 }

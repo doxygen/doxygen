@@ -150,7 +150,7 @@ static void addSTLMember(const std::shared_ptr<Entry> &root,const char *type,con
   root->moveToSubEntryAndKeep(memEntry);
 }
 
-static void addSTLIterator(const std::shared_ptr<Entry> &classEntry,const QCString &name)
+static void addSTLIterator(const std::shared_ptr<Entry> &classEntry,const DString &name)
 {
   std::shared_ptr<Entry> iteratorClassEntry = std::make_shared<Entry>();
   iteratorClassEntry->fileName  = "[STL]";
@@ -166,7 +166,7 @@ static void addSTLIterator(const std::shared_ptr<Entry> &classEntry,const QCStri
 static void addSTLClass(const std::shared_ptr<Entry> &root,const STLInfo *info)
 {
   //printf("Adding STL class %s\n",info->className);
-  QCString fullName = info->className;
+  DString fullName = info->className;
   fullName.prepend("std::");
 
   // add fake Entry for the class

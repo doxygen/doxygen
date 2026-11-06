@@ -53,8 +53,9 @@ class GroupDef : public DefinitionMutable, public Definition
   public:
     ABSTRACT_BASE_CLASS(GroupDef)
 
-    virtual QCString groupTitle() const = 0;
-    virtual void setGroupTitle( const QCString &newtitle ) = 0;
+    virtual DString groupTitle() const = 0;
+    virtual DString groupTitleAsText() const = 0;
+    virtual void setGroupTitle( const DString &newtitle ) = 0;
     virtual bool hasGroupTitle( ) const = 0;
     virtual void addFile(FileDef *def) = 0;
     virtual bool containsFile(const FileDef *def) const = 0;
@@ -66,7 +67,7 @@ class GroupDef : public DefinitionMutable, public Definition
     virtual void addPage(PageDef *def) = 0;
     virtual void addExample(PageDef *def) = 0;
     virtual void addDir(DirDef *dd) = 0;
-    virtual bool insertMember(MemberDef *def,bool docOnly=FALSE) = 0;
+    virtual bool insertMember(MemberDef *def,bool docOnly=false) = 0;
     virtual void removeMember(MemberDef *md) = 0;
     virtual bool findGroup(const GroupDef *def) const = 0;
     virtual void writeDocumentation(OutputList &ol) = 0;
@@ -83,6 +84,7 @@ class GroupDef : public DefinitionMutable, public Definition
     virtual void findSectionsInDocumentation() = 0;
 
     virtual void addListReferences() = 0;
+    virtual void addRequirementReferences() = 0;
     virtual void sortMemberLists() = 0;
     virtual bool subGrouping() const = 0;
 
@@ -112,8 +114,8 @@ class GroupDef : public DefinitionMutable, public Definition
     virtual void overrideGroupGraph(bool e) = 0;
 };
 
-std::unique_ptr<GroupDef> createGroupDef(const QCString &fileName,int line,const QCString &name,
-                                         const QCString &title,const QCString &refFileName=QCString());
+std::unique_ptr<GroupDef> createGroupDef(const DString &fileName,int line,const DString &name,
+                                         const DString &title,const DString &refFileName=DString());
 
 // --- Cast functions
 
@@ -122,11 +124,11 @@ const GroupDef      *toGroupDef(const Definition *d);
 
 // ------------------
 
-class GroupLinkedMap : public LinkedMap<GroupDef>
+class GroupLinkedMap final : public LinkedMap<GroupDef>
 {
 };
 
-class GroupList : public std::vector<GroupDef *>
+class GroupList final : public std::vector<GroupDef *>
 {
 };
 

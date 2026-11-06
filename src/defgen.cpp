@@ -39,10 +39,10 @@
 
 #define DEF_DB(x)
 
-static inline void writeDEFString(TextStream &t,const QCString &s)
+static inline void writeDEFString(TextStream &t,const DString &s)
 {
   t << '\'';
-  if (!s.isEmpty())
+  if (!s.empty())
   {
     const char* p=s.data();
     char c = 0;
@@ -59,9 +59,9 @@ static inline void writeDEFString(TextStream &t,const QCString &s)
 static void generateDEFForMember(const MemberDef *md,
     TextStream &t,
     const Definition *def,
-    const QCString &prefix)
+    const DString &prefix)
 {
-  QCString memPrefix;
+  DString memPrefix;
 
   // + declaration
   // - reimplements
@@ -76,7 +76,7 @@ static void generateDEFForMember(const MemberDef *md,
 
   if (md->memberType()==MemberType::EnumValue) return;
 
-  QCString scopeName;
+  DString scopeName;
   if (md->getClassDef())
     scopeName=md->getClassDef()->name();
   else if (md->getNamespaceDef())
@@ -87,27 +87,9 @@ static void generateDEFForMember(const MemberDef *md,
   memPrefix.append( prefix );
   memPrefix.append( "-mem-" );
 
-  QCString memType;
-  bool isFunc=FALSE;
-  switch (md->memberType())
-  {
-    case MemberType::Define:      memType="define";     break;
-    case MemberType::EnumValue:   ASSERT(0);            break;
-    case MemberType::Property:    memType="property";   break;
-    case MemberType::Event:       memType="event";      break;
-    case MemberType::Variable:    memType="variable";   break;
-    case MemberType::Typedef:     memType="typedef";    break;
-    case MemberType::Enumeration: memType="enum";       break;
-    case MemberType::Interface:   memType="interface";  break;
-    case MemberType::Service:     memType="service";    break;
-    case MemberType::Sequence:    memType="sequence";   break;
-    case MemberType::Dictionary:  memType="dictionary"; break;
-    case MemberType::Function:    memType="function";   isFunc=TRUE; break;
-    case MemberType::Signal:      memType="signal";     isFunc=TRUE; break;
-    case MemberType::Friend:      memType="friend";     isFunc=TRUE; break;
-    case MemberType::DCOP:        memType="dcop";       isFunc=TRUE; break;
-    case MemberType::Slot:        memType="slot";       isFunc=TRUE; break;
-  }
+  if (md->memberType() == MemberType::EnumValue) ASSERT(0);
+  bool isFunc=to_isFunction(md->memberType());
+  DString memType = to_string_lower(md->memberType());
 
   t << memPrefix << "kind = '" << memType << "';\n";
   t << memPrefix << "id   = '"
@@ -121,7 +103,7 @@ static void generateDEFForMember(const MemberDef *md,
       md->memberType()!=MemberType::Enumeration
      )
   {
-    QCString typeStr = replaceAnonymousScopes(md->typeString());
+    DString typeStr = replaceAnonymousScopes(md->typeString());
     t << memPrefix << "type = <<_EnD_oF_dEf_TeXt_\n" << typeStr << "\n"
       << "_EnD_oF_dEf_TeXt_;\n";
   }
@@ -132,7 +114,7 @@ static void generateDEFForMember(const MemberDef *md,
   {
     const ArgumentList &defAl = md->argumentList();
     ArgumentList declAl = *stringToArgumentList(md->getLanguage(),md->argsString());
-    QCString fcnPrefix = "  " + memPrefix + "param-";
+    DString fcnPrefix = "  " + memPrefix + "param-";
 
     auto defIt = defAl.begin();
     for (const Argument &a : declAl)
@@ -144,36 +126,36 @@ static void generateDEFForMember(const MemberDef *md,
         ++defIt;
       }
       t << memPrefix << "param = {\n";
-      if (!a.attrib.isEmpty())
+      if (!a.attrib.empty())
       {
         t << fcnPrefix << "attributes = ";
         writeDEFString(t,a.attrib);
         t << ";\n";
       }
-      if (!a.type.isEmpty())
+      if (!a.type.empty())
       {
         t << fcnPrefix << "type = <<_EnD_oF_dEf_TeXt_\n"
           << a.type << "\n_EnD_oF_dEf_TeXt_;\n";
       }
-      if (!a.name.isEmpty())
+      if (!a.name.empty())
       {
         t << fcnPrefix << "declname = ";
         writeDEFString(t,a.name);
         t << ";\n";
       }
-      if (defArg && !defArg->name.isEmpty() && defArg->name!=a.name)
+      if (defArg && !defArg->name.empty() && defArg->name!=a.name)
       {
         t << fcnPrefix << "defname = ";
         writeDEFString(t,defArg->name);
         t << ";\n";
       }
-      if (!a.array.isEmpty())
+      if (!a.array.empty())
       {
         t << fcnPrefix << "array = ";
         writeDEFString(t,a.array);
         t << ";\n";
       }
-      if (!a.defval.isEmpty())
+      if (!a.defval.empty())
       {
         t << fcnPrefix << "defval = <<_EnD_oF_dEf_TeXt_\n"
           << a.defval << "\n_EnD_oF_dEf_TeXt_;\n";
@@ -184,7 +166,7 @@ static void generateDEFForMember(const MemberDef *md,
   else if (  md->memberType()==MemberType::Define
       && md->argsString()!=nullptr)
   {
-    QCString defPrefix = "  " + memPrefix + "def-";
+    DString defPrefix = "  " + memPrefix + "def-";
     for (const Argument &a : md->argumentList())
     {
       t << memPrefix << "param  = {\n";
@@ -193,7 +175,7 @@ static void generateDEFForMember(const MemberDef *md,
     }
   }
 
-  if (!md->initializer().isEmpty())
+  if (!md->initializer().empty())
   {
     t << memPrefix << "initializer = <<_EnD_oF_dEf_TeXt_\n"
       << md->initializer() << "\n_EnD_oF_dEf_TeXt_;\n";
@@ -204,7 +186,7 @@ static void generateDEFForMember(const MemberDef *md,
     for (const auto &emd : md->enumFieldList())
     {
       t << memPrefix << "enum = { enum-name = " << emd->name() << ';';
-      if (!emd->initializer().isEmpty())
+      if (!emd->initializer().empty())
       {
         t << " enum-value = ";
         writeDEFString(t,emd->initializer());
@@ -223,7 +205,7 @@ static void generateDEFForMember(const MemberDef *md,
 
   //printf("md->getReferencesMembers()=%p\n",md->getReferencesMembers());
 
-  QCString refPrefix = "  " + memPrefix + "ref-";
+  DString refPrefix = "  " + memPrefix + "ref-";
   auto refList = md->getReferencesMembers();
   for (const auto &rmd : refList)
   {
@@ -238,9 +220,9 @@ static void generateDEFForMember(const MemberDef *md,
       t << refPrefix << "line = '"
         << rmd->getStartBodyLine() << "';\n";
 
-      QCString scope = rmd->getScopeString();
-      QCString name = rmd->name();
-      if (!scope.isEmpty() && scope!=def->name())
+      DString scope = rmd->getScopeString();
+      DString name = rmd->name();
+      if (!scope.empty() && scope!=def->name())
       {
         name.prepend(scope+"::");
       }
@@ -264,9 +246,9 @@ static void generateDEFForMember(const MemberDef *md,
       t << refPrefix << "line = '"
         << rmd->getStartBodyLine() << "';\n";
 
-      QCString scope = rmd->getScopeString();
-      QCString name = rmd->name();
-      if (!scope.isEmpty() && scope!=def->name())
+      DString scope = rmd->getScopeString();
+      DString name = rmd->name();
+      if (!scope.empty() && scope!=def->name())
       {
         name.prepend(scope+"::");
       }
@@ -284,7 +266,7 @@ static void generateDEFForMember(const MemberDef *md,
 static void generateDEFClassSection(const ClassDef *cd,
     TextStream &t,
     const MemberList *ml,
-    const QCString &kind)
+    const DString &kind)
 {
   if (cd && ml && !ml->empty())
   {
@@ -316,7 +298,7 @@ static void generateDEFForClass(const ClassDef *cd,TextStream &t)
   // - examples
 
   if (cd->isReference()) return; // skip external references.
-  if (cd->name().find('@')!=-1) return; // skip anonymous compounds.
+  if (cd->name().find('@')!=DString::npos) return; // skip anonymous compounds.
   if (cd->isImplicitTemplateInstance()) return; // skip generated template instances.
 
   t << cd->compoundTypeString() << " = {\n";
@@ -406,7 +388,7 @@ static void generateDEFForClass(const ClassDef *cd,TextStream &t)
 static void generateDEFSection(const Definition *d,
     TextStream &t,
     const MemberList *ml,
-    const QCString &kind)
+    const DString &kind)
 {
   if (ml && !ml->empty())
   {
@@ -481,7 +463,7 @@ static void generateDEFForFile(const FileDef *fd,TextStream &t)
 
 void generateDEF()
 {
-  QCString outputDirectory = Config_getString(OUTPUT_DIRECTORY)+"/def";
+  DString outputDirectory = Config_getString(OUTPUT_DIRECTORY)+"/def";
   Dir defDir(outputDirectory.str());
   if (!defDir.exists() && !defDir.mkdir(outputDirectory.str()))
   {
@@ -489,7 +471,7 @@ void generateDEF()
     return;
   }
 
-  QCString fileName=outputDirectory+"/doxygen.def";
+  DString fileName=outputDirectory+"/doxygen.def";
   std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {

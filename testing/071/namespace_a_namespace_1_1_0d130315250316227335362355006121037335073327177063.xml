@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="namespace_a_namespace_1_1_0d130315250316227335362355006121037335073327177063" kind="namespace" language="C++">
-    <compoundname>ANamespace</compoundname>
+    <compoundname>ANamespace::@130315250316227335362355006121037335073327177063</compoundname>
     <sectiondef kind="enum">
       <memberdef kind="enum" id="namespace_a_namespace_1_1_0d130315250316227335362355006121037335073327177063_1a80c23b2c34d4baaf4e21819ff9c3dcd6" prot="public" static="no" strong="yes">
         <type/>
         <name>Boolean</name>
-        <qualifiedname>ANamespace::Boolean</qualifiedname>
+        <qualifiedname>ANamespace::@130315250316227335362355006121037335073327177063::Boolean</qualifiedname>
         <enumvalue id="namespace_a_namespace_1_1_0d130315250316227335362355006121037335073327177063_1a80c23b2c34d4baaf4e21819ff9c3dcd6af8320b26d30ab433c5a54546d21f414c" prot="public">
           <name>False</name>
           <briefdescription>

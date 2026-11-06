@@ -60,33 +60,35 @@ endif()
 
 set(DOC_INSTALL_DIR "share/doc/packages/doxygen" CACHE STRING "Relative path where to install the documentation")
 set(DOC_FILES
-        arch.dox
-        archoverview.eps
-        archoverview.svg
-        autolink.dox
-        changelog.dox
-        commands.dox
-        custcmd.dox
-        customize.dox
-        diagrams.dox
-        docblocks.dox
-        additional.dox
-        Doxyfile
-        doxygen_manual.css
-        doxygen_manual_chm.css
-        doxygen_usage.dox
-        doxywizard_expert.png
-        doxywizard_main.png
-        doxywizard_menu_file.png
-        doxywizard_menu_settings.png
-        doxywizard_menu_help.png
-        doxywizard_page1.png
-        doxywizard_page2.png
-        doxywizard_page3.png
-        doxywizard_page4.png
-        doxywizard_run.png
-        doxywizard_usage.dox
-        expert_bool.png
+    arch.dox
+    archoverview.eps
+    archoverview.svg
+    autolink.dox
+    changelog.dox
+    commands.dox
+    custcmd.dox
+    customize.dox
+    diagrams.dox
+    docblocks.dox
+    additional.dox
+    Doxyfile
+    doxygen_manual.css
+    doxygen_manual_chm.css
+    doxygen_usage.dox
+    doxywizard_expert.png
+    doxywizard_expert_search.png
+    doxywizard_main.png
+    doxywizard_menu_file.png
+    doxywizard_menu_settings.png
+    doxywizard_language.png
+    doxywizard_menu_help.png
+    doxywizard_page1.png
+    doxywizard_page2.png
+    doxywizard_page3.png
+    doxywizard_page4.png
+    doxywizard_run.png
+    doxywizard_usage.dox
+    expert_bool.png
         expert_enum.png
         expert_int.png
         expert_list_dir.png
@@ -120,6 +122,7 @@ set(DOC_FILES
         layout_noindex_and_treeview.png
         layout_noindex_and_sidebar.png
         lists.dox
+        requirements.dox
         markdown.dox
         output.dox
         perlmod.dox
@@ -130,6 +133,7 @@ set(DOC_FILES
         xmlcmds.dox
         emojisup.dox
         language.tpl
+        i18n_guide.md
         maintainers.txt
         translator.py
         smile.png

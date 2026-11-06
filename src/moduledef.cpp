@@ -35,45 +35,45 @@ class ModuleDefImpl;
 
 struct HeaderInfo
 {
-  HeaderInfo(const QCString &fn,const QCString &name,bool sys)
+  HeaderInfo(const DString &fn,const DString &name,bool sys)
     : fileName(fn), headerName(name), isSystem(sys) {}
-  QCString fileName;   // file containing the import
-  QCString headerName; // name of the imported header
+  DString fileName;   // file containing the import
+  DString headerName; // name of the imported header
   bool isSystem;       // <...> => true, "..." => false
 };
 
 using HeaderInfoVector = std::vector<HeaderInfo>;
 
 
-class ModuleDefImpl : public DefinitionMixin<ModuleDef>
+class ModuleDefImpl final : public DefinitionMixin<ModuleDef>
 {
   public:
-    ModuleDefImpl(const QCString &fileName,int startLine,int startColom,
-                  const QCString &name, Type type, const QCString &partitionName)
+    ModuleDefImpl(const DString &fileName,int startLine,int startColom,
+                  const DString &name, Type type, const DString &partitionName)
       : DefinitionMixin<ModuleDef>(fileName,startLine,startColom,name,nullptr,nullptr,true),
         m_type(type), m_partitionName(partitionName) {}
 
     // --- Definition
     DefType definitionType() const override { return TypeModule; }
     CodeSymbolType codeSymbolType() const override { return CodeSymbolType::Module; }
-    QCString displayName(bool=TRUE) const override { return name(); }
-    QCString getOutputFileBase() const override;
-    QCString anchor() const override { return ""; }
+    DString displayName(bool=true) const override { return name(); }
+    DString getOutputFileBase() const override;
+    DString anchor() const override { return ""; }
     bool isLinkableInProject() const override {
       if (m_primaryInterface) return m_primaryInterface->isLinkableInProject();
       else return isLinkable() && !isHidden() && !isReference(); }
     bool isLinkable() const override {
       if (m_primaryInterface) return m_primaryInterface->isLinkable();
       else return hasDocumentation(); }
-    QCString qualifiedName() const override;
+    DString qualifiedName() const override;
     void writeSummaryLinks(OutputList &ol) const override;
     void writePageNavigation(OutputList &ol) const override;
 
     // --- ModuleDef
     Type moduleType() const override { return m_type; }
-    QCString partitionName() const override { return m_partitionName; }
+    DString partitionName() const override { return m_partitionName; }
     void writeDocumentation(OutputList &ol) override;
-    bool isPrimaryInterface() const override { return m_type==Type::Interface && m_partitionName.isEmpty(); }
+    bool isPrimaryInterface() const override { return m_type==Type::Interface && m_partitionName.empty(); }
     MemberList *getMemberList(MemberListType lt) const override;
     const MemberLists &getMemberLists() const override { return m_memberLists; }
     const MemberGroupList &getMemberGroups() const override { return m_memberGroups; }
@@ -87,24 +87,24 @@ class ModuleDefImpl : public DefinitionMixin<ModuleDef>
     void writeTagFile(TextStream &t) const override;
     FileList getUsedFiles() const override;
 
-    void writeExports(OutputList &ol,const QCString &title);
-    void writeClassDeclarations(OutputList &ol,const QCString &title);
-    void writeConcepts(OutputList &ol,const QCString &title);
-    void writeFiles(OutputList &ol,const QCString &title);
+    void writeExports(OutputList &ol,const DString &title);
+    void writeClassDeclarations(OutputList &ol,const DString &title);
+    void writeConcepts(OutputList &ol,const DString &title);
+    void writeFiles(OutputList &ol,const DString &title);
     void startMemberDeclarations(OutputList &ol);
     void endMemberDeclarations(OutputList &ol);
     void startMemberDocumentation(OutputList &ol);
     void endMemberDocumentation(OutputList &ol);
-    void writeDetailedDescription(OutputList &ol,const QCString &title);
+    void writeDetailedDescription(OutputList &ol,const DString &title);
     void writeBriefDescription(OutputList &ol);
     void writeMemberGroups(OutputList &ol);
-    void writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title);
-    void writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title);
+    void writeMemberDeclarations(OutputList &ol,MemberListType lt,const DString &title);
+    void writeMemberDocumentation(OutputList &ol,MemberListType lt,const DString &title);
     void writeAuthorSection(OutputList &ol);
-    void writeDeclarationLink(OutputList &ol,bool &found,const QCString &header,bool localNames) const;
+    void writeDeclarationLink(OutputList &ol,bool &found,const DString &header,bool localNames) const;
 
-    void addHeader(int line,const QCString &headerName,bool isSystem);
-    void addImport(int line,const QCString &moduleName,const QCString &partitionName,bool isExported);
+    void addHeader(int line,const DString &headerName,bool isSystem);
+    void addImport(int line,const DString &moduleName,const DString &partitionName,bool isExported);
     void addClassToModule(const Entry *root,ClassDef *cd);
     void addConceptToModule(const Entry *root,ConceptDef *cd);
     void addMemberToModule(const Entry *root,MemberDef *md);
@@ -113,21 +113,21 @@ class ModuleDefImpl : public DefinitionMixin<ModuleDef>
     void setPrimaryInterface(const ModuleDef *mod);
     void setFileDef(FileDef *fd);
     void addMemberToList(MemberListType lt,MemberDef *md);
-    void addExportedModule(const QCString &moduleName,const ImportInfo &info);
+    void addExportedModule(const DString &moduleName,const ImportInfo &info);
     void addListReferences();
+    void addRequirementReferences();
     void addMembersToMemberGroup();
     void distributeMemberGroupDocumentation();
     void findSectionsInDocumentation();
     void sortMemberLists();
 
-    //ModuleMap &partitions() { return m_partitions; }
     void mergeSymbolsFrom(ModuleDefImpl *other);
     bool hasDetailedDescription() const;
     void countMembers();
 
   private:
     Type                  m_type;
-    QCString              m_partitionName;
+    DString              m_partitionName;
     ImportInfoMap         m_imports;
     ImportInfoMap         m_exportedModules;
     ClassLinkedRefMap     m_classes;
@@ -140,15 +140,15 @@ class ModuleDefImpl : public DefinitionMixin<ModuleDef>
     FileDef              *m_fileDef = nullptr;  // file holding this module
 };
 
-QCString ModuleDefImpl::getOutputFileBase() const
+DString ModuleDefImpl::getOutputFileBase() const
 {
   return convertNameToFile("module_" + name());
 }
 
-QCString ModuleDefImpl::qualifiedName() const
+DString ModuleDefImpl::qualifiedName() const
 {
-  QCString result=name();
-  if (!m_partitionName.isEmpty())
+  DString result=name();
+  if (!m_partitionName.empty())
   {
     result+=":"+m_partitionName;
   }
@@ -182,18 +182,18 @@ void ModuleDefImpl::setFileDef(FileDef *fd)
   m_fileDef = fd;
 }
 
-void ModuleDefImpl::addHeader(int line,const QCString &headerName,bool isSystem)
+void ModuleDefImpl::addHeader(int line,const DString &headerName,bool isSystem)
 {
   AUTO_TRACE("name={}:line={},header={},isSystem={}",name(),line,headerName,isSystem);
 }
 
-void ModuleDefImpl::addImport(int line,const QCString &moduleName,const QCString &partitionName,bool isExported)
+void ModuleDefImpl::addImport(int line,const DString &moduleName,const DString &partitionName,bool isExported)
 {
   AUTO_TRACE("name={}:line={},module={},partition={}",name(),line,moduleName,partitionName);
   m_imports[getDefFileName().str()+":"+std::to_string(line)].push_back(ImportInfo(this,moduleName,line,partitionName,isExported));
 }
 
-void ModuleDefImpl::addExportedModule(const QCString &moduleName,const ImportInfo &info)
+void ModuleDefImpl::addExportedModule(const DString &moduleName,const ImportInfo &info)
 {
   AUTO_TRACE("name={}:moduleName={},import={}",name(),moduleName,info.importName);
   m_exportedModules[moduleName.str()].push_back(info);
@@ -201,7 +201,7 @@ void ModuleDefImpl::addExportedModule(const QCString &moduleName,const ImportInf
 
 void ModuleDefImpl::addClassToModule(const Entry *root,ClassDef *cd)
 {
-  QCString className = cd->qualifiedName();
+  DString className = cd->qualifiedName();
   AUTO_TRACE("{}:{} class {} of module {} exported={}",
       root->fileName,root->startLine, className, name(), root->exported);
   bool isExported = m_classes.find(className)!=nullptr;
@@ -218,7 +218,7 @@ void ModuleDefImpl::addClassToModule(const Entry *root,ClassDef *cd)
 
 void ModuleDefImpl::addConceptToModule(const Entry *root,ConceptDef *cd)
 {
-  QCString conceptName = cd->qualifiedName();
+  DString conceptName = cd->qualifiedName();
   AUTO_TRACE("{}:{} concept {} of module {} exported={}",
      root->fileName,root->startLine,
      cd->qualifiedName(),name(),
@@ -344,7 +344,7 @@ void ModuleDefImpl::writeDocumentation(OutputList &ol)
   ol.pushGeneratorState();
   AUTO_TRACE("%s file=%s",name(),getDefFileName());
   SrcLangExt lang = getLanguage();
-  QCString pageTitle;
+  DString pageTitle;
   if (Config_getBool(HIDE_COMPOUND_REFERENCE))
   {
     pageTitle = displayName();
@@ -353,7 +353,7 @@ void ModuleDefImpl::writeDocumentation(OutputList &ol)
   {
     pageTitle = theTranslator->trModuleReference(displayName());
   }
-  startFile(ol,getOutputFileBase(),false,name(),pageTitle,HighlightedItem::ModuleVisible,false,QCString());
+  startFile(ol,getOutputFileBase(),false,name(),pageTitle,HighlightedItem::ModuleVisible,false,DString());
 
   // ---- title part
   ol.startHeaderSection();
@@ -500,14 +500,14 @@ void ModuleDefImpl::writeDocumentation(OutputList &ol)
   ol.popGeneratorState();
 }
 
-void ModuleDefImpl::writeClassDeclarations(OutputList &ol,const QCString &title)
+void ModuleDefImpl::writeClassDeclarations(OutputList &ol,const DString &title)
 {
-  m_classes.writeDeclaration(ol,nullptr,title,FALSE);
+  m_classes.writeDeclaration(ol,nullptr,title,false);
 }
 
-void ModuleDefImpl::writeConcepts(OutputList &ol,const QCString &title)
+void ModuleDefImpl::writeConcepts(OutputList &ol,const DString &title)
 {
-  m_concepts.writeDeclaration(ol,title,FALSE);
+  m_concepts.writeDeclaration(ol,title,false);
 }
 
 void ModuleDefImpl::startMemberDeclarations(OutputList &ol)
@@ -525,7 +525,7 @@ void ModuleDefImpl::startMemberDocumentation(OutputList &ol)
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
   {
     ol.disable(OutputType::Html);
-    Doxygen::suppressDocWarnings = TRUE;
+    Doxygen::suppressDocWarnings = true;
   }
 }
 
@@ -534,11 +534,11 @@ void ModuleDefImpl::endMemberDocumentation(OutputList &ol)
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
   {
     ol.enable(OutputType::Html);
-    Doxygen::suppressDocWarnings = FALSE;
+    Doxygen::suppressDocWarnings = false;
   }
 }
 
-void ModuleDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
+void ModuleDefImpl::writeDetailedDescription(OutputList &ol,const DString &title)
 {
   if (hasDetailedDescription())
   {
@@ -548,14 +548,14 @@ void ModuleDefImpl::writeDetailedDescription(OutputList &ol,const QCString &titl
     ol.popGeneratorState();
     ol.pushGeneratorState();
       ol.disableAllBut(OutputType::Html);
-      ol.writeAnchor(QCString(),"details");
+      ol.writeAnchor(DString(),"details");
     ol.popGeneratorState();
     ol.startGroupHeader("details");
     ol.parseText(title);
     ol.endGroupHeader();
 
     ol.startTextBlock();
-    if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF))
+    if (!briefDescription().empty() && Config_getBool(REPEAT_BRIEF))
     {
       ol.generateDoc(briefFile(),
                      briefLine(),
@@ -564,8 +564,8 @@ void ModuleDefImpl::writeDetailedDescription(OutputList &ol,const QCString &titl
                      briefDescription(),
                      DocOptions());
     }
-    if (!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF) &&
-        !documentation().isEmpty())
+    if (!briefDescription().empty() && Config_getBool(REPEAT_BRIEF) &&
+        !documentation().empty())
     {
       ol.pushGeneratorState();
         ol.disable(OutputType::Man);
@@ -576,7 +576,7 @@ void ModuleDefImpl::writeDetailedDescription(OutputList &ol,const QCString &titl
         ol.writeString("\n\n");
       ol.popGeneratorState();
     }
-    if (!documentation().isEmpty())
+    if (!documentation().empty())
     {
       ol.generateDoc(docFile(),
                      docLine(),
@@ -605,7 +605,7 @@ void ModuleDefImpl::writeBriefDescription(OutputList &ol)
                                      .setIndexWords(true)
                                      .setSingleLine(true))
                 };
-    if (!ast->isEmpty())
+    if (!ast->empty())
     {
       ol.startParagraph();
       ol.pushGeneratorState();
@@ -621,7 +621,7 @@ void ModuleDefImpl::writeBriefDescription(OutputList &ol)
       if (hasDetailedDescription())
       {
         ol.disableAllBut(OutputType::Html);
-        ol.startTextLink(QCString(),"details");
+        ol.startTextLink(DString(),"details");
         ol.parseText(theTranslator->trMore());
         ol.endTextLink();
       }
@@ -640,13 +640,13 @@ void ModuleDefImpl::writeMemberGroups(OutputList &ol)
   }
 }
 
-void ModuleDefImpl::writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title)
+void ModuleDefImpl::writeMemberDeclarations(OutputList &ol,MemberListType lt,const DString &title)
 {
   MemberList * ml = getMemberList(lt);
-  if (ml) ml->writeDeclarations(ol,nullptr,nullptr,nullptr,nullptr,this,title,QCString());
+  if (ml) ml->writeDeclarations(ol,nullptr,nullptr,nullptr,nullptr,this,title,DString());
 }
 
-void ModuleDefImpl::writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title)
+void ModuleDefImpl::writeMemberDocumentation(OutputList &ol,MemberListType lt,const DString &title)
 {
   MemberList * ml = getMemberList(lt);
   if (ml) ml->writeDocumentation(ol,name(),this,title,ml->listType().toLabel());
@@ -658,7 +658,7 @@ void ModuleDefImpl::writeAuthorSection(OutputList &ol)
   ol.pushGeneratorState();
   ol.disableAllBut(OutputType::Man);
   ol.startGroupHeader();
-  ol.parseText(theTranslator->trAuthor(TRUE,TRUE));
+  ol.parseText(theTranslator->trAuthor(true,true));
   ol.endGroupHeader();
   ol.parseText(theTranslator->trGeneratedAutomatically(Config_getString(PROJECT_NAME)));
   ol.popGeneratorState();
@@ -667,7 +667,7 @@ void ModuleDefImpl::writeAuthorSection(OutputList &ol)
 bool ModuleDefImpl::hasDetailedDescription() const
 {
   bool repeatBrief = Config_getBool(REPEAT_BRIEF);
-  return (!briefDescription().isEmpty() && repeatBrief) || !documentation().isEmpty();
+  return (!briefDescription().empty() && repeatBrief) || !documentation().empty();
 }
 
 void ModuleDefImpl::countMembers()
@@ -686,16 +686,15 @@ void ModuleDefImpl::countMembers()
 
 void ModuleDefImpl::addListReferences()
 {
-  const RefItemVector &xrefItems = xrefListItems();
-  addRefItem(xrefItems,
-      qualifiedName(),
-      getLanguage()==SrcLangExt::Fortran ?
-      theTranslator->trModule(TRUE,TRUE) :
-      theTranslator->trNamespace(TRUE,TRUE),
-      getOutputFileBase(),displayName(),
-      QCString(),
-      this
-      );
+  addRefItem(xrefListItems(),
+             qualifiedName(),
+             getLanguage()==SrcLangExt::Fortran ?
+             theTranslator->trModule(true,true) :
+             theTranslator->trNamespace(true,true),
+             getOutputFileBase(),displayName(),
+             DString(),
+             this
+            );
   for (const auto &mg : m_memberGroups)
   {
     mg->addListReferences(this);
@@ -705,6 +704,22 @@ void ModuleDefImpl::addListReferences()
     if (ml->listType().isDocumentation())
     {
       ml->addListReferences(this);
+    }
+  }
+}
+
+void ModuleDefImpl::addRequirementReferences()
+{
+  RequirementManager::instance().addRequirementRefsForSymbol(this);
+  for (const auto &mg : m_memberGroups)
+  {
+    mg->addRequirementReferences(this);
+  }
+  for (auto &ml : m_memberLists)
+  {
+    if (ml->listType().isDocumentation())
+    {
+      ml->addRequirementReferences(this);
     }
   }
 }
@@ -760,7 +775,7 @@ void ModuleDefImpl::sortMemberLists()
 {
   for (auto &ml : m_memberLists)
   {
-    if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(FALSE); }
+    if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(false); }
   }
 
   if (Config_getBool(SORT_BRIEF_DOCS))
@@ -768,16 +783,16 @@ void ModuleDefImpl::sortMemberLists()
     auto classComp = [](const ClassLinkedRefMap::Ptr &c1,const ClassLinkedRefMap::Ptr &c2)
     {
       return Config_getBool(SORT_BY_SCOPE_NAME)          ?
-        qstricmp_sort(c1->name(), c2->name())<0          :
-        qstricmp_sort(c1->className(), c2->className())<0;
+        dstricmp_sort(c1->name(), c2->name())<0          :
+        dstricmp_sort(c1->className(), c2->className())<0;
     };
     std::stable_sort(m_classes.begin(), m_classes.end(), classComp);
 
     auto conceptComp = [](const ConceptLinkedRefMap::Ptr &c1,const ConceptLinkedRefMap::Ptr &c2)
     {
       return Config_getBool(SORT_BY_SCOPE_NAME)                   ?
-        qstricmp_sort(c1->qualifiedName(), c2->qualifiedName())<0 :
-        qstricmp_sort(c1->name(), c2->name())<0;
+        dstricmp_sort(c1->qualifiedName(), c2->qualifiedName())<0 :
+        dstricmp_sort(c1->name(), c2->name())<0;
     };
     std::stable_sort(m_concepts.begin(), m_concepts.end(), conceptComp);
   }
@@ -786,24 +801,24 @@ void ModuleDefImpl::sortMemberLists()
   {
     FileDef *f1 = m1->getFileDef();
     FileDef *f2 = m2->getFileDef();
-    QCString fn1 = f1 ? f1->name() : m1->name();
-    QCString fn2 = f2 ? f2->name() : m2->name();
+    DString fn1 = f1 ? f1->name() : m1->name();
+    DString fn2 = f2 ? f2->name() : m2->name();
     static auto typeRank = [](const ModuleDef *m) -> int
     {
       if (m->moduleType()==ModuleDef::Type::Interface)
       {
-        if (m->partitionName().isEmpty()) return 0;  // primary interface unit
+        if (m->partitionName().empty()) return 0;  // primary interface unit
         return 1;                                    // partition interface unit
       }
       else
       {
-        if (!m->partitionName().isEmpty()) return 2;  // partition implementation unit
+        if (!m->partitionName().empty()) return 2;  // partition implementation unit
         return 3;                                    // implementation unit
       }
     };
     auto tr1 = typeRank(m1);
     auto tr2 = typeRank(m2);
-    int diff = qstricmp_sort(fn1,fn2);
+    int diff = dstricmp_sort(fn1,fn2);
     return tr1<tr2 || (tr1==tr2 && diff<0);
   };
 
@@ -814,28 +829,28 @@ void ModuleDefImpl::writeSummaryLinks(OutputList &ol) const
 {
   ol.pushGeneratorState();
   ol.disableAllBut(OutputType::Html);
-  bool first=TRUE;
+  bool first=true;
   SrcLangExt lang=getLanguage();
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Module))
   {
     const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
     if (lde->kind()==LayoutDocEntry::ModuleClasses && m_classes.declVisible() && ls)
     {
-      QCString label = "classes";
-      ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
-      first=FALSE;
+      DString label = "classes";
+      ol.writeSummaryLink(DString(),label,ls->title(lang),first);
+      first=false;
     }
     else if (lde->kind()==LayoutDocEntry::ModuleConcepts && m_concepts.declVisible() && ls)
     {
-      QCString label = "concepts";
-      ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
-      first=FALSE;
+      DString label = "concepts";
+      ol.writeSummaryLink(DString(),label,ls->title(lang),first);
+      first=false;
     }
     else if (lde->kind()==LayoutDocEntry::ModuleUsedFiles && ls)
     {
-      QCString label = "files";
-      ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
-      first=FALSE;
+      DString label = "files";
+      ol.writeSummaryLink(DString(),label,ls->title(lang),first);
+      first=false;
     }
     else if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
@@ -845,8 +860,8 @@ void ModuleDefImpl::writeSummaryLinks(OutputList &ol) const
         MemberList * ml = getMemberList(lmd->type);
         if (ml && ml->declVisible())
         {
-          ol.writeSummaryLink(QCString(),ml->listType().toLabel(),lmd->title(lang),first);
-          first=FALSE;
+          ol.writeSummaryLink(DString(),ml->listType().toLabel(),lmd->title(lang),first);
+          first=false;
         }
       }
     }
@@ -863,14 +878,14 @@ void ModuleDefImpl::writePageNavigation(OutputList &ol) const
   ol.writePageOutline();
 }
 
-void ModuleDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCString &header,bool localNames) const
+void ModuleDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const DString &header,bool localNames) const
 {
   if (isLinkable())
   {
     if (!found) // first module
     {
       ol.startMemberHeader("modules");
-      if (!header.isEmpty())
+      if (!header.empty())
       {
         ol.parseText(header);
       }
@@ -880,12 +895,12 @@ void ModuleDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStri
       }
       ol.endMemberHeader();
       ol.startMemberList();
-      found=TRUE;
+      found=true;
     }
     ol.startMemberDeclaration();
-    QCString cname = displayName(!localNames);
-    QCString anc = anchor();
-    if (anc.isEmpty()) anc=cname; else anc.prepend(cname+"_");
+    DString cname = displayName(!localNames);
+    DString anc = anchor();
+    if (anc.empty()) anc=cname; else anc.prepend(cname+"_");
     ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
     ol.writeString("module ");
     ol.insertMemberAlign();
@@ -905,7 +920,7 @@ void ModuleDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStri
     }
     ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
     // add the brief description if available
-    if (!briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
+    if (!briefDescription().empty() && Config_getBool(BRIEF_MEMBER_DESC))
     {
       auto parser { createDocParser() };
       auto ast    { validatingParseDoc(*parser.get(),
@@ -917,19 +932,19 @@ void ModuleDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStri
                                        DocOptions()
                                        .setSingleLine(true))
                    };
-      if (!ast->isEmpty())
+      if (!ast->empty())
       {
         ol.startMemberDescription(anchor());
         ol.writeDoc(ast.get(),this,nullptr);
         ol.endMemberDescription();
       }
     }
-    ol.endMemberDeclaration(anchor(),QCString());
+    ol.endMemberDeclaration(anchor(),DString());
   }
 }
 
 
-void ModuleDefImpl::writeExports(OutputList &ol,const QCString &title)
+void ModuleDefImpl::writeExports(OutputList &ol,const DString &title)
 {
   AUTO_TRACE("name={} count={}",name(),m_exportedModules.size());
   if (!m_exportedModules.empty())
@@ -945,11 +960,11 @@ void ModuleDefImpl::writeExports(OutputList &ol,const QCString &title)
         ModuleDef *mod = ModuleManager::instance().getPrimaryInterface(importInfo.importName);
         ol.startMemberDeclaration();
         ol.startMemberItem(importInfo.importName,OutputGenerator::MemberItemType::Normal);
-        ol.docify(theTranslator->trModule(FALSE,TRUE)+" ");
+        ol.docify(theTranslator->trModule(false,true)+" ");
         ol.insertMemberAlign();
         if (mod && mod->isLinkable())
         {
-          ol.writeObjectLink(mod->getReference(),mod->getOutputFileBase(),QCString(),mod->displayName());
+          ol.writeObjectLink(mod->getReference(),mod->getOutputFileBase(),DString(),mod->displayName());
         }
         else
         {
@@ -958,7 +973,7 @@ void ModuleDefImpl::writeExports(OutputList &ol,const QCString &title)
           ol.endBold();
         }
         ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
-        if (mod && !mod->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
+        if (mod && !mod->briefDescription().empty() && Config_getBool(BRIEF_MEMBER_DESC))
         {
           ol.startMemberDescription(mod->getOutputFileBase());
           ol.generateDoc(briefFile(),
@@ -970,14 +985,14 @@ void ModuleDefImpl::writeExports(OutputList &ol,const QCString &title)
                          .setSingleLine(true));
           ol.endMemberDescription();
         }
-        ol.endMemberDeclaration(QCString(),QCString());
+        ol.endMemberDeclaration(DString(),DString());
       }
     }
     ol.endMemberList();
   }
 }
 
-void ModuleDefImpl::writeFiles(OutputList &ol,const QCString &title)
+void ModuleDefImpl::writeFiles(OutputList &ol,const DString &title)
 {
   AUTO_TRACE("{} count={}",name(),m_contributing.size());
   if (!m_contributing.empty())
@@ -992,20 +1007,20 @@ void ModuleDefImpl::writeFiles(OutputList &ol,const QCString &title)
       if (fd)
       {
         ol.startMemberDeclaration();
-        QCString fname = fd->displayName();
-        QCString anc = fd->anchor();
-        if (anc.isEmpty()) anc=fname; else anc.prepend(fname+"_");
+        DString fname = fd->displayName();
+        DString anc = fd->anchor();
+        if (anc.empty()) anc=fname; else anc.prepend(fname+"_");
         ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
-        ol.docify(theTranslator->trFile(FALSE,TRUE)+" ");
+        ol.docify(theTranslator->trFile(false,true)+" ");
         ol.insertMemberAlign();
-        QCString path=fd->getPath();
+        DString path=fd->getPath();
         if (Config_getBool(FULL_PATH_NAMES))
         {
           ol.docify(stripFromPath(path));
         }
         if (fd->isLinkable())
         {
-          ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),QCString(),fname);
+          ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),DString(),fname);
         }
         else
         {
@@ -1014,7 +1029,7 @@ void ModuleDefImpl::writeFiles(OutputList &ol,const QCString &title)
           ol.endBold();
         }
         ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
-        if (!fd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
+        if (!fd->briefDescription().empty() && Config_getBool(BRIEF_MEMBER_DESC))
         {
           ol.startMemberDescription(fd->getOutputFileBase());
           ol.generateDoc(briefFile(),
@@ -1026,7 +1041,7 @@ void ModuleDefImpl::writeFiles(OutputList &ol,const QCString &title)
                          .setSingleLine(true));
           ol.endMemberDescription();
         }
-        ol.endMemberDeclaration(QCString(),QCString());
+        ol.endMemberDeclaration(DString(),DString());
       }
     }
     ol.endMemberList();
@@ -1097,7 +1112,7 @@ void ModuleDefImpl::writeTagFile(TextStream &tagFile) const
   tagFile << "  <compound kind=\"module\">\n";
   tagFile << "    <name>" << convertToXML(name()) << "</name>\n";
   const FileDef *fd = getFileDef();
-  QCString fn = fd ? fd->getOutputFileBase() : getOutputFileBase();
+  DString fn = fd ? fd->getOutputFileBase() : getOutputFileBase();
   addHtmlExtensionIfMissing(fn);
   tagFile << "    <filename>" << convertToXML(fn) << "</filename>\n";
 #if 0 // at the moment we do not export the members of a module to a tag file.
@@ -1173,8 +1188,8 @@ void ModuleDefImpl::writeTagFile(TextStream &tagFile) const
     }
   }
 #endif
-  QCString idStr = id();
-  if (!idStr.isEmpty())
+  DString idStr = id();
+  if (!idStr.empty())
   {
     tagFile << "    <clangid>" << convertToXML(idStr) << "</clangid>\n";
   }
@@ -1221,9 +1236,9 @@ bool ModuleLinkedRefMap::declVisible() const
   return false;
 }
 
-void ModuleLinkedRefMap::writeDeclaration(OutputList &ol,const QCString &header,bool localNames) const
+void ModuleLinkedRefMap::writeDeclaration(OutputList &ol,const DString &header,bool localNames) const
 {
-  bool found=FALSE;
+  bool found=false;
   for (const auto &mod : *this)
   {
     toModuleDefImpl(mod)->writeDeclarationLink(ol,found,header,localNames);
@@ -1252,8 +1267,8 @@ ModuleManager::ModuleManager() : p(std::make_unique<Private>())
 {
 }
 
-void ModuleManager::createModuleDef(const QCString &fileName,int line,int column,bool exported,
-                                    const QCString &moduleName,const QCString &partitionName)
+void ModuleManager::createModuleDef(const DString &fileName,int line,int column,bool exported,
+                                    const DString &moduleName,const DString &partitionName)
 {
   AUTO_TRACE("{}:{}: Found module name='{}' partition='{}' exported='{}'",
       fileName,line,moduleName,partitionName,exported);
@@ -1283,7 +1298,7 @@ void ModuleManager::clear()
   p->moduleFileMap.clear();
 }
 
-void ModuleManager::addHeader(const QCString &moduleFile,int line,const QCString &headerName,bool isSystem)
+void ModuleManager::addHeader(const DString &moduleFile,int line,const DString &headerName,bool isSystem)
 {
   AUTO_TRACE("{}:{} headerName={} isSystem={}",moduleFile,line,headerName,isSystem);
   std::lock_guard lock(p->mutex);
@@ -1299,8 +1314,8 @@ void ModuleManager::addHeader(const QCString &moduleFile,int line,const QCString
   p->headers.emplace_back(moduleFile,headerName,isSystem);
 }
 
-void ModuleManager::addImport(const QCString &moduleFile,int line,const QCString &importName,
-                              bool isExported,const QCString &partitionName)
+void ModuleManager::addImport(const DString &moduleFile,int line,const DString &importName,
+                              bool isExported,const DString &partitionName)
 {
   AUTO_TRACE("{}:{} importName={},isExported={},partitionName={}",
       moduleFile,line,importName,isExported,partitionName);
@@ -1309,7 +1324,7 @@ void ModuleManager::addImport(const QCString &moduleFile,int line,const QCString
   if (mod) // import inside a module
   {
     AUTO_TRACE_ADD("in module");
-    toModuleDefImpl(mod)->addImport(line,importName.isEmpty()?mod->name():importName,partitionName,isExported);
+    toModuleDefImpl(mod)->addImport(line,importName.empty()?mod->name():importName,partitionName,isExported);
   }
   else // import outside of a module
   {
@@ -1354,7 +1369,7 @@ void ModuleManager::addMemberToModule(const Entry *root,MemberDef *md)
   }
 }
 
-void ModuleManager::addTagInfo(const QCString &fileName,const QCString &tagFile,const QCString &clangId)
+void ModuleManager::addTagInfo(const DString &fileName,const DString &tagFile,const DString &clangId)
 {
   std::lock_guard lock(p->mutex);
   auto mod = p->moduleFileMap.find(fileName);
@@ -1375,7 +1390,7 @@ void ModuleManager::resolvePartitionsRecursively(ModuleDef *intfMod, ModuleDef *
     {
       AUTO_TRACE_ADD("partitionFileName={} importName={} partitionName={}",
           partitionFileName,importInfo.importName,importInfo.partitionName);
-      if (importInfo.importName==intfMod->name() && !importInfo.partitionName.isEmpty() &&
+      if (importInfo.importName==intfMod->name() && !importInfo.partitionName.empty() &&
           importInfo.exported) // that is an exported partition of this module
       {
         auto it = p->moduleNameMap.find(importInfo.importName.str());
@@ -1413,7 +1428,7 @@ void ModuleManager::resolvePartitions()
   AUTO_TRACE();
   for (auto &mod : p->moduleFileMap) // foreach module
   {
-    if (mod->moduleType()==ModuleDef::Type::Interface && mod->partitionName().isEmpty())
+    if (mod->moduleType()==ModuleDef::Type::Interface && mod->partitionName().empty())
     { // that is a primary interface
       resolvePartitionsRecursively(mod.get(),mod.get());
     }
@@ -1488,7 +1503,7 @@ void ModuleManager::resolveImports()
     AUTO_TRACE_ADD("header name={} fd={}",headerInfo.fileName,(void*)fd);
     if (fd)
     {
-      QCString resolvedHeader = determineAbsoluteIncludeName(headerInfo.fileName,headerInfo.headerName);
+      DString resolvedHeader = determineAbsoluteIncludeName(headerInfo.fileName,headerInfo.headerName);
       FileDef *importFd = findFileDef(Doxygen::inputNameLinkedMap,resolvedHeader,ambig);
       fd->addIncludeDependency(importFd, headerInfo.headerName,
                                headerInfo.isSystem ? IncludeKind::ImportSystem : IncludeKind::ImportLocal);
@@ -1581,8 +1596,8 @@ ModuleLinkedMap &ModuleManager::modules()
 void ModuleManager::addDocs(const Entry *root)
 {
   AUTO_TRACE("file={} module={}",root->fileName,root->name);
-  if (root->doc.isEmpty() && root->brief.isEmpty()) return;
-  if (root->name.find(':')!=-1)
+  if (root->doc.empty() && root->brief.empty()) return;
+  if (root->name.find(':')!=DString::npos)
   {
     warn(root->fileName,root->startLine,"Ignoring documentation for module partition {}. Please place documentation at the primary module name",
         root->name);
@@ -1601,6 +1616,7 @@ void ModuleManager::addDocs(const Entry *root)
         mod->setHidden(root->hidden);
         mod->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
         mod->setRefItems(root->sli);
+        mod->setRequirementReferences(root->rqli);
         //mod->addSectionsToDefinition(root->anchors);
         addModuleToGroups(root,mod);
       }
@@ -1616,7 +1632,7 @@ void ModuleManager::addDocs(const Entry *root)
   }
 }
 
-ModuleDef *ModuleManager::getPrimaryInterface(const QCString &moduleName) const
+ModuleDef *ModuleManager::getPrimaryInterface(const DString &moduleName) const
 {
   auto it = p->moduleNameMap.find(moduleName.str());
   if (it != p->moduleNameMap.end())
@@ -1637,6 +1653,14 @@ void ModuleManager::addListReferences()
   for (const auto &mod : p->moduleFileMap) // foreach module
   {
     if (mod->isPrimaryInterface()) toModuleDefImpl(mod)->addListReferences();
+  }
+}
+
+void ModuleManager::addRequirementReferences()
+{
+  for (const auto &mod : p->moduleFileMap) // foreach module
+  {
+    if (mod->isPrimaryInterface()) toModuleDefImpl(mod)->addRequirementReferences();
   }
 }
 

@@ -50,20 +50,20 @@ using FTVNodes       = std::vector<FTVNodePtr>;
 
 struct FTVNode
 {
-  FTVNode(bool dir,const QCString &r,const QCString &f,const QCString &a,
-          const QCString &n,bool sepIndex,bool navIndex,const Definition *df,
-          const QCString &nameAsHtml_)
-    : isLast(TRUE), isDir(dir), ref(r), file(f), anchor(a), name(n), nameAsHtml(nameAsHtml_),
+  FTVNode(bool dir,const DString &r,const DString &f,const DString &a,
+          const DString &n,bool sepIndex,bool navIndex,const Definition *df,
+          const DString &nameAsHtml_)
+    : isLast(true), isDir(dir), ref(r), file(f), anchor(a), name(n), nameAsHtml(nameAsHtml_),
       separateIndex(sepIndex), addToNavIndex(navIndex), def(df) {}
   int computeTreeDepth(int level) const;
   int numNodesAtLevel(int level,int maxLevel) const;
   bool isLast;
   bool isDir;
-  QCString ref;
-  QCString file;
-  QCString anchor;
-  QCString name;
-  QCString nameAsHtml;
+  DString ref;
+  DString file;
+  DString anchor;
+  DString name;
+  DString nameAsHtml;
   int index = 0;
   FTVNodes children;
   FTVNodeWeakPtr parent;
@@ -173,7 +173,7 @@ void FTVHelp::decContentsDepth()
 }
 
 /*! Add a list item to the contents file.
- *  \param isDir TRUE if the item is a directory, FALSE if it is a text
+ *  \param isDir true if the item is a directory, false if it is a text
  *  \param name the name of the item.
  *  \param nameAsHtml the name of the item in HTML format.
  *  \param ref  the URL of to the item.
@@ -184,21 +184,21 @@ void FTVHelp::decContentsDepth()
  *  \param def Definition corresponding to this entry
  */
 void FTVHelp::addContentsItem(bool isDir,
-                              const QCString &name,
-                              const QCString &ref,
-                              const QCString &file,
-                              const QCString &anchor,
+                              const DString &name,
+                              const DString &ref,
+                              const DString &file,
+                              const DString &anchor,
                               bool separateIndex,
                               bool addToNavIndex,
                               const Definition *def,
-                              const QCString &nameAsHtml
+                              const DString &nameAsHtml
                               )
 {
   //printf("%p: p->indent=%d addContentsItem(isDir=%d,name=%s,ref=%s,file=%s,anchor=%s,nameAsHtml=%s)\n",(void*)this,p->indent,isDir,qPrint(name),qPrint(ref),qPrint(file),qPrint(anchor),qPrint(nameAsHtml));
   auto &nl = p->indentNodes[p->indent];
   if (!nl.empty())
   {
-    nl.back()->isLast=FALSE;
+    nl.back()->isLast=false;
   }
   auto newNode = std::make_shared<FTVNode>(isDir,ref,file,anchor,name,separateIndex,addToNavIndex,def,nameAsHtml);
   nl.push_back(newNode);
@@ -213,15 +213,15 @@ void FTVHelp::addContentsItem(bool isDir,
   }
 }
 
-static QCString node2URL(const FTVNodePtr &n,bool overruleFile=FALSE,bool srcLink=FALSE)
+static DString node2URL(const FTVNodePtr &n,bool overruleFile=false,bool srcLink=false)
 {
-  QCString url = n->file;
-  if (!url.isEmpty() && url.at(0)=='!')  // relative URL
+  DString url = n->file;
+  if (!url.empty() && url.at(0)=='!')  // relative URL
   {
     // remove leading !
     url = url.mid(1);
   }
-  else if (!url.isEmpty() && url.at(0)=='^') // absolute URL
+  else if (!url.empty() && url.at(0)=='^') // absolute URL
   {
     // skip, keep ^ in the output
   }
@@ -240,42 +240,41 @@ static QCString node2URL(const FTVNodePtr &n,bool overruleFile=FALSE,bool srcLin
       }
     }
     addHtmlExtensionIfMissing(url);
-    if (!n->anchor.isEmpty()) url+="#"+n->anchor;
+    if (!n->anchor.empty()) url+="#"+n->anchor;
   }
   return url;
 }
 
-static QCString generateIndentLabel(const FTVNodePtr &n,int level)
+static DString generateIndentLabel(const FTVNodePtr &n,int level)
 {
-  QCString result;
+  DString result;
   auto parent = n->parent.lock();
   if (parent)
   {
     result=generateIndentLabel(parent,level+1);
   }
-  result+=QCString().setNum(n->index)+"_";
+  result+=DString().setNum(n->index)+"_";
   return result;
 }
 
 static void generateIndent(TextStream &t, const FTVNodePtr &n,bool opened)
 {
+  bool dynamicSections = Config_getBool(HTML_DYNAMIC_SECTIONS);
   int indent=0;
   auto parent = n->parent.lock();
   while (parent) { indent++; parent=parent->parent.lock(); }
-  if (n->isDir)
+  if (n->isDir && dynamicSections)
   {
     const char *ARROW_DOWN = "<span class=\"arrowhead opened\"></span>";
     const char *ARROW_RIGHT = "<span class=\"arrowhead closed\"></span>";
-    QCString dir = opened ? ARROW_DOWN : ARROW_RIGHT;
-    t << "<span style=\"width:" << (indent*16) << "px;display:inline-block;\">&#160;</span>"
-      << "<span id=\"arr_" << generateIndentLabel(n,0) << "\" class=\"arrow\" ";
-    t << "onclick=\"dynsection.toggleFolder('" << generateIndentLabel(n,0) << "')\"";
-    t << ">" << dir
+    DString dir = opened ? ARROW_DOWN : ARROW_RIGHT;
+    for(int i=0;i<indent;i++) t << "<span class=\"spacer\">&#160;</span>";
+    t << "<span id=\"arr_" << generateIndentLabel(n,0) << "\" class=\"arrow\">" << dir
       << "</span>";
   }
   else
   {
-    t << "<span style=\"width:" << ((indent+1)*16) << "px;display:inline-block;\">&#160;</span>";
+    for(int i=0;i<=indent;i++) t << "<span class=\"spacer\">&#160;</span>";
   }
 }
 
@@ -283,20 +282,20 @@ void FTVHelp::Private::generateLink(TextStream &t,const FTVNodePtr &n)
 {
   //printf("FTVHelp::generateLink(ref=%s,file=%s,anchor=%s\n",
   //    qPrint(n->ref),qPrint(n->file),qPrint(n->anchor));
-  bool setTarget = FALSE;
-  bool nameAsHtml = !n->nameAsHtml.isEmpty();
-  QCString text = nameAsHtml ? n->nameAsHtml : convertToHtml(n->name);
-  if (n->file.isEmpty()) // no link
+  bool setTarget = false;
+  bool nameAsHtml = !n->nameAsHtml.empty();
+  DString text = nameAsHtml ? n->nameAsHtml : convertToHtml(n->name);
+  if (n->file.empty()) // no link
   {
     t << "<b>" << text << "</b>";
   }
   else // link into other frame
   {
-    if (!n->ref.isEmpty()) // link to entity imported via tag file
+    if (!n->ref.empty()) // link to entity imported via tag file
     {
       t << "<a class=\"elRef\" ";
-      QCString result = externalLinkTarget();
-      if (result != "") setTarget = TRUE;
+      DString result = externalLinkTarget();
+      if (result != "") setTarget = true;
       t << result;
     }
     else // local link
@@ -304,7 +303,7 @@ void FTVHelp::Private::generateLink(TextStream &t,const FTVNodePtr &n)
       t << "<a class=\"el\" ";
     }
     t << "href=\"";
-    t << externalRef("",n->ref,TRUE);
+    t << externalRef("",n->ref,true);
     t << node2URL(n);
     if (!setTarget)
     {
@@ -319,7 +318,7 @@ void FTVHelp::Private::generateLink(TextStream &t,const FTVNodePtr &n)
     }
     t << text;
     t << "</a>";
-    if (!n->ref.isEmpty())
+    if (!n->ref.empty())
     {
       t << "&#160;[external]";
     }
@@ -328,9 +327,9 @@ void FTVHelp::Private::generateLink(TextStream &t,const FTVNodePtr &n)
 
 static void generateBriefDoc(TextStream &t,const Definition *def)
 {
-  QCString brief = def->briefDescription(TRUE);
+  DString brief = def->briefDescription(true);
   //printf("*** %p: generateBriefDoc(%s)='%s'\n",def,qPrint(def->name()),qPrint(brief));
-  if (!brief.isEmpty())
+  if (!brief.empty())
   {
     auto parser { createDocParser() };
     auto ast    { validatingParseDoc(*parser.get(),
@@ -346,7 +345,7 @@ static void generateBriefDoc(TextStream &t,const Definition *def)
     const DocNodeAST *astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
     if (astImpl)
     {
-      QCString relPath = relativePathToRoot(def->getOutputFileBase());
+      DString relPath = relativePathToRoot(def->getOutputFileBase());
       OutputCodeList htmlList;
       htmlList.add<HtmlCodeGenerator>(&t,relPath);
       HtmlDocVisitor visitor(t,htmlList,def);
@@ -378,17 +377,20 @@ static char compoundIcon(const ClassDef *cd)
 
 void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,int maxLevel,int &index)
 {
+  bool dynamicSections = Config_getBool(HTML_DYNAMIC_SECTIONS);
   for (const auto &n : nl)
   {
     t << "<tr id=\"row_" << generateIndentLabel(n,0) << "\"";
+    t << " class=\"";
     if ((index&1)==0) // even row
-      t << " class=\"even\"";
+      t << "even";
     else
-      t << " class=\"odd\"";
-    if (level>=maxLevel) // item invisible by default
-      t << " style=\"display:none;\"";
+      t << "odd";
+    if (level>=maxLevel && dynamicSections) // item invisible by default
+      t << " hidden";
     else // item visible by default
       index++;
+    t << "\"";
     t << "><td class=\"entry\">";
     bool nodeOpened = level+1<maxLevel;
     generateIndent(t,n,nodeOpened);
@@ -426,11 +428,10 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
         char icon=compoundIcon(toClassDef(n->def));
         t << "<span class=\"icona\"><span class=\"icon\">" << icon << "</span></span>";
       }
-      else
+      else if (dynamicSections)
       {
-        t << "<span id=\"img_" << generateIndentLabel(n,0) << "\" class=\"iconfolder"
-          << "\" onclick=\"dynsection.toggleFolder('" << generateIndentLabel(n,0)
-          << "')\"><div class=\"folder-icon"
+        t << "<span id=\"img_" << generateIndentLabel(n,0) << "\" class=\"iconfolder\">"
+          << "<div class=\"folder-icon"
           << (nodeOpened ? " open" : "")
           << "\"></div></span>";
       }
@@ -454,7 +455,7 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
       }
       if (srcRef)
       {
-        QCString fn=srcRef->getSourceFileBase();
+        DString fn=srcRef->getSourceFileBase();
         addHtmlExtensionIfMissing(fn);
         t << "<a href=\"" << fn << "\">";
       }
@@ -521,24 +522,24 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
 
 struct NavIndexEntry
 {
-  NavIndexEntry(const QCString &u,const QCString &p) : url(u), path(p) {}
-  QCString url;
-  QCString path;
+  NavIndexEntry(const DString &u,const DString &p) : url(u), path(p) {}
+  DString url;
+  DString path;
 };
 
-class NavIndexEntryList : public std::vector<NavIndexEntry>
+class NavIndexEntryList final : public std::vector<NavIndexEntry>
 {
 };
 
-static QCString pathToNode(const FTVNodePtr &leaf,const FTVNodePtr &n)
+static DString pathToNode(const FTVNodePtr &leaf,const FTVNodePtr &n)
 {
-  QCString result;
+  DString result;
   auto parent = n->parent.lock();
   if (parent)
   {
     result+=pathToNode(leaf,parent);
   }
-  result+=QCString().setNum(n->index);
+  result+=DString().setNum(n->index);
   if (leaf!=n) result+=",";
   return result;
 }
@@ -546,43 +547,44 @@ static QCString pathToNode(const FTVNodePtr &leaf,const FTVNodePtr &n)
 static bool dupOfParent(const FTVNodePtr &n)
 {
   auto parent = n->parent.lock();
-  if (!parent) return FALSE;
-  if (n->file==parent->file) return TRUE;
-  return FALSE;
+  if (!parent) return false;
+  if (n->file==parent->file) return true;
+  return false;
 }
 
 static void generateJSLink(TextStream &t,const FTVNodePtr &n)
 {
-  bool nameAsHtml = !n->nameAsHtml.isEmpty();
-  QCString result = nameAsHtml ? n->nameAsHtml : n->name;
-  QCString link = convertToJSString(result,nameAsHtml);
-  if (n->file.isEmpty()) // no link
+  bool nameAsHtml = !n->nameAsHtml.empty();
+  DString link = nameAsHtml ? convertToJSString(n->nameAsHtml,true) : convertToJSString(n->name);
+  link = substitute(link,"\n","");
+  if (n->file.empty()) // no link
   {
     t << "\"" << link << "\", null, ";
   }
   else // link into other page
   {
-    if (Config_getBool(HIDE_SCOPE_NAMES)) result=stripScope(result);
     t << "\"" << link << "\", \"";
-    t << externalRef("",n->ref,TRUE);
+    t << externalRef("",n->ref,true);
     t << node2URL(n);
     t << "\", ";
   }
 }
 
-static QCString convertFileId2Var(const QCString &fileId)
+static DString convertFileId2Var(const DString &fileId)
 {
-  QCString varId = fileId;
-  int i=varId.findRev('/');
-  if (i>=0) varId = varId.mid(i+1);
+  DString varId = fileId;
+  size_t i=varId.rfind('/');
+  if (i!=DString::npos) varId = varId.mid(i+1);
+  if (isdigit(varId[0])) varId.prepend("_");
+
   return substitute(varId,"-","_");
 }
 
 
 struct JSTreeFile
 {
-  JSTreeFile(const QCString &fi,const FTVNodePtr &n) : fileId(fi), node(n) {}
-  QCString fileId;
+  JSTreeFile(const DString &fi,const FTVNodePtr &n) : fileId(fi), node(n) {}
+  DString fileId;
   FTVNodePtr node;
 };
 
@@ -590,14 +592,14 @@ using JSTreeFiles = std::vector<JSTreeFile>;
 
 static void collectJSTreeFiles(const FTVNodes &nl,JSTreeFiles &files)
 {
-  QCString htmlOutput = Config_getString(HTML_OUTPUT);
+  DString htmlOutput = Config_getString(HTML_OUTPUT);
   for (const auto &n : nl)
   {
     if (n->separateIndex) // add new file if there are children
     {
       if (!n->children.empty())
       {
-        QCString fileId = n->file;
+        DString fileId = n->file;
         files.emplace_back(fileId,n);
         collectJSTreeFiles(n->children,files);
       }
@@ -614,23 +616,23 @@ static std::mutex g_navIndexMutex;
 static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
                            const FTVNodes &nl,int level,bool &first)
 {
-  QCString htmlOutput = Config_getString(HTML_OUTPUT);
-  QCString indentStr;
+  DString htmlOutput = Config_getString(HTML_OUTPUT);
+  DString indentStr;
   indentStr.fill(' ',level*2);
 
-  bool found=FALSE;
+  bool found=false;
   for (const auto &n : nl)
   {
     // terminate previous entry
     if (!first) t << ",\n";
-    first=FALSE;
+    first=false;
 
     // start entry
     if (!found)
     {
       t << "[\n";
     }
-    found=TRUE;
+    found=true;
 
     if (n->addToNavIndex) // add entry to the navigation index
     {
@@ -642,11 +644,11 @@ static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
         bool doc = fileVisibleInIndex(fd,src);
         if (doc)
         {
-          navIndex.emplace_back(node2URL(n,TRUE,FALSE),pathToNode(n,n));
+          navIndex.emplace_back(node2URL(n,true,false),pathToNode(n,n));
         }
         if (src)
         {
-          navIndex.emplace_back(node2URL(n,TRUE,TRUE),pathToNode(n,n));
+          navIndex.emplace_back(node2URL(n,true,true),pathToNode(n,n));
         }
       }
       else
@@ -661,8 +663,8 @@ static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
       generateJSLink(t,n);
       if (!n->children.empty()) // write children to separate file for dynamic loading
       {
-        QCString fileId = n->file;
-        if (!n->anchor.isEmpty())
+        DString fileId = n->file;
+        if (!n->anchor.empty())
         {
           fileId+="_"+n->anchor;
         }
@@ -679,7 +681,7 @@ static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
     }
     else // show items in this file
     {
-      bool firstChild=TRUE;
+      bool firstChild=true;
       t << indentStr << "  [ ";
       generateJSLink(t,n);
       bool emptySection = !generateJSTree(navIndex,t,n->children,level+1,firstChild);
@@ -694,20 +696,20 @@ static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
 
 static void generateJSTreeFiles(NavIndexEntryList &navIndex,TextStream &t,const FTVNodes &nodeList)
 {
-  QCString htmlOutput = Config_getString(HTML_OUTPUT);
+  DString htmlOutput = Config_getString(HTML_OUTPUT);
 
   auto getVarName = [](const FTVNodePtr n)
   {
-    QCString                  fileId = n->file;
-    if (!n->anchor.isEmpty()) fileId+="_"+n->anchor;
+    DString                  fileId = n->file;
+    if (!n->anchor.empty()) fileId+="_"+n->anchor;
     if (dupOfParent(n))       fileId+="_dup";
     return fileId;
   };
 
   auto generateJSFile = [&](const JSTreeFile &tf)
   {
-    QCString fileId = getVarName(tf.node);
-    QCString fileName = htmlOutput+"/"+fileId+".js";
+    DString fileId = getVarName(tf.node);
+    DString fileName = htmlOutput+"/"+fileId+".js";
     std::ofstream ff = Portable::openOutputStream(fileName);
     if (ff.is_open())
     {
@@ -745,7 +747,7 @@ static void generateJSTreeFiles(NavIndexEntryList &navIndex,TextStream &t,const 
 
 static void generateJSNavTree(const FTVNodes &nodeList)
 {
-  QCString htmlOutput = Config_getString(HTML_OUTPUT);
+  DString htmlOutput = Config_getString(HTML_OUTPUT);
   std::ofstream f = Portable::openOutputStream(htmlOutput+"/navtreedata.js");
   NavIndexEntryList navIndex;
   if (f.is_open())
@@ -758,8 +760,8 @@ static void generateJSNavTree(const FTVNodes &nodeList)
     t << "var NAVTREE =\n";
     t << "[\n";
     t << "  [ ";
-    QCString projName = Config_getString(PROJECT_NAME);
-    if (projName.isEmpty())
+    DString projName = Config_getString(PROJECT_NAME);
+    if (projName.empty())
     {
       if (mainPageHasTitle()) // Use title of main page as root
       {
@@ -782,7 +784,7 @@ static void generateJSNavTree(const FTVNodes &nodeList)
     // related page index is written as a child of index.html, so add this as well
     navIndex.emplace_back("pages"+Doxygen::htmlFileExtension,"");
 
-    bool first=TRUE;
+    bool first=true;
     generateJSTree(navIndex,t,nodeList,1,first);
     generateJSTreeFiles(navIndex,t,nodeList);
 
@@ -794,7 +796,7 @@ static void generateJSNavTree(const FTVNodes &nodeList)
 
     // write the navigation index (and sub-indices)
     std::stable_sort(navIndex.begin(),navIndex.end(),[](const auto &n1,const auto &n2)
-        { return !n1.url.isEmpty() && (n2.url.isEmpty() || (n1.url<n2.url)); });
+        { return !n1.url.empty() && (n2.url.empty() || (n1.url<n2.url)); });
 
     int subIndex=0;
     int elemCount=0;
@@ -806,7 +808,7 @@ static void generateJSNavTree(const FTVNodes &nodeList)
       t << "[\n";
       tsidx << "var NAVTREEINDEX" << subIndex << " =\n";
       tsidx << "{\n";
-      first=TRUE;
+      first=true;
       auto it = navIndex.begin();
       while (it!=navIndex.end())
       {
@@ -819,7 +821,7 @@ static void generateJSNavTree(const FTVNodes &nodeList)
           }
           else
           {
-            first=FALSE;
+            first=false;
           }
           t << "\"" << e.url << "\"";
         }
@@ -835,7 +837,7 @@ static void generateJSNavTree(const FTVNodes &nodeList)
           elemCount=0;
           tsidx.close();
           subIndex++;
-          QCString fileName = htmlOutput+"/navtreeindex"+QCString().setNum(subIndex)+".js";
+          DString fileName = htmlOutput+"/navtreeindex"+DString().setNum(subIndex)+".js";
           tsidx = Portable::openOutputStream(fileName);
           if (!tsidx.is_open()) break;
           tsidx << "var NAVTREEINDEX" << subIndex << " =\n";
@@ -845,9 +847,9 @@ static void generateJSNavTree(const FTVNodes &nodeList)
       tsidx << "};\n";
       t << "\n];\n";
     }
-    t << "\nvar SYNCONMSG = '"  << theTranslator->trPanelSynchronisationTooltip(FALSE) << "';";
-    t << "\nvar SYNCOFFMSG = '" << theTranslator->trPanelSynchronisationTooltip(TRUE)  << "';";
-    t << "\nvar LISTOFALLMEMBERS = '" << theTranslator->trListOfAllMembers() << "';";
+    t << "\nconst SYNCONMSG = '"  << theTranslator->trPanelSynchronisationTooltip(false) << "';";
+    t << "\nconst SYNCOFFMSG = '" << theTranslator->trPanelSynchronisationTooltip(true)  << "';";
+    t << "\nconst LISTOFALLMEMBERS = '" << theTranslator->trListOfAllMembers() << "';";
   }
 
   auto &mgr = ResourceMgr::instance();
@@ -858,7 +860,7 @@ static void generateJSNavTree(const FTVNodes &nodeList)
       TextStream t(&fn);
       t << substitute(
              substitute(mgr.getAsString("navtree.js"),
-                "$TREEVIEW_WIDTH", QCString().setNum(Config_getInt(TREEVIEW_WIDTH))),
+                "$TREEVIEW_WIDTH", DString().setNum(Config_getInt(TREEVIEW_WIDTH))),
                 "$PROJECTID",getProjectId());
     }
   }
@@ -869,7 +871,7 @@ static void generateJSNavTree(const FTVNodes &nodeList)
 // new style scripts
 void FTVHelp::generateTreeViewScripts()
 {
-  QCString htmlOutput = Config_getString(HTML_OUTPUT);
+  DString htmlOutput = Config_getString(HTML_OUTPUT);
 
   // generate navtree.js & navtreeindex.js
   generateJSNavTree(p->indentNodes[0]);
@@ -878,6 +880,7 @@ void FTVHelp::generateTreeViewScripts()
 // write tree inside page
 void FTVHelp::generateTreeViewInline(TextStream &t)
 {
+  bool dynamicSections = Config_getBool(HTML_DYNAMIC_SECTIONS);
   int preferredNumEntries = Config_getInt(HTML_INDEX_NUM_ENTRIES);
   t << "<div class=\"directory\">\n";
   int d=1, depth=1;
@@ -893,14 +896,17 @@ void FTVHelp::generateTreeViewInline(TextStream &t)
   // write level selector
   if (depth>1)
   {
-    t << "<div class=\"levels\">[";
-    t << theTranslator->trDetailLevel();
-    t << " ";
-    for (int i=1;i<=depth;i++)
+    if (dynamicSections)
     {
-      t << "<span onclick=\"javascript:dynsection.toggleLevel(" << i << ");\">" << i << "</span>";
+      t << "<div class=\"levels\">[";
+      t << theTranslator->trDetailLevel();
+      t << " ";
+      for (int i=1;i<=depth;i++)
+      {
+        t << "<span class=\"dyn-level-" << i << "\">" << i << "</span>";
+      }
+      t << "]</div>";
     }
-    t << "]</div>";
 
     if (preferredNumEntries>0)
     {

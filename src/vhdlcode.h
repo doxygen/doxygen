@@ -22,7 +22,7 @@ class MemberDef;
 
 void codeFreeVhdlScanner();
 
-class VHDLCodeParser : public CodeParserInterface
+class VHDLCodeParser final : public CodeParserInterface
 {
   public:
     VHDLCodeParser();
@@ -30,8 +30,8 @@ class VHDLCodeParser : public CodeParserInterface
     NON_COPYABLE(VHDLCodeParser)
 
     void parseCode(OutputCodeList &codeOutIntf,
-                   const QCString &scopeName,
-                   const QCString &input,
+                   const DString &scopeName,
+                   const DString &input,
                    SrcLangExt lang,
                    bool stripCodeComments,
                    const CodeParserOptions &options

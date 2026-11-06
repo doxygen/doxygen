@@ -96,10 +96,10 @@ static EdgeProperties umlEdgeProps =
   umlEdgeColorMap, umlArrowStyleMap, umlEdgeStyleMap
 };
 
-QCString escapeTooltip(const QCString &tooltip)
+DString escapeTooltip(const DString &tooltip)
 {
-  if (tooltip.isEmpty()) return tooltip;
-  QCString result;
+  if (tooltip.empty()) return tooltip;
+  DString result;
   const char *p=tooltip.data();
   char c = 0;
   while ((c=*p++))
@@ -117,7 +117,7 @@ QCString escapeTooltip(const QCString &tooltip)
 static void writeBoxMemberList(TextStream &t,
   char prot,const MemberList *ml,const ClassDef *scope,
   bool &lineWritten,
-  bool isStatic=FALSE,const StringUnorderedSet *skipNames=nullptr)
+  bool isStatic=false,const StringUnorderedSet *skipNames=nullptr)
 {
   constexpr auto tr_start = "<TR><TD VALIGN=\"top\" CELLPADDING=\"1\" CELLSPACING=\"0\">";
   constexpr auto tr_mid   = "</TD><TD VALIGN=\"top\" ALIGN=\"LEFT\" CELLPADDING=\"1\" CELLSPACING=\"0\">";
@@ -150,14 +150,14 @@ static void writeBoxMemberList(TextStream &t,
         int numFields = Config_getInt(UML_LIMIT_NUM_FIELDS);
         if (numFields>0 && (totalCount>numFields*3/2 && count>=numFields))
         {
-          t << tr_start << tr_mid << theTranslator->trAndMore(QCString().sprintf("%d",totalCount-count)) << tr_end;
+          t << tr_start << tr_mid << theTranslator->trAndMore(DString().sprintf("%d",totalCount-count)) << tr_end;
           lineWritten = true;
           break;
         }
         else
         {
           t << tr_start << prot << tr_mid;
-          QCString label;
+          DString label;
           if (dotUmlDetails==DOT_UML_DETAILS_t::YES)
           {
             label+=mma->typeString();
@@ -193,19 +193,19 @@ static void writeBoxMemberList(TextStream &t,
   }
 }
 
-QCString DotNode::convertLabel(const QCString &l, LabelStyle style)
+DString DotNode::convertLabel(const DString &l, LabelStyle style)
 {
-  QCString bBefore("\\_/<({[: =-+@%#~?$"); // break before character set
-  QCString bAfter(">]),:;|");              // break after  character set
-  if (l.isEmpty()) return QCString();
-  QCString result;
+  DString bBefore("\\_/<({[: =-+@%#~?$"); // break before character set
+  DString bAfter(">]),:;|");              // break after  character set
+  if (l.empty()) return DString();
+  DString result;
   char pc=0;
   uint32_t idx = 0;
   int charsLeft=static_cast<int>(l.length());
   int sinceLast=0;
   int foldLen = Config_getInt(DOT_WRAP_THRESHOLD); // ideal text length
-  QCString br;
-  QCString br1;
+  DString br;
+  DString br1;
   if (style==LabelStyle::Table)
   {
     result += "<<TABLE CELLBORDER=\"0\" BORDER=\"0\"><TR><TD VALIGN=\"top\" ALIGN=\"LEFT\" CELLPADDING=\"1\" CELLSPACING=\"0\">";
@@ -311,9 +311,9 @@ QCString DotNode::convertLabel(const QCString &l, LabelStyle style)
   return result;
 }
 
-static QCString stripProtectionPrefix(const QCString &s)
+static DString stripProtectionPrefix(const DString &s)
 {
-  if (!s.isEmpty() && (s[0]=='-' || s[0]=='+' || s[0]=='~' || s[0]=='#'))
+  if (!s.empty() && (s[0]=='-' || s[0]=='+' || s[0]=='~' || s[0]=='#'))
   {
     return s.mid(1);
   }
@@ -323,7 +323,7 @@ static QCString stripProtectionPrefix(const QCString &s)
   }
 }
 
-DotNode::DotNode(DotGraph *graph,const QCString &lab,const QCString &tip, const QCString &url,
+DotNode::DotNode(DotGraph *graph,const DString &lab,const DString &tip, const DString &url,
   bool isRoot,const ClassDef *cd)
   : m_graph(graph)
   , m_number(graph->getNextNodeNumber())
@@ -338,8 +338,8 @@ DotNode::DotNode(DotGraph *graph,const QCString &lab,const QCString &tip, const 
 void DotNode::addChild(DotNode *n,
   EdgeInfo::Colors edgeColor,
   EdgeInfo::Styles edgeStyle,
-  const QCString &edgeLab,
-  const QCString &edgeURL,
+  const DString &edgeLab,
+  const DString &edgeURL,
   int edgeLabCol
 )
 {
@@ -372,7 +372,7 @@ void DotNode::removeParent(DotNode *n)
 void DotNode::deleteNode(DotNodeRefVector &deletedList)
 {
   if (m_deleted) return; // avoid recursive loops in case the graph has cycles
-  m_deleted=TRUE;
+  m_deleted=true;
   // delete all parent nodes of this node
   for (const auto &pn : m_parents)
   {
@@ -424,12 +424,12 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
     // for each edge
     for (const auto &ei : m_edgeInfo)
     {
-      if (!ei.label().isEmpty()) // labels joined by \n
+      if (!ei.label().empty()) // labels joined by \n
       {
-        int i=0;
-        int p=0;
-        QCString lab;
-        while ((i=ei.label().find('\n',p))!=-1)
+        size_t i=0;
+        size_t p=0;
+        DString lab;
+        while ((i=ei.label().find('\n',p))!=DString::npos)
         {
           lab = stripProtectionPrefix(ei.label().mid(p,i-p));
           arrowNames.insert(lab.str());
@@ -452,33 +452,33 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
     {
       bool lineWritten = false;
       t << sep;
-      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType::PubAttribs()),m_classDef,lineWritten,FALSE,&arrowNames);
-      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType::PubStaticAttribs()),m_classDef,lineWritten,TRUE,&arrowNames);
-      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType::Properties()),m_classDef,lineWritten,FALSE,&arrowNames);
-      writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType::PacAttribs()),m_classDef,lineWritten,FALSE,&arrowNames);
-      writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType::PacStaticAttribs()),m_classDef,lineWritten,TRUE,&arrowNames);
-      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType::ProAttribs()),m_classDef,lineWritten,FALSE,&arrowNames);
-      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType::ProStaticAttribs()),m_classDef,lineWritten,TRUE,&arrowNames);
+      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType::PubAttribs()),m_classDef,lineWritten,false,&arrowNames);
+      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType::PubStaticAttribs()),m_classDef,lineWritten,true,&arrowNames);
+      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType::Properties()),m_classDef,lineWritten,false,&arrowNames);
+      writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType::PacAttribs()),m_classDef,lineWritten,false,&arrowNames);
+      writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType::PacStaticAttribs()),m_classDef,lineWritten,true,&arrowNames);
+      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType::ProAttribs()),m_classDef,lineWritten,false,&arrowNames);
+      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType::ProStaticAttribs()),m_classDef,lineWritten,true,&arrowNames);
       if (Config_getBool(EXTRACT_PRIVATE))
       {
-        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType::PriAttribs()),m_classDef,lineWritten,FALSE,&arrowNames);
-        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType::PriStaticAttribs()),m_classDef,lineWritten,TRUE,&arrowNames);
+        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType::PriAttribs()),m_classDef,lineWritten,false,&arrowNames);
+        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType::PriStaticAttribs()),m_classDef,lineWritten,true,&arrowNames);
       }
       if (!lineWritten) t << empty_line;
       t << sep;
       lineWritten = false;
       writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType::PubMethods()),m_classDef,lineWritten);
-      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType::PubStaticMethods()),m_classDef,lineWritten,TRUE);
+      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType::PubStaticMethods()),m_classDef,lineWritten,true);
       writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType::PubSlots()),m_classDef,lineWritten);
       writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType::PacMethods()),m_classDef,lineWritten);
-      writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType::PacStaticMethods()),m_classDef,lineWritten,TRUE);
+      writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType::PacStaticMethods()),m_classDef,lineWritten,true);
       writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType::ProMethods()),m_classDef,lineWritten);
-      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType::ProStaticMethods()),m_classDef,lineWritten,TRUE);
+      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType::ProStaticMethods()),m_classDef,lineWritten,true);
       writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType::ProSlots()),m_classDef,lineWritten);
       if (Config_getBool(EXTRACT_PRIVATE))
       {
         writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType::PriMethods()),m_classDef,lineWritten);
-        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType::PriStaticMethods()),m_classDef,lineWritten,TRUE);
+        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType::PriStaticMethods()),m_classDef,lineWritten,true);
         writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType::PriSlots()),m_classDef,lineWritten);
       }
       if (m_classDef->getLanguage()!=SrcLangExt::Fortran)
@@ -487,7 +487,7 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
         {
           if (!mg->members().empty())
           {
-            writeBoxMemberList(t,'*',&mg->members(),m_classDef,lineWritten,FALSE,&arrowNames);
+            writeBoxMemberList(t,'*',&mg->members(),m_classDef,lineWritten,false,&arrowNames);
           }
         }
       }
@@ -513,26 +513,26 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
 
 void DotNode::writeUrl(TextStream &t) const
 {
-  if (m_url.isEmpty() || m_url == DotNode::placeholderUrl) return;
-  int tagPos = m_url.findRev('$');
+  if (m_url.empty() || m_url == DotNode::placeholderUrl) return;
+  size_t tagPos = m_url.rfind('$');
   t << ",URL=\"";
-  QCString noTagURL = m_url;
-  if (tagPos!=-1)
+  DString noTagURL = m_url;
+  if (tagPos!=DString::npos)
   {
     t << m_url.left(tagPos);
     noTagURL = m_url.mid(tagPos);
   }
-  int anchorPos = noTagURL.findRev('#');
-  if (anchorPos==-1)
+  size_t anchorPos = noTagURL.rfind('#');
+  if (anchorPos==DString::npos)
   {
     addHtmlExtensionIfMissing(noTagURL);
     t << noTagURL << "\"";
   }
   else // insert extensiom before anchor
   {
-    QCString fn = noTagURL.left(anchorPos);
+    DString fn = noTagURL.left(anchorPos);
     addHtmlExtensionIfMissing(fn);
-    t << fn << noTagURL.right(noTagURL.length() - anchorPos) << "\"";
+    t << fn << noTagURL.mid(anchorPos) << "\"";
   }
 }
 
@@ -569,13 +569,13 @@ void DotNode::writeBox(TextStream &t,
   }
   else
   {
-    labCol = m_url.isEmpty() ? "grey60" :  // non link
+    labCol = m_url.empty() ? "grey60" :  // non link
     (hasNonReachableChildren ? "red" : "grey40");
-    fillCol = m_url.isEmpty() ? "#E0E0E0" :
+    fillCol = m_url.empty() ? "#E0E0E0" :
     (hasNonReachableChildren ? "#FFF0F0" : "white");
   }
   t << "  Node" << m_number << " [";
-  t << "id=\"Node" << QCString().sprintf("%06d",m_number) << "\",";
+  t << "id=\"Node" << DString().sprintf("%06d",m_number) << "\",";
   writeLabel(t,gt);
   t << ",height=0.2,width=0.4";
   if (m_isRoot)
@@ -589,7 +589,7 @@ void DotNode::writeBox(TextStream &t,
     t << ", style=\"filled\"";
     writeUrl(t);
   }
-  if (!m_tooltip.isEmpty())
+  if (!m_tooltip.empty())
   {
     t << ",tooltip=\"" << escapeTooltip(m_tooltip) << "\"";
   }
@@ -621,17 +621,17 @@ void DotNode::writeArrow(TextStream &t,
   t << " [";
 
   const EdgeProperties *eProps = Config_getBool(UML_LOOK) ? &umlEdgeProps : &normalEdgeProps;
-  QCString aStyle = eProps->arrowStyleMap[ei->color()];
+  DString aStyle = eProps->arrowStyleMap[ei->color()];
   bool umlUseArrow = aStyle=="odiamond";
 
   t << "id=\"edge" << m_graph->getNextEdgeNumber() <<
-       "_Node" << QCString().sprintf("%06d",m_number) <<
-       "_Node" << QCString().sprintf("%06d",cn->number()) << "\",";
+       "_Node" << DString().sprintf("%06d",m_number) <<
+       "_Node" << DString().sprintf("%06d",cn->number()) << "\",";
   if (pointBack && !umlUseArrow) t << "dir=\"back\",";
   t << "color=\"" << eProps->edgeColorMap[ei->color()] << "\",";
   t << "style=\"" << eProps->edgeStyleMap[ei->style()] << "\"";
   t << ",tooltip=\" \""; // space in tooltip is required otherwise still something like 'Node0 -> Node1' is used
-  if (!ei->label().isEmpty())
+  if (!ei->label().empty())
   {
     t << ",label=" << convertLabel(ei->label(),LabelStyle::Table) << " ,fontcolor=\"grey\" ";
   }
@@ -662,7 +662,7 @@ void DotNode::write(TextStream &t,
   if (m_written) return; // node already written to the output
   if (!m_visible) return; // node is not visible
   writeBox(t,gt,format,m_truncated==Truncated);
-  m_written=TRUE;
+  m_written=true;
   if (toChildren)
   {
     auto it = m_edgeInfo.begin();
@@ -692,11 +692,11 @@ void DotNode::write(TextStream &t,
           format,
           pn,
           &pn->edgeInfo()[index],
-          FALSE,
+          false,
           backArrows
         );
       }
-      pn->write(t,gt,format,TRUE,FALSE,backArrows);
+      pn->write(t,gt,format,true,false,backArrows);
     }
   }
   //printf("end DotNode::write(%d) name=%s\n",distance,qPrint(m_label));
@@ -706,11 +706,11 @@ void DotNode::writeXML(TextStream &t,bool isClassGraph) const
 {
   t << "      <node id=\"" << m_number << "\">\n";
   t << "        <label>" << convertToXML(m_label) << "</label>\n";
-  if (!m_url.isEmpty())
+  if (!m_url.empty())
   {
-    QCString url(m_url);
-    int dollarPos = url.find('$');
-    if (dollarPos!=-1)
+    DString url(m_url);
+    size_t dollarPos = url.find('$');
+    if (dollarPos!=DString::npos)
     {
       t << "        <link refid=\"" << convertToXML(url.mid(dollarPos+1)) << "\"";
       if (dollarPos>0)
@@ -743,11 +743,11 @@ void DotNode::writeXML(TextStream &t,bool isClassGraph) const
       t << "include";
     }
     t << "\">\n";
-    if (!edgeInfo.label().isEmpty())
+    if (!edgeInfo.label().empty())
     {
-      int p=0;
-      int ni=0;
-      while ((ni=edgeInfo.label().find('\n',p))!=-1)
+      size_t p=0;
+      size_t ni=0;
+      while ((ni=edgeInfo.label().find('\n',p))!=DString::npos)
       {
         t << "          <edgelabel>"
           << convertToXML(edgeInfo.label().mid(p,ni-p))
@@ -768,11 +768,10 @@ void DotNode::writeDocbook(TextStream &t,bool isClassGraph) const
 {
   t << "      <node id=\"" << m_number << "\">\n";
   t << "        <label>" << convertToXML(m_label) << "</label>\n";
-  if (!m_url.isEmpty())
+  if (!m_url.empty())
   {
-    QCString url(m_url);
-    int dollarPos = url.find('$');
-    if (dollarPos!=-1)
+    DString url(m_url);
+    if (size_t dollarPos = url.find('$'); dollarPos!=DString::npos)
     {
       t << "        <link refid=\"" << convertToXML(url.mid(dollarPos+1)) << "\"";
       if (dollarPos>0)
@@ -805,11 +804,11 @@ void DotNode::writeDocbook(TextStream &t,bool isClassGraph) const
       t << "include";
     }
     t << "\">\n";
-    if (!edgeInfo.label().isEmpty())
+    if (!edgeInfo.label().empty())
     {
-      int p=0;
-      int ni=0;
-      while ((ni=edgeInfo.label().find('\n',p))!=-1)
+      size_t p=0;
+      size_t ni=0;
+      while ((ni=edgeInfo.label().find('\n',p))!=DString::npos)
       {
         t << "          <edgelabel>"
           << convertToXML(edgeInfo.label().mid(p,ni-p))
@@ -817,7 +816,7 @@ void DotNode::writeDocbook(TextStream &t,bool isClassGraph) const
         p=ni+1;
       }
       t << "          <edgelabel>"
-        << convertToXML(edgeInfo.label().right(edgeInfo.label().length()-p))
+        << convertToXML(edgeInfo.label().mid(p))
         << "</edgelabel>\n";
     }
     t << "        </childnode>\n";
@@ -835,11 +834,10 @@ void DotNode::writeDEF(TextStream &t) const
   t << nodePrefix << "id    = " << m_number << ";\n";
   t << nodePrefix << "label = '" << m_label << "';\n";
 
-  if (!m_url.isEmpty())
+  if (!m_url.empty())
   {
-    QCString url(m_url);
-    int dollarPos = url.find('$');
-    if (dollarPos!=-1)
+    DString url(m_url);
+    if (size_t dollarPos = url.find('$'); dollarPos!=DString::npos)
     {
       t << nodePrefix << "link = {\n" << "  "
         << nodePrefix << "link-id = '" << url.mid(dollarPos+1) << "';\n";
@@ -871,7 +869,7 @@ void DotNode::writeDEF(TextStream &t) const
     }
     t << ";\n";
 
-    if (!edgeInfo.label().isEmpty())
+    if (!edgeInfo.label().empty())
     {
       t << "          edgelabel = <<_EnD_oF_dEf_TeXt_\n"
         << edgeInfo.label() << "\n"
@@ -886,7 +884,7 @@ void DotNode::writeDEF(TextStream &t) const
 
 void DotNode::clearWriteFlag()
 {
-  m_written=FALSE;
+  m_written=false;
   for (const auto &pn : m_parents)  if (pn->isWritten()) pn->clearWriteFlag();
   for (const auto &cn : m_children) if (cn->isWritten()) cn->clearWriteFlag();
 }

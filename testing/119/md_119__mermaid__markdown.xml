@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="md_119__mermaid__markdown" kind="page">
+    <compoundname>md_119__mermaid__markdown</compoundname>
+    <title>119_mermaid_markdown</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <sect1 id="md_119__mermaid__markdown_1autotoc_md0">
+        <title>Mermaid Markdown Test</title>
+        <para>Text before diagram.</para>
+        <para>
+          <mermaid>flowchart LR
+  A[Start] --&gt; B[End]</mermaid>
+        </para>
+        <para>Text after diagram. </para>
+      </sect1>
+    </detaileddescription>
+    <location file="119_mermaid_markdown.md"/>
+  </compounddef>
+</doxygen>

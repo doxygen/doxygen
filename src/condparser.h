@@ -22,14 +22,14 @@
  *         !     NOT operator
  */
 
-#include "qcstring.h"
+#include "dstring.h"
 
 class CondParser
 {
   // public functions
   public:
     CondParser() : m_e(nullptr), m_tokenType(NOTHING) {}
-    bool parse(const QCString &fileName,int lineNr,const QCString &expr);
+    bool parse(const DString &fileName,int lineNr,const DString &expr);
 
     // enumerations
   private:
@@ -51,11 +51,11 @@ class CondParser
     // data
   private:
 
-    QCString m_err;                 //!< error state
-    QCString m_expr;                //!< holds the expression
+    DString m_err;                  //!< error state
+    DString m_expr;                 //!< holds the expression
     const char *m_e;                //!< points to a character in expr
 
-    QCString m_token;               //!< holds the token
+    DString m_token;                //!< holds the token
     TOKENTYPE m_tokenType;          //!< type of the token
 
     // private functions
@@ -68,8 +68,8 @@ class CondParser
     bool parseVar();
 
     bool evalOperator(const int opId, bool lhs, bool rhs);
-    bool evalVariable(const QCString &varName);
-    int getOperatorId(const QCString &opName);
+    bool evalVariable(const DString &varName);
+    int getOperatorId(const DString &opName);
 };
 
 #endif

@@ -23,9 +23,14 @@
 
 #include "condparser.h"
 #include "config.h"
+#include "configimpl.h"
+#include "configoptions.h"
 #include "message.h"
 
 // declarations
+static DString error_str = "doxyconfig_error";
+static DString resolveConfig(const DString &fileName,int lineNr, const DString &expr);
+static DString getConfig(const DString &fileName,int lineNr, const DString &expr);
 
 /**
  * parses and evaluates the given expression.
@@ -33,26 +38,26 @@
  * - On error, an error message is returned.
  * - On success, the result of the expression is either "1" or "0".
  */
-bool CondParser::parse(const QCString &fileName,int lineNr,const QCString &expr)
+bool CondParser::parse(const DString &fileName,int lineNr,const DString &expr)
 {
-  if (expr.isEmpty()) return false;
-  m_expr      = expr;
+  if (expr.empty()) return false;
   m_tokenType = NOTHING;
+  m_expr = resolveConfig(fileName, lineNr, expr);
 
   // initialize all variables
   m_e = m_expr.data();    // let m_e point to the start of the expression
 
   bool answer=false;
   getToken();
-  if (m_tokenType==DELIMITER && m_token.isEmpty())
+  if (m_tokenType==DELIMITER && m_token.empty())
   {
-    // empty expression: answer==FALSE
+    // empty expression: answer==false
   }
-  else if (m_err.isEmpty())
+  else if (m_err.empty())
   {
     answer = parseLevel1();
   }
-  if (!m_err.isEmpty())
+  if (!m_err.empty())
   {
     warn(fileName,lineNr,"problem evaluating expression '{}': {}", expr, m_err);
   }
@@ -87,7 +92,7 @@ static bool isAlphaNumSpec(const char c)
  * returns the id of the given operator
  * returns -1 if the operator is not recognized
  */
-int CondParser::getOperatorId(const QCString &opName)
+int CondParser::getOperatorId(const DString &opName)
 {
   // level 2
   if (opName=="&&") { return AND; }
@@ -161,7 +166,7 @@ void CondParser::getToken()
   {
     m_token += *m_e++;
   }
-  m_err = QCString("Syntax error in part '")+m_token+"'";
+  m_err = DString("Syntax error in part '")+m_token+"'";
   return;
 }
 
@@ -217,7 +222,7 @@ bool CondParser::parseLevel3()
       if (m_tokenType!=DELIMITER || m_token!=")")
       {
         m_err="Parenthesis ) missing";
-        return FALSE;
+        return false;
       }
       getToken();
       return ans;
@@ -242,15 +247,15 @@ bool CondParser::parseVar()
 
     default:
       // syntax error or unexpected end of expression
-      if (m_token.isEmpty())
+      if (m_token.empty())
       {
         m_err="Unexpected end of expression";
-        return FALSE;
+        return false;
       }
       else
       {
         m_err="Value expected";
-        return FALSE;
+        return false;
       }
       break;
   }
@@ -269,16 +274,110 @@ bool CondParser::evalOperator(int opId, bool lhs, bool rhs)
     case OR:  return lhs || rhs;
   }
 
-  m_err = "Internal error unknown operator: id="+QCString().setNum(opId);
-  return FALSE;
+  m_err = "Internal error unknown operator: id="+DString().setNum(opId);
+  return false;
 }
 
 /**
  * evaluate a variable
  */
-bool CondParser::evalVariable(const QCString &varName)
+bool CondParser::evalVariable(const DString &varName)
 {
-  const StringVector &list = Config_getList(ENABLED_SECTIONS);
+  if (varName == "YES") return true;
+  if (varName == "NO") return false;
+  StringVector list = Config_getList(ENABLED_SECTIONS);
   return std::find(list.begin(),list.end(),varName.str())!=list.end();
 }
 
+static DString getConfig(const DString &fileName,int lineNr, const DString &expr)
+{
+  if (expr.empty())
+  {
+    return error_str;
+  }
+  ConfigOption * opt = ConfigImpl::instance()->get(expr);
+  if (opt)
+  {
+    switch (opt->kind())
+    {
+      case ConfigOption::O_Bool:
+        return((static_cast<ConfigBool*>(opt)->valueRef())? "YES" : "NO");
+      case ConfigOption::O_String:
+        // due to the fact that there can be any character in the string
+        warn(fileName,lineNr,
+             "String setting '{}' not possible in conditional statement, ignored", expr);
+        return error_str;
+      case ConfigOption::O_Enum:
+        return(*(static_cast<ConfigEnum*>(opt)->valueRef()));
+      case ConfigOption::O_Int:
+        return (DString().setNum(*(static_cast<ConfigInt*>(opt)->valueRef())));
+      case ConfigOption::O_List:
+        warn(fileName,lineNr,
+             "List setting '{}' not possible in conditional statement, ignored", expr);
+        return error_str;
+      case ConfigOption::O_Obsolete:
+        warn(fileName,lineNr,
+             "Obsolete setting '{}' not possible in conditional statement, ignored", expr);
+        return error_str;
+      case ConfigOption::O_Disabled:
+        warn(fileName,lineNr,
+             "Disabled setting '{}' not possible in conditional statement, ignored", expr);
+        return error_str;
+      case ConfigOption::O_Info:
+        warn(fileName,lineNr,
+             "Info setting '{}' not possible in conditional statement, ignored", expr);
+        return error_str;
+      default:
+        warn(fileName,lineNr,
+             "Unknown error occurrence '{}', ignored", expr);
+        return error_str;
+    }
+  }
+  else
+  {
+    warn(fileName,lineNr,
+         "Unknown setting '{}' not possible in conditional statement, ignored", expr);
+    return error_str;
+  }
+}
+
+static DString resolveConfig(const DString &fileName,int lineNr, const DString &expr)
+{
+  if (expr.empty())
+  {
+    return "";
+  }
+
+  DString loc_expr;
+  signed char c = 0;
+  const char *p=expr.data();
+  while ((c=*p++)!=0)
+  {
+    switch(c)
+    {
+      case '\\':
+      case '@':
+        if (*p == 'd' && DString(p).startsWith("doxyconfig"))
+        {
+          p+=10; // skip doxyconfig
+          while (*p==' ' || *p=='\t') {p++;}
+          DString bufConfig;
+          while ((c=*p++)!=0)
+          {
+             if ((c>='A' && c<='Z') || (c>='0' && c<='9') || c=='_') bufConfig += c;
+             else
+             {
+               break;
+             }
+          }
+          p--;
+          loc_expr += getConfig(fileName, lineNr, bufConfig);
+        }
+        break;
+      default:
+        loc_expr += c;
+        break;
+    }
+  }
+  return loc_expr;
+}

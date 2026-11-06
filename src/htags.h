@@ -15,15 +15,15 @@
 #ifndef HTAGS_H
 #define HTAGS_H
 
-class QCString;
+class DString;
 
 /** This class is a namespace for HTAGS related functions */
 struct Htags
 {
   static bool useHtags;
-  static bool loadFilemap(const QCString &htmldir);
-  static QCString path2URL(const QCString &path);
-  static bool execute(const QCString &htmldir);
+  static bool loadFilemap(const DString &htmldir);
+  static DString path2URL(const DString &path);
+  static bool execute(const DString &htmldir);
 };
 
 #endif /* HTAGS_H */

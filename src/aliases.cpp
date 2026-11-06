@@ -42,7 +42,7 @@ using AliasInfoMap   = std::unordered_map<std::string,AliasOverloads>;   // key 
 //-----------------------------------------------------------
 
 static std::string expandAliasRec(StringUnorderedSet &aliasesProcessed,
-                               std::string_view s,bool allowRecursion=FALSE);
+                               std::string_view s,bool allowRecursion=false);
 static int countAliasArguments(std::string_view args, std::string_view sep);
 static std::string extractAliasArgs(std::string_view args);
 static std::string expandAlias(std::string_view aliasName,std::string_view aliasValue);
@@ -74,7 +74,7 @@ static void addValidAliasToMap(std::string_view alias)
     aliasName  = m[1].str();
     aliasValue = alias.substr(i);
     //printf("Alias: found name='%s' value='%s'\n",qPrint(name),qPrint(aliasValue));
-    if (m[2].length()>0) // alias with parameters
+    if (!m[2].empty()) // alias with parameters
     {
       separator=",";
       size_t b = m[2].position();   // index of '{'
@@ -160,9 +160,9 @@ static std::string escapeAlias(std::string_view value)
 
 void readAliases()
 {
+  StringVector aliases = Config_getList(ALIASES);
   // add aliases to a dictionary
-  const StringVector &aliasList = Config_getList(ALIASES);
-  for (const auto &al : aliasList)
+  for (const auto &al : aliases)
   {
     addValidAliasToMap(al);
   }

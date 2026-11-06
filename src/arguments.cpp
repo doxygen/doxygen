@@ -19,9 +19,9 @@
 /*! the argument list is documented if one of its
  *  arguments is documented
  */
-bool ArgumentList::hasDocumentation() const
+bool ArgumentList::hasDocumentation(bool allowEmptyNames) const
 {
-  return std::any_of(begin(),end(),[](const Argument &a){ return a.hasDocumentation(); });
+  return std::any_of(begin(),end(),[allowEmptyNames](const Argument &a){ return a.hasDocumentation(allowEmptyNames); });
 }
 
 /*! the template argument list is documented if one of its
@@ -33,19 +33,19 @@ bool ArgumentList::hasTemplateDocumentation() const
 }
 
 /*! Sets the trailing return type for a method */
-void ArgumentList::setTrailingReturnType(const QCString &s)
+void ArgumentList::setTrailingReturnType(const DString &s)
 {
   m_trailingReturnType = s;
 }
 
-void ArgumentList::appendTrailingReturnType(const QCString &s)
+void ArgumentList::appendTrailingReturnType(const DString &s)
 {
   m_trailingReturnType += s;
 }
 
 void ArgumentList::finishTrailingReturnType()
 {
-  if (!m_trailingReturnType.isEmpty())
+  if (!m_trailingReturnType.empty())
   {
     m_trailingReturnType = " "+removeRedundantWhiteSpace(m_trailingReturnType);
   }

@@ -1,4 +1,4 @@
-/******************************************************************************
+  /******************************************************************************
  *
  *
  *
@@ -28,10 +28,10 @@ class OutputCodeList;
 class TextStream;
 
 /*! @brief Concrete visitor implementation for RTF output. */
-class RTFDocVisitor : public DocVisitor
+class RTFDocVisitor final : public DocVisitor
 {
   public:
-    RTFDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt, int hierarchyLevel = 0);
+    RTFDocVisitor(TextStream &t,OutputCodeList &ci,const DString &langExt, int hierarchyLevel = 0);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -88,6 +88,7 @@ class RTFDocVisitor : public DocVisitor
     void operator()(const DocMscFile &);
     void operator()(const DocDiaFile &);
     void operator()(const DocPlantUmlFile &);
+    void operator()(const DocMermaidFile &);
     void operator()(const DocLink &);
     void operator()(const DocRef &ref);
     void operator()(const DocSecRefItem &);
@@ -115,25 +116,24 @@ class RTFDocVisitor : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void filter(const QCString &str,bool verbatim=FALSE);
-    void startLink(const QCString &ref,const QCString &file,
-                   const QCString &anchor);
-    void endLink(const QCString &ref);
-    QCString getStyle(const QCString &name);
-    QCString getListTable(const int id);
+    void filter(const DString &str, bool verbatim = false, const bool citeEntry = false);
+    void startLink(const DString &ref,const DString &file,
+                   const DString &anchor);
+    void endLink(const DString &ref);
+    DString getStyle(const DString &name);
+    DString getListTable(const int id);
 
     int indentLevel() const;
     void incIndentLevel();
     void decIndentLevel();
 
-    void includePicturePreRTF(const QCString &name, bool isTypeRTF, bool hasCaption, bool inlineImage = FALSE);
-    void includePicturePostRTF(bool isTypeRTF, bool hasCaption, bool inlineImage = FALSE);
-    void writeDotFile(const QCString &fileName, bool hasCaption,const QCString &srcFile,int srcLine);
-    void writeDotFile(const DocDotFile &);
-    void writeMscFile(const QCString &fileName, bool hasCaption,const QCString &srcFile,int srcLine);
-    void writeMscFile(const DocMscFile &);
-    void writeDiaFile(const DocDiaFile &);
-    void writePlantUMLFile(const QCString &fileName, bool hasCaption);
+    void includePicturePreRTF(const DString &name, bool isTypeRTF, bool hasCaption, bool inlineImage = false);
+    void includePicturePostRTF(bool isTypeRTF, bool hasCaption, bool inlineImage = false);
+    void writeDotFile(const DString &fileName, bool hasCaption,const DString &srcFile,int srcLine,bool newFile = true);
+    void writeMscFile(const DString &fileName, bool hasCaption,const DString &srcFile,int srcLine,bool newFile = true);
+    void writeDiaFile(const DString &fileName, bool hasCaption,const DString &srcFile,int srcLine,bool newFile = true);
+    void writePlantUMLFile(const DString &fileName, bool hasCaption);
+    void writeMermaidFile(const DString &fileName, bool hasCaption);
 
     //--------------------------------------
     // state variables
@@ -144,7 +144,7 @@ class RTFDocVisitor : public DocVisitor
     bool m_insidePre = false;
     bool m_hide = false;
     bool m_lastIsPara = false;
-    QCString m_langExt;
+    DString m_langExt;
 
     static const int maxIndentLevels = 13;
     int m_indentLevel = 0;

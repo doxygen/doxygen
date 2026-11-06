@@ -125,6 +125,9 @@ class SubMatch
     /** Returns the length of the matching part. */
     size_t length()      const { return m_len; }
 
+    /** Returns true if the match is empty (no match). */
+    bool empty()         const { return m_len==0; }
+
     /** Returns the matching part as a string */
     std::string str()    const { return std::string{m_str.substr(m_pos,m_len)}; }
 
@@ -177,8 +180,14 @@ class Match
       return m;
     }
 
-    /** Returns the number of sub matches available in this match. */
-    size_t size()     const { return m_subMatches.size(); }
+    /** Returns the number of sub matches available in this match.
+     *  Only counts groups that actually matched (trailing unmatched optional groups are excluded). */
+    size_t size() const
+    {
+      size_t s = m_subMatches.size();
+      while (s > 1 && m_subMatches[s-1].position() == std::string::npos) s--;
+      return s;
+    }
 
     /** Returns the n-th SubMatch object. Note that there is always 1 SubMatch object
      *  representing the whole match.

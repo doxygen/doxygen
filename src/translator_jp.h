@@ -30,6 +30,9 @@
  * 1.8.5)
  * Translation Added for 1.8.4 and revised
  *      by Suzumizaki-Kimitaka (30-Aug-2013)
+ * 1.18.0)
+ * Added 76 missing translation methods from releases 1.8.15 to 1.16.0
+ *      by GitHub Copilot (09-Jun-2026)
  */
 /*
 Messages for translators written in Japanese:
@@ -69,33 +72,33 @@ Doxygen の開発の方でもそれはそれでいーんじゃん？みたいな
 #ifndef TRANSLATOR_JP_H
 #define TRANSLATOR_JP_H
 
-class TranslatorJapanese : public TranslatorAdapter_1_8_15
+class TranslatorJapanese : public Translator
 {
   public:
-    QCString idLanguage() override
+    DString idLanguage() override
     { return "japanese"; }
 
-    QCString latexLanguageSupportCommand() override
+    DString latexLanguageSupportCommand() override
     {
       return "\\usepackage{CJKutf8}\n";
     }
-    QCString trISOLang() override
+    DString trISOLang() override
     {
       return "ja";
     }
-    QCString getLanguageString() override
+    DString getLanguageString() override
     {
       return "0x411 Japanese";
     }
-    QCString latexFontenc() override
+    DString latexFontenc() override
     {
       return "";
     }
-    QCString latexDocumentPre() override
+    DString latexDocumentPre() override
     {
       return "\\begin{CJK}{UTF8}{min}\n";
     }
-    QCString latexDocumentPost() override
+    DString latexDocumentPost() override
     {
       return "\\end{CJK}\n";
     }
@@ -105,31 +108,31 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     }
 
     /*! used in the compound documentation before a list of related functions. */
-    QCString trRelatedFunctions() override
+    DString trRelatedFunctions() override
     { return "関連関数"; }
 
     /*! subscript for the related functions. */
-    QCString trRelatedSubscript() override
+    DString trRelatedSubscript() override
     { return "（これらはメソッドではありません）"; }
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
-    QCString trDetailedDescription() override
+    DString trDetailedDescription() override
     { return "詳解"; }
 
     /*! header that is used when the summary tag is missing inside the details tag */
-    QCString trDetails() override
+    DString trDetails() override
     { return "詳細"; }
 
     /*! header that is put before the list of typedefs. */
-    QCString trMemberTypedefDocumentation() override
+    DString trMemberTypedefDocumentation() override
     { return "型定義メンバ詳解"; }
 
     /*! header that is put before the list of enumerations. */
-    QCString trMemberEnumerationDocumentation() override
+    DString trMemberEnumerationDocumentation() override
     { return "列挙型メンバ詳解"; }
 
     /*! header that is put before the list of member functions. */
-    QCString trMemberFunctionDocumentation() override
+    DString trMemberFunctionDocumentation() override
     {
       if( Config_getBool(OPTIMIZE_OUTPUT_JAVA))
       {
@@ -142,7 +145,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     }
 
     /*! header that is put before the list of member attributes. */
-    QCString trMemberDataDocumentation() override
+    DString trMemberDataDocumentation() override
     {
       if( Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -155,47 +158,47 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     }
 
     /*! this is the text of a link put after brief descriptions. */
-    QCString trMore() override
+    DString trMore() override
     { return "[詳解]"; }
 
     /*! put in the class documentation */
-    QCString trListOfAllMembers() override
+    DString trListOfAllMembers() override
     { return "全メンバ一覧"; }
 
     /*! used as the title of the "list of all members" page of a class */
-    QCString trMemberList() override
+    DString trMemberList() override
     { return "メンバ一覧"; }
 
     /*! this is the first part of a sentence that is followed by a class name */
-    QCString trThisIsTheListOfAllMembers() override
+    DString trThisIsTheListOfAllMembers() override
     { return "継承メンバを含む"; }
     /* trIncludingInheritedMembers に続くように定義すること */
 
     /*! this is the remainder of the sentence after the class name */
-    QCString trIncludingInheritedMembers() override
+    DString trIncludingInheritedMembers() override
     { return " の全メンバ一覧です。"; }
     /* trThisIsTheListOfAllMembers から続くように定義すること */
 
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
-    QCString trGeneratedAutomatically(const QCString &s) override
-    { QCString result = "Doxygen により";
-      if (!s.isEmpty()) result=" "+s+"の";
+    DString trGeneratedAutomatically(const DString &s) override
+    { DString result = "Doxygen により";
+      if (!s.empty()) result=" "+s+"の";
       result+="ソースコードから抽出しました。";
       return result;
     }
 
     /*! put after an enum name in the list of all members */
-    QCString trEnumName() override
+    DString trEnumName() override
     { return "列挙名"; }
 
     /*! put after an enum value in the list of all members */
-    QCString trEnumValue() override
+    DString trEnumValue() override
     { return "列挙値"; }
 
     /*! put after an undocumented member in the list of all members */
-    QCString trDefinedIn() override
+    DString trDefinedIn() override
     { return "定義場所: "; }
 
     // quick reference sections
@@ -203,15 +206,15 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! This is put above each page as a link to the list of all groups of
      *  compounds or files (see the \\group command).
      */
-    QCString trModules() override
+    DString trModules() override
     { return "モジュール"; }
 
     /*! This is put above each page as a link to the class hierarchy */
-    QCString trClassHierarchy() override
+    DString trClassHierarchy() override
     { return "クラス階層"; }
 
     /*! This is put above each page as a link to the list of annotated classes */
-    QCString trCompoundList() override
+    DString trCompoundList() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -224,11 +227,11 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     }
 
     /*! This is put above each page as a link to the list of documented files */
-    QCString trFileList() override
+    DString trFileList() override
     { return "ファイル一覧"; }
 
     /*! This is put above each page as a link to all members of compounds. */
-    QCString trCompoundMembers() override
+    DString trCompoundMembers() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -241,7 +244,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     }
 
     /*! This is put above each page as a link to all members of files. */
-    QCString trFileMembers() override
+    DString trFileMembers() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -253,25 +256,25 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
       }
     }
     /*! This is put above each page as a link to all related pages. */
-    QCString trRelatedPages() override
+    DString trRelatedPages() override
     { return "諸情報"; }
 
     /*! This is put above each page as a link to all examples. */
-    QCString trExamples() override
+    DString trExamples() override
     { return "各種例"; }
 
     /*! This is put above each page as a link to the search engine. */
-    QCString trSearch() override
+    DString trSearch() override
     { return "検索"; }
 
     /*! This is an introduction to the class hierarchy. */
-    QCString trClassHierarchyDescription() override
+    DString trClassHierarchyDescription() override
     {
       return "クラス階層一覧です。大雑把に文字符号順で並べられています。";
     }
 
     /*! This is an introduction to the list with all files. */
-    QCString trFileListDescription(bool extractAll) override
+    DString trFileListDescription(bool extractAll) override
     {
       /* 概要がついているのは見ればわかるので省略 */
       /* extractAll こと EXTRACT_ALL はすべての詳解が存在することを
@@ -287,7 +290,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
 
 
     /*! This is an introduction to the annotated compound list. */
-    QCString trCompoundListDescription() override
+    DString trCompoundListDescription() override
     {
       /* 概要がついているのは見ればわかるので省略 */
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
@@ -301,10 +304,10 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     }
 
     /*! This is an introduction to the page with all class members. */
-    QCString trCompoundMembersDescription(bool extractAll) override
+    DString trCompoundMembersDescription(bool extractAll) override
     {
       const bool forC = Config_getBool(OPTIMIZE_OUTPUT_FOR_C);
-      QCString result;
+      DString result;
       if (forC)
       {
         result = "構造体・共用体の";
@@ -357,9 +360,9 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     }
 
     /*! This is an introduction to the page with all file members. */
-    QCString trFileMembersDescription(bool /*extractAll*/) override
+    DString trFileMembersDescription(bool /*extractAll*/) override
     {
-      QCString result;
+      DString result;
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="関数・変数・マクロ・列挙・型定義";
@@ -373,37 +376,37 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     }
 
     /*! This is an introduction to the page with the list of all examples */
-    QCString trExamplesDescription() override
+    DString trExamplesDescription() override
     { return "各種例の一覧です。"; }
 
     /*! This is an introduction to the page with the list of related pages */
-    QCString trRelatedPagesDescription() override
+    DString trRelatedPagesDescription() override
     { return "諸情報の一覧です。"; }
 
     /*! This is an introduction to the page with the list of class/file groups */
-    QCString trModulesDescription() override
+    DString trModulesDescription() override
     { return "全モジュールの一覧です。"; }
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation(const QCString &projName) override
-    { return (!projName.isEmpty()?projName + " " : "") + "詳解"; }
+    DString trDocumentation(const DString &projName) override
+    { return (!projName.empty()?projName + " " : "") + "詳解"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
      */
-    QCString trModuleIndex() override
+    DString trModuleIndex() override
     { return "モジュール索引"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
      */
-    QCString trHierarchicalIndex() override
+    DString trHierarchicalIndex() override
     { return "階層索引"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index.
      */
-    QCString trCompoundIndex() override
+    DString trCompoundIndex() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -418,19 +421,19 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! This is used in LaTeX as the title of the chapter with the
      * list of all files.
      */
-    QCString trFileIndex() override
+    DString trFileIndex() override
     { return "ファイル索引"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all groups.
      */
-    QCString trModuleDocumentation() override
+    DString trModuleDocumentation() override
     { return "モジュール詳解"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all classes, structs and unions.
      */
-    QCString trClassDocumentation() override
+    DString trClassDocumentation() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -449,82 +452,82 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all files.
      */
-    QCString trFileDocumentation() override
+    DString trFileDocumentation() override
     { return "ファイル詳解"; }
 
     /*! This is used in LaTeX as the title of the document */
-    QCString trReferenceManual() override
+    DString trReferenceManual() override
     { return "リファレンスマニュアル"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of defines
      */
-    QCString trDefines() override
+    DString trDefines() override
     { return "マクロ定義"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
-    QCString trTypedefs() override
+    DString trTypedefs() override
     { return "型定義"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
      */
-    QCString trEnumerations() override
+    DString trEnumerations() override
     { return "列挙型"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) functions
      */
-    QCString trFunctions() override
+    DString trFunctions() override
     { return "関数"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
-    QCString trVariables() override
+    DString trVariables() override
     { return "変数"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
-    QCString trEnumerationValues() override
+    DString trEnumerationValues() override
     { return "列挙値"; }
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
-    QCString trDefineDocumentation() override
+    DString trDefineDocumentation() override
     { return "マクロ定義詳解"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
-    QCString trTypedefDocumentation() override
+    DString trTypedefDocumentation() override
     { return "型定義詳解"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration types
      */
-    QCString trEnumerationTypeDocumentation() override
+    DString trEnumerationTypeDocumentation() override
     { return "列挙型詳解"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
      */
-    QCString trFunctionDocumentation() override
+    DString trFunctionDocumentation() override
     { return "関数詳解"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for variables
      */
-    QCString trVariableDocumentation() override
+    DString trVariableDocumentation() override
     { return "変数詳解"; }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
      */
-    QCString trCompounds() override
+    DString trCompounds() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -538,50 +541,50 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    QCString trGeneratedAt(const QCString &date,const QCString &projName) override
+    DString trGeneratedAt(const DString &date,const DString &projName) override
     {
-      QCString result = date+"作成";
-      if (!projName.isEmpty()) result+=" - " + projName;
+      DString result = date+"作成";
+      if (!projName.empty()) result+=" - " + projName;
       result+=" / 構成: ";
       return result;
     }
 
     /*! this text is put before a class diagram */
-    QCString trClassDiagram(const QCString &clName) override
+    DString trClassDiagram(const DString &clName) override
     {
       return clName+" の継承関係図";
     }
 
     /*! this text is generated when the \\warning command is used. */
-    QCString trWarning() override
+    DString trWarning() override
     { return "警告"; }
 
     /*! this text is generated when the \\version command is used. */
-    QCString trVersion() override
+    DString trVersion() override
     { return "バージョン"; }
 
     /*! this text is generated when the \\date command is used. */
-    QCString trDate() override
+    DString trDate() override
     { return "日付"; }
 
     /*! this text is generated when the \\return command is used. */
-    QCString trReturns() override
+    DString trReturns() override
     { return "戻り値"; }
 
     /*! this text is generated when the \\sa command is used. */
-    QCString trSeeAlso() override
+    DString trSeeAlso() override
     { return "参照"; }
 
     /*! this text is generated when the \\param command is used. */
-    QCString trParameters() override
+    DString trParameters() override
     { return "引数"; }
 
     /*! this text is generated when the \\exception command is used. */
-    QCString trExceptions() override
+    DString trExceptions() override
     { return "例外"; }
 
     /*! this text is used in the title page of a LaTeX document. */
-    QCString trGeneratedBy() override
+    DString trGeneratedBy() override
     { return "構築:"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -589,11 +592,11 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of page containing all the index of all namespaces. */
-    QCString trNamespaceList() override
+    DString trNamespaceList() override
     { return "名前空間一覧"; }
 
     /*! used as an introduction to the namespace list */
-    QCString trNamespaceListDescription(bool extractAll) override
+    DString trNamespaceListDescription(bool extractAll) override
     {
       if (extractAll)
       {
@@ -605,7 +608,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! used in the class documentation as a header before the list of all
      *  friends of a class
      */
-    QCString trFriends() override
+    DString trFriends() override
     { return "フレンド"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -615,7 +618,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! used in the class documentation as a header before the list of all
      * related classes
      */
-    QCString trRelatedFunctionDocumentation() override
+    DString trRelatedFunctionDocumentation() override
     { return "フレンドと関連関数の詳解"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -623,11 +626,11 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
-    QCString trCompoundReference(const QCString &clName,
+    DString trCompoundReference(const DString &clName,
                                  ClassDef::CompoundType compType,
                                  bool isTemplate) override
     {
-      QCString result=clName+" ";
+      DString result=clName+" ";
       switch(compType)
       {
         case ClassDef::Class:      result+="クラス"; break;
@@ -644,47 +647,47 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     }
 
     /*! used as the title of the HTML page of a file */
-    QCString trFileReference(const QCString &fileName) override
+    DString trFileReference(const DString &fileName) override
     {
-      QCString result=fileName+" ファイル";
+      DString result=fileName+" ファイル";
       return result;
     }
 
     /*! used as the title of the HTML page of a namespace */
-    QCString trNamespaceReference(const QCString &namespaceName) override
+    DString trNamespaceReference(const DString &namespaceName) override
     {
-      QCString result=namespaceName+" 名前空間";
+      DString result=namespaceName+" 名前空間";
       return result;
     }
 
     /* these are for the member sections of a class, struct or union */
-    QCString trPublicMembers() override
+    DString trPublicMembers() override
     { return "公開メンバ関数"; }
-    QCString trPublicSlots() override
+    DString trPublicSlots() override
     { return "公開スロット"; }
-    QCString trSignals() override
+    DString trSignals() override
     { return "シグナル"; }
-    QCString trStaticPublicMembers() override
+    DString trStaticPublicMembers() override
     { return "静的公開メンバ関数"; }
-    QCString trProtectedMembers() override
+    DString trProtectedMembers() override
     { return "限定公開メンバ関数"; }
-    QCString trProtectedSlots() override
+    DString trProtectedSlots() override
     { return "限定公開スロット"; }
-    QCString trStaticProtectedMembers() override
+    DString trStaticProtectedMembers() override
     { return "静的限定公開メンバ関数"; }
-    QCString trPrivateMembers() override
+    DString trPrivateMembers() override
     { return "非公開メンバ関数"; }
-    QCString trPrivateSlots() override
+    DString trPrivateSlots() override
     { return "非公開スロット"; }
-    QCString trStaticPrivateMembers() override
+    DString trStaticPrivateMembers() override
     { return "静的非公開メンバ関数"; }
 
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
      */
-    QCString trWriteList(int numEntries) override
+    DString trWriteList(int numEntries) override
     {
-      QCString result;
+      DString result;
       // the inherits list contain `numEntries' classes
       for (int i=0;i<numEntries;i++)
       {
@@ -699,7 +702,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
       }
       if ( result.length() > 60 )
       {
-        QCString countStr;
+        DString countStr;
         countStr.sprintf(" (計%d項目)", numEntries);
         result += countStr;
       }
@@ -709,7 +712,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! used in class documentation to produce a list of base classes,
      *  if class diagrams are disabled.
      */
-    QCString trInheritsList(int numEntries) override
+    DString trInheritsList(int numEntries) override
     {
       return trWriteList(numEntries)+"を継承しています。";
     }
@@ -717,7 +720,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! used in class documentation to produce a list of super classes,
      *  if class diagrams are disabled.
      */
-    QCString trInheritedByList(int numEntries) override
+    DString trInheritedByList(int numEntries) override
     {
       return trWriteList(numEntries)+"に継承されています。";
     }
@@ -725,7 +728,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! used in member documentation blocks to produce a list of
      *  members that are hidden by this one.
      */
-    QCString trReimplementedFromList(int numEntries) override
+    DString trReimplementedFromList(int numEntries) override
     {
       return trWriteList(numEntries)+"を再実装しています。";
     }
@@ -733,19 +736,19 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! used in member documentation blocks to produce a list of
      *  all member that overwrite the implementation of this member.
      */
-    QCString trReimplementedInList(int numEntries) override
+    DString trReimplementedInList(int numEntries) override
     {
       return trWriteList(numEntries)+"で再実装されています。";
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
-    QCString trNamespaceMembers() override
+    DString trNamespaceMembers() override
     { return "名前空間メンバ"; }
 
     /*! This is an introduction to the page with all namespace members */
-    QCString trNamespaceMemberDescription(bool extractAll) override
+    DString trNamespaceMemberDescription(bool extractAll) override
     {
-      QCString result="これは";
+      DString result="これは";
       result+="名前空間の一覧です。それぞれ";
       if (extractAll)
       {
@@ -761,13 +764,13 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! This is used in LaTeX as the title of the chapter with the
      *  index of all namespaces.
      */
-    QCString trNamespaceIndex() override
+    DString trNamespaceIndex() override
     { return "名前空間索引"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
-    QCString trNamespaceDocumentation() override
+    DString trNamespaceDocumentation() override
     { return "名前空間詳解"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -777,7 +780,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! This is used in the documentation before the list of all
      *  namespaces in a file.
      */
-    QCString trNamespaces() override
+    DString trNamespaces() override
     { return "名前空間"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -787,11 +790,11 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! This is put at the bottom of a class documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
-    QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
+    DString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool /*single*/) override
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result="この";
+      DString result="この";
       switch(compType)
       {
         case ClassDef::Class:      result+="クラス"; break;
@@ -812,29 +815,29 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! This is used as the heading text for the retval command. */
-    QCString trReturnValues() override
+    DString trReturnValues() override
     { return "戻り値"; }
 
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
-    QCString trMainPage() override
+    DString trMainPage() override
     { return "総合概要"; }
 
     /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
-    QCString trPageAbbreviation() override
+    DString trPageAbbreviation() override
     { return "p."; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-991003
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trDefinedAtLineInSourceFile() override
+    DString trDefinedAtLineInSourceFile() override
     {
       return " @1 の @0 行目に定義があります。";
     }
-    QCString trDefinedInSourceFile() override
+    DString trDefinedInSourceFile() override
     {
       return " @0 に定義があります。";
     }
@@ -843,74 +846,74 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
 // new since 1.0.0
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trDeprecated() override
+    DString trDeprecated() override
     {
       return "非推奨";
     }
 
     /*! this text is put before a collaboration diagram */
-    QCString trCollaborationDiagram(const QCString &clName) override
+    DString trCollaborationDiagram(const DString &clName) override
     {
       return clName+" 連携図";
     }
     /*! this text is put before an include dependency graph */
-    QCString trInclDepGraph(const QCString &fName) override
+    DString trInclDepGraph(const DString &fName) override
     {
     return fName+" の依存先関係図:";
     }
     /*! header that is put before the list of constructor/destructors. */
-    QCString trConstructorDocumentation() override
+    DString trConstructorDocumentation() override
     {
       return "構築子と解体子";
     }
     /*! Used in the file documentation to point to the corresponding sources. */
-    QCString trGotoSourceCode() override
+    DString trGotoSourceCode() override
     {
       return "[ソースコード]";
     }
     /*! Used in the file sources to point to the corresponding documentation. */
-    QCString trGotoDocumentation() override
+    DString trGotoDocumentation() override
     {
       return "[詳解]";
     }
     /*! Text for the \\pre command */
-    QCString trPrecondition() override
+    DString trPrecondition() override
     {
       return "事前条件";
     }
     /*! Text for the \\post command */
-    QCString trPostcondition() override
+    DString trPostcondition() override
     {
       return "事後条件";
     }
     /*! Text for the \\invariant command */
-    QCString trInvariant() override
+    DString trInvariant() override
     {
       return "不変";
     }
     /*! Text shown before a multi-line variable/enum initialization */
-    QCString trInitialValue() override
+    DString trInitialValue() override
     {
       return "初期値:";
     }
     /*! Text used the source code in the file index */
-    QCString trCode() override
+    DString trCode() override
     {
       return "コード";
     }
-    QCString trGraphicalHierarchy() override
+    DString trGraphicalHierarchy() override
     {
       return "クラス階層図";
     }
-    QCString trGotoGraphicalHierarchy() override
+    DString trGotoGraphicalHierarchy() override
     {
       return "[クラス階層図]";
     }
-    QCString trGotoTextualHierarchy() override
+    DString trGotoTextualHierarchy() override
     {
       return "[クラス階層表]";
     }
-    QCString trPageIndex() override
+    DString trPageIndex() override
     {
       return "ページ索引";
     }
@@ -918,15 +921,15 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
 // new since 1.1.0
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trNote() override
+    DString trNote() override
     {
       return "覚え書き";
     }
-    QCString trPublicTypes() override
+    DString trPublicTypes() override
     {
       return "公開型";
     }
-    QCString trPublicAttribs() override
+    DString trPublicAttribs() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
@@ -937,31 +940,31 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
         return "公開変数類";
       }
     }
-    QCString trStaticPublicAttribs() override
+    DString trStaticPublicAttribs() override
     {
       return "静的公開変数類";
     }
-    QCString trProtectedTypes() override
+    DString trProtectedTypes() override
     {
       return "限定公開型";
     }
-    QCString trProtectedAttribs() override
+    DString trProtectedAttribs() override
     {
       return "限定公開変数類";
     }
-    QCString trStaticProtectedAttribs() override
+    DString trStaticProtectedAttribs() override
     {
       return "静的限定公開変数類";
     }
-    QCString trPrivateTypes() override
+    DString trPrivateTypes() override
     {
       return "非公開型";
     }
-    QCString trPrivateAttribs() override
+    DString trPrivateAttribs() override
     {
       return "非公開変数類";
     }
-    QCString trStaticPrivateAttribs() override
+    DString trStaticPrivateAttribs() override
     {
       return "静的非公開変数類";
     }
@@ -971,12 +974,12 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a todo item */
-    QCString trTodo() override
+    DString trTodo() override
     {
       return "todo";
     }
     /*! Used as the header of the todo list */
-    QCString trTodoList() override
+    DString trTodoList() override
     {
       return "todo一覧";
     }
@@ -985,23 +988,23 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
 // new since 1.1.4
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trReferencedBy() override
+    DString trReferencedBy() override
     {
       return "参照元";
     }
-    QCString trRemarks() override
+    DString trRemarks() override
     {
       return "注釈";
     }
-    QCString trAttention() override
+    DString trAttention() override
     {
       return "注意";
     }
-    QCString trInclByDepGraph() override
+    DString trInclByDepGraph() override
     {
       return "被依存関係図:";
     }
-    QCString trSince() override
+    DString trSince() override
     {
       return "から";
     }
@@ -1011,12 +1014,12 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! title of the graph legend page */
-    QCString trLegendTitle() override
+    DString trLegendTitle() override
     {
       return "グラフの凡例";
     }
     /*! page explaining how the dot graph's should be interpreted */
-    QCString trLegendDocs() override
+    DString trLegendDocs() override
     {
       return
         "Doxygen が生成したグラフを読み方について。<p>\n"
@@ -1074,7 +1077,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
         "</ul>\n";
     }
     /*! text for the link to the legend page */
-    QCString trLegend() override
+    DString trLegend() override
     {
       return "凡例";
     }
@@ -1084,12 +1087,12 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a test item */
-    QCString trTest() override
+    DString trTest() override
     {
       return "テスト";
     }
     /*! Used as the header of the test list */
-    QCString trTestList() override
+    DString trTestList() override
     {
       return "テスト一覧";
     }
@@ -1099,12 +1102,12 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a section header for IDL properties */
-    QCString trProperties() override
+    DString trProperties() override
     {
       return "プロパティ";
     }
     /*! Used as a section header for IDL property documentation */
-    QCString trPropertyDocumentation() override
+    DString trPropertyDocumentation() override
     {
       return "プロパティ詳解";
     }
@@ -1115,7 +1118,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used for Java classes in the summary section of Java packages */
-    QCString trClasses() override
+    DString trClasses() override
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
     {
@@ -1127,23 +1130,23 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     }
     }
     /*! Used as the title of a Java package */
-    QCString trPackage(const QCString &name) override
+    DString trPackage(const DString &name) override
     {
       return name+" パッケージ";
     }
     /*! The description of the package index page */
-    QCString trPackageListDescription() override
+    DString trPackageListDescription() override
     {
       return "パッケージ一覧です。";
     }
     /*! The link name in the Quick links header for each page */
-    QCString trPackages() override
+    DString trPackages() override
     {
       return "パッケージ";
     }
 
 	    /*! Text shown before a multi-line define */
-    QCString trDefineValue() override
+    DString trDefineValue() override
     {
       return "値:";
     }
@@ -1154,12 +1157,12 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a \\bug item */
-    QCString trBug() override
+    DString trBug() override
     {
       return "バグ";
     }
     /*! Used as the header of the bug list */
-    QCString trBugList() override
+    DString trBugList() override
     {
       return "バグ一覧";
     }
@@ -1193,7 +1196,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      * </pre>
      *
      */
-    QCString trRTFansicp() override
+    DString trRTFansicp() override
     {
       return "932";
     }
@@ -1202,13 +1205,13 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! Used as ansicpg for RTF fcharset
      *  \see trRTFansicp() for a table of possible values.
      */
-    QCString trRTFCharSet() override
+    DString trRTFCharSet() override
     {
       return "128";
     }
 
     /*! Used as header RTF general index */
-    QCString trRTFGeneralIndex() override
+    DString trRTFGeneralIndex() override
     {
       return "索引";
     }
@@ -1217,7 +1220,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trClass(bool /*first_capital*/, bool /*singular*/) override
+    DString trClass(bool /*first_capital*/, bool /*singular*/) override
     {
       return "クラス";
     }
@@ -1226,7 +1229,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trFile(bool /*first_capital*/, bool /*singular*/) override
+    DString trFile(bool /*first_capital*/, bool /*singular*/) override
     {
       return "ファイル";
     }
@@ -1235,7 +1238,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trNamespace(bool /*first_capital*/, bool /*singular*/) override
+    DString trNamespace(bool /*first_capital*/, bool /*singular*/) override
     {
       return "名前空間";
     }
@@ -1244,7 +1247,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trGroup(bool /*first_capital*/, bool /*singular*/) override
+    DString trGroup(bool /*first_capital*/, bool /*singular*/) override
     {
       return "グループ";
     }
@@ -1253,7 +1256,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trPage(bool /*first_capital*/, bool /*singular*/) override
+    DString trPage(bool /*first_capital*/, bool /*singular*/) override
     {
       return "ページ";
     }
@@ -1262,7 +1265,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trMember(bool /*first_capital*/, bool /*singular*/) override
+    DString trMember(bool /*first_capital*/, bool /*singular*/) override
     {
       return "メンバ";
     }
@@ -1271,7 +1274,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trGlobal(bool /*first_capital*/, bool /*singular*/) override
+    DString trGlobal(bool /*first_capital*/, bool /*singular*/) override
     {
       return "大域各種";
     }
@@ -1282,7 +1285,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
 
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
-    QCString trAuthor(bool /*first_capital*/, bool /*singular*/) override
+    DString trAuthor(bool /*first_capital*/, bool /*singular*/) override
     {
       return "著者";
     }
@@ -1293,7 +1296,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
 
     /*! This text is put before the list of members referenced by a member
      */
-    QCString trReferences() override
+    DString trReferences() override
     {
       return "参照先";
     }
@@ -1305,7 +1308,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! used in member documentation blocks to produce a list of
      *  members that are implemented by this one.
      */
-    QCString trImplementedFromList(int numEntries) override
+    DString trImplementedFromList(int numEntries) override
     {
       return trWriteList(numEntries)+"を実装しています。";
     }
@@ -1313,7 +1316,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! used in member documentation blocks to produce a list of
      *  all members that implement this abstract member.
      */
-    QCString trImplementedInList(int numEntries) override
+    DString trImplementedInList(int numEntries) override
     {
       return trWriteList(numEntries)+"で実装されています。";
     }
@@ -1324,7 +1327,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! used in RTF documentation as a heading for the Table
      *  of Contents.
      */
-    QCString trRTFTableOfContents() override
+    DString trRTFTableOfContents() override
     {
       return "目次";
     }
@@ -1336,7 +1339,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! Used as the header of the list of item that have been
      *  flagged deprecated
      */
-    QCString trDeprecatedList() override
+    DString trDeprecatedList() override
     {
       return "非推奨一覧";
     }
@@ -1348,12 +1351,12 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! Used as a header for declaration section of the events found in
      * a C# program
      */
-    QCString trEvents() override
+    DString trEvents() override
     {
       return "イベント";
     }
     /*! Header used for the documentation section of a class' events. */
-    QCString trEventDocumentation() override
+    DString trEventDocumentation() override
     {
       return "イベント詳解";
     }
@@ -1364,18 +1367,18 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
 
     /*! Used as a heading for a list of Java class types with package scope.
      */
-    QCString trPackageTypes() override
+    DString trPackageTypes() override
     {
       return "パッケージ内の型定義";
     }
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    QCString trPackageFunctions() override
+    DString trPackageFunctions() override
     {
       return "関数";
     }
-    QCString trPackageMembers() override
+    DString trPackageMembers() override
     {
       return "パッケージ内のメンバ";
     }
@@ -1383,21 +1386,21 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    QCString trStaticPackageFunctions() override
+    DString trStaticPackageFunctions() override
     {
       return "静的関数";
     }
     /*! Used as a heading for a list of Java class variables with package
      * scope.
      */
-    QCString trPackageAttribs() override
+    DString trPackageAttribs() override
     {
       return "変数";
     }
     /*! Used as a heading for a list of static Java class variables with
      * package scope.
      */
-    QCString trStaticPackageAttribs() override
+    DString trStaticPackageAttribs() override
     {
       return "静的変数";
     }
@@ -1409,12 +1412,12 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! Used in the quick index of a class/file/namespace member list page
      *  to link to the unfiltered list of all members.
      */
-    QCString trAll() override
+    DString trAll() override
     {
       return "全て";
     }
     /*! Put in front of the call graph for a function. */
-    QCString trCallGraph() override
+    DString trCallGraph() override
     {
       return "呼び出し関係図:";
     }
@@ -1426,7 +1429,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! This string is used as the title for the page listing the search
      *  results.
      */
-    QCString trSearchResultsTitle() override
+    DString trSearchResultsTitle() override
     {
       return "検索結果";
     }
@@ -1438,7 +1441,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      *  value 2 represents 2 or more matches. HTML markup is allowed inside
      *  the returned string.
      */
-    QCString trSearchResults(int numDocuments) override
+    DString trSearchResults(int numDocuments) override
     {
       if (numDocuments==0)
       {
@@ -1457,7 +1460,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! This string is put before the list of matched words, for each search
      *  result. What follows is the list of words that matched the query.
      */
-    QCString trSearchMatches() override
+    DString trSearchMatches() override
     {
       return "照合語:";
     }
@@ -1468,7 +1471,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
 
     /*! This is used in HTML as the title of page with source code for file filename
      */
-    QCString trSourceFile(const QCString& filename) override
+    DString trSourceFile(const DString& filename) override
     {
       return filename + " ソースファイル";
     }
@@ -1480,31 +1483,31 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! This is used as the name of the chapter containing the directory
      *  hierarchy.
      */
-    QCString trDirIndex() override
+    DString trDirIndex() override
     { return "ディレクトリ索引"; }
 
     /*! This is used as the name of the chapter containing the documentation
      *  of the directories.
      */
-    QCString trDirDocumentation() override
+    DString trDirDocumentation() override
     { return "ディレクトリ詳解"; }
 
     /*! This is used as the title of the directory index and also in the
      *  Quick links of an HTML page, to link to the directory hierarchy.
      */
-    QCString trDirectories() override
+    DString trDirectories() override
     { return "ディレクトリ"; }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    QCString trDirReference(const QCString &dirName) override
-    { QCString result=dirName; result+=" ディレクトリリファレンス"; return result; }
+    DString trDirReference(const DString &dirName) override
+    { DString result=dirName; result+=" ディレクトリリファレンス"; return result; }
 
     /*! This returns the word directory with or without starting capital
-     *  (\a first_capital) and in sigular or plural form (\a singular).
+     *  (\a first_capital) and in singular or plural form (\a singular).
      */
-    QCString trDir(bool, bool) override
+    DString trDir(bool, bool) override
     {
       return "ディレクトリ";
     }
@@ -1516,7 +1519,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! This text is added to the documentation when the \\overload command
      *  is used for a overloaded function.
      */
-    QCString trOverloadText() override
+    DString trOverloadText() override
     {
        return "これはオーバーロードされたメンバ関数です。"
               "利便性のために用意されています。"
@@ -1528,7 +1531,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! This is used to introduce a caller (or called-by) graph */
-    QCString trCallerGraph() override
+    DString trCallerGraph() override
     {
       return "被呼び出し関係図:";
     }
@@ -1536,7 +1539,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration values
      */
-    QCString trEnumerationValueDocumentation() override
+    DString trEnumerationValueDocumentation() override
     { return "列挙型詳解"; }
 
 
@@ -1545,25 +1548,25 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! header that is put before the list of member subprograms (Fortran). */
-    QCString trMemberFunctionDocumentationFortran() override
+    DString trMemberFunctionDocumentationFortran() override
     { return "メンバ関数/サブルーチン詳解"; }
 
     /*! This is put above each page as a link to the list of annotated data types (Fortran). */
-    QCString trCompoundListFortran() override
+    DString trCompoundListFortran() override
     { return "データ型一覧"; }
 
     /*! This is put above each page as a link to all members of compounds (Fortran). */
-    QCString trCompoundMembersFortran() override
+    DString trCompoundMembersFortran() override
     { return "データフィールド"; }
 
     /*! This is an introduction to the annotated compound list (Fortran). */
-    QCString trCompoundListDescriptionFortran() override
+    DString trCompoundListDescriptionFortran() override
     { return "これはデータ型の一覧です:"; }
 
     /*! This is an introduction to the page with all data types (Fortran). */
-    QCString trCompoundMembersDescriptionFortran(bool extractAll) override
+    DString trCompoundMembersDescriptionFortran(bool extractAll) override
     {
-      QCString result="これは";
+      DString result="これは";
       result+="フィールドの一覧です。それぞれ";
       if (extractAll)
       {
@@ -1576,42 +1579,42 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index (Fortran).
      */
-    QCString trCompoundIndexFortran() override
+    DString trCompoundIndexFortran() override
     { return "データ型索引"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all data types (Fortran).
      */
-    QCString trTypeDocumentation() override
+    DString trTypeDocumentation() override
     { return "データ型詳解"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) subprograms (Fortran).
      */
-    QCString trSubprograms() override
+    DString trSubprograms() override
     { return "関数/サブルーチン"; }
 
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for subprograms (Fortran)
      */
-    QCString trSubprogramDocumentation() override
+    DString trSubprogramDocumentation() override
     { return "関数/サブルーチン詳解"; }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds (Fortran)
      */
-     QCString trDataTypes() override
+     DString trDataTypes() override
     { return "データ型"; }
 
     /*! used as the title of page containing all the index of all modules (Fortran). */
-    QCString trModulesList() override
+    DString trModulesList() override
     { return "モジュール一覧"; }
 
     /*! used as an introduction to the modules list (Fortran) */
-    QCString trModulesListDescription(bool extractAll) override
+    DString trModulesListDescription(bool extractAll) override
     {
-      QCString result;
+      DString result;
       if (!extractAll)
       {
         result+="詳解が記されている";
@@ -1625,11 +1628,11 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     }
 
     /*! used as the title of the HTML page of a module/type (Fortran) */
-    QCString trCompoundReferenceFortran(const QCString &clName,
+    DString trCompoundReferenceFortran(const DString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate) override
     {
-      QCString result="";
+      DString result="";
       switch(compType)
       {
         case ClassDef::Class:      result+="モジュール "; break;
@@ -1646,21 +1649,21 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
-    QCString trModuleReference(const QCString &namespaceName) override
+    DString trModuleReference(const DString &namespaceName) override
     {
-      QCString result=namespaceName;
+      DString result=namespaceName;
       result+="モジュール";
       return result;
     }
 
     /*! This is put above each page as a link to all members of modules. (Fortran) */
-    QCString trModulesMembers() override
+    DString trModulesMembers() override
     { return "モジュールメンバ"; }
 
     /*! This is an introduction to the page with all modules members (Fortran) */
-    QCString trModulesMemberDescription(bool extractAll) override
+    DString trModulesMemberDescription(bool extractAll) override
     {
-      QCString result="これはモジュールメンバ一覧です。それぞれ ";
+      DString result="これはモジュールメンバ一覧です。それぞれ ";
       if (extractAll)
       {
         result+="属しているモジュール";
@@ -1672,25 +1675,25 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! This is used in LaTeX as the title of the chapter with the
      *  index of all modules (Fortran).
      */
-    QCString trModulesIndex() override
+    DString trModulesIndex() override
     { return "モジュール索引"; }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trModule(bool /*first_capital*/, bool /*singular*/) override
+    DString trModule(bool /*first_capital*/, bool /*singular*/) override
     {
       return "モジュール";
     }
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
-    QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
+    DString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
         bool /*single*/) override
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result="次のファイルから";
+      DString result="次のファイルから";
       switch(compType)
       {
         case ClassDef::Class:      result+="モジュール"; break;
@@ -1709,23 +1712,23 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trType(bool /*first_capital*/, bool /*singular*/) override
+    DString trType(bool /*first_capital*/, bool /*singular*/) override
     {
-      QCString result = "型";
+      DString result = "型";
       return result;
     }
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    QCString trSubprogram(bool /*first_capital*/, bool /*singular*/) override
+    DString trSubprogram(bool /*first_capital*/, bool /*singular*/) override
     {
-      QCString result = "サブプログラム";
+      DString result = "サブプログラム";
       return result;
     }
 
     /*! C# Type Constraint list */
-    QCString trTypeConstraints() override
+    DString trTypeConstraints() override
     {
       return "型制約";
     }
@@ -1735,31 +1738,31 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! directory relation for \a name */
-    QCString trDirRelation(const QCString &name) override
+    DString trDirRelation(const DString &name) override
     {
-      return QCString(name)+" 関係";
+      return name+" 関係";
     }
 
     /*! Loading message shown when loading search results */
-    QCString trLoading() override
+    DString trLoading() override
     {
       return "読み取り中…";
     }
 
     /*! Label used for search results in the global namespace */
-    QCString trGlobalNamespace() override
+    DString trGlobalNamespace() override
     {
       return "大域名前空間";
     }
 
     /*! Message shown while searching */
-    QCString trSearching() override
+    DString trSearching() override
     {
       return "検索中…";
     }
 
     /*! Text shown when no search results are found */
-    QCString trNoMatches() override
+    DString trNoMatches() override
     {
       return "一致する文字列を見つけられません";
     }
@@ -1772,7 +1775,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      *  table is shown. The heading for the first column mentions the
      *  source file that has a relation to another file.
      */
-    QCString trFileIn(const QCString &name) override
+    DString trFileIn(const DString &name) override
     {
       return name+"にあるファイル";
     }
@@ -1781,7 +1784,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      *  table is shown. The heading for the second column mentions the
      *  destination file that is included.
      */
-    QCString trIncludesFileIn(const QCString &name) override
+    DString trIncludesFileIn(const DString &name) override
     {
       return name+"にあるファイルを include している";
     }
@@ -1796,12 +1799,12 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      *  @param seconds Seconds within the minute: 0..59
      *  @param includeTime Include time in the result string?
      */
-    QCString trDateTime(int year,int month,int day,int dayOfWeek,
+    DString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
                                 DateTimeType includeTime) override
     {
       static const char *days[]   = { "月", "火", "水", "木", "金", "土", "日" };
-      QCString sdate;
+      DString sdate;
       if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
       {
         sdate.sprintf("%.4d年%.2d月%.2d日(%s)",year,month,day,days[dayOfWeek-1]);
@@ -1809,27 +1812,27 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
       if (includeTime == DateTimeType::DateTime) sdate += " ";
       if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
-        QCString stime;
+        DString stime;
         stime.sprintf("%.2d時%.2d分%.2d秒",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
     }
-    QCString trDayOfWeek(int dayOfWeek, bool, bool full) override
+    DString trDayOfWeek(int dayOfWeek, bool, bool full) override
     {
       static const char *days_short[]   = { "月", "火", "水", "木", "金", "土", "日" };
       static const char *days_full[]    = { "月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日", "日曜日" };
-      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      DString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
       return text;
     }
-    QCString trMonth(int month, bool, bool full) override
+    DString trMonth(int month, bool, bool full) override
     {
       static const char *months_short[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
       static const char *months_full[]  = { "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月" };
-      QCString text  = full? months_full[month-1] : months_short[month-1];
+      DString text  = full? months_full[month-1] : months_short[month-1];
       return text;
     }
-    QCString trDayPeriod(bool period) override
+    DString trDayPeriod(bool period) override
     {
       static const char *dayPeriod[] = { "午前", "午後" };
       return dayPeriod[period?1:0];
@@ -1840,51 +1843,51 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! Header for the page with bibliographic citations */
-    QCString trCiteReferences() override
+    DString trCiteReferences() override
     { return "書誌参照"; }
 
     /*! Text for copyright paragraph */
-    QCString trCopyright() override
+    DString trCopyright() override
     { return "著作権所有"; }
 
     /*! Header for the graph showing the directory dependencies */
-    QCString trDirDepGraph(const QCString &name) override
-    { return QCString(name)+" のディレクトリ依存関係図"; }
+    DString trDirDepGraph(const DString &name) override
+    { return name+" のディレクトリ依存関係図"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.0
 //////////////////////////////////////////////////////////////////////////
 
     /*! Detail level selector shown for hierarchical indices */
-    QCString trDetailLevel() override
+    DString trDetailLevel() override
     { return "表示階層"; }
 
     /*! Section header for list of template parameters */
-    QCString trTemplateParameters() override
+    DString trTemplateParameters() override
     { return "テンプレート引数"; }
 
     /*! Used in dot graph when UML_LOOK is enabled and there are many fields */
-    QCString trAndMore(const QCString &number) override
+    DString trAndMore(const DString &number) override
     { return "ほか "+number+" 件…"; }
 
     /*! Used file list for a Java enum */
-    QCString trEnumGeneratedFromFiles(bool) override
+    DString trEnumGeneratedFromFiles(bool) override
     {
       return "次のファイルからこの列挙についての詳解を抽出しました:";
     }
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
-    QCString trEnumReference(const QCString &name) override
-    { return QCString("列挙 ")+name+" 詳解"; }
+    DString trEnumReference(const DString &name) override
+    { return DString("列挙 ")+name+" 詳解"; }
 
     /*! Used for a section containing inherited members */
-    QCString trInheritedFrom(const QCString &members,const QCString &what) override
-    { return QCString("基底クラス ")+what+" に属する継承"+members; }
+    DString trInheritedFrom(const DString &members,const DString &what) override
+    { return DString("基底クラス ")+what+" に属する継承"+members; }
 
     /*! Header of the sections with inherited members specific for the
      *  base class(es)
      */
-    QCString trAdditionalInheritedMembers() override
+    DString trAdditionalInheritedMembers() override
     { return "その他の継承メンバ"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1895,10 +1898,10 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      *  navigation tree in the HTML output when GENERATE_TREEVIEW is
      *  enabled. This tooltip explains the meaning of the button.
      */
-    QCString trPanelSynchronisationTooltip(bool enable) override
+    DString trPanelSynchronisationTooltip(bool enable) override
     {
 
-      QCString opt = enable ? "有効" : "無効";
+      DString opt = enable ? "有効" : "無効";
       return "クリックで同期表示が"+opt+"になります";
     }
 
@@ -1906,7 +1909,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      *  a category. Note that the @1 marker is required and is replaced
      *  by a link.
      */
-    QCString trProvidedByCategory() override
+    DString trProvidedByCategory() override
     {
       return "@0 カテゴリーから提供されています。";
     }
@@ -1915,7 +1918,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      *  Note that the @1 marker is required and is replaced by a link to
      *  the class method.
      */
-    QCString trExtendsClass() override
+    DString trExtendsClass() override
     {
       return "@0 を拡張しています。";
     }
@@ -1923,7 +1926,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! Used as the header of a list of class methods in Objective-C.
      *  These are similar to static public member functions in C++.
      */
-    QCString trClassMethods() override
+    DString trClassMethods() override
     {
       return "クラスメソッド";
     }
@@ -1931,14 +1934,14 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! Used as the header of a list of instance methods in Objective-C.
      *  These are similar to public member functions in C++.
      */
-    QCString trInstanceMethods() override
+    DString trInstanceMethods() override
     {
       return "実体メソッド";
     }
 
     /*! Used as the header of the member functions of an Objective-C class.
      */
-    QCString trMethodDocumentation() override
+    DString trMethodDocumentation() override
     {
       return "メソッド詳解";
     }
@@ -1948,52 +1951,644 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /** old style UNO IDL services: implemented interfaces */
-    QCString trInterfaces() override
+    DString trInterfaces() override
     { return "実装されたインターフォース"; }
 
     /** old style UNO IDL services: inherited services */
-    QCString trServices() override
+    DString trServices() override
     { return "継承されたサービス"; }
 
     /** UNO IDL constant groups */
-    QCString trConstantGroups() override
+    DString trConstantGroups() override
     { return "定数グループ"; }
 
     /** UNO IDL constant groups */
-    QCString trConstantGroupReference(const QCString &namespaceName) override
+    DString trConstantGroupReference(const DString &namespaceName) override
     {
-      QCString result=namespaceName;
+      DString result=namespaceName;
       result+=" 定数グループ詳解";
       return result;
     }
     /** UNO IDL service page title */
-    QCString trServiceReference(const QCString &sName) override
+    DString trServiceReference(const DString &sName) override
     {
-      QCString result=sName;
+      DString result=sName;
       result+=" サービス詳解";
       return result;
     }
     /** UNO IDL singleton page title */
-    QCString trSingletonReference(const QCString &sName) override
+    DString trSingletonReference(const DString &sName) override
     {
-      QCString result=sName;
+      DString result=sName;
       result+=" Singleton 詳解";
       return result;
     }
     /** UNO IDL service page */
-    QCString trServiceGeneratedFromFiles(bool /*single*/) override
+    DString trServiceGeneratedFromFiles(bool /*single*/) override
     {
       // single is true implies a single file
       return "次のファイルからこのサービスについて"
              "の詳解を抽出しました:";
     }
     /** UNO IDL singleton page */
-    QCString trSingletonGeneratedFromFiles(bool /*single*/) override
+    DString trSingletonGeneratedFromFiles(bool /*single*/) override
     {
       // single is true implies a single file
       return "次のファイルからこの Singleton について"
              "の詳解を抽出しました:";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.15
+//////////////////////////////////////////////////////////////////////////
+
+    /** VHDL design unit hierarchy */
+    DString trDesignUnitHierarchy() override
+    { return "デザインユニット階層"; }
+
+    /** VHDL design unit list */
+    DString trDesignUnitList() override
+    { return "デザインユニット一覧"; }
+
+    /** VHDL design unit members */
+    DString trDesignUnitMembers() override
+    { return "デザインユニットメンバ"; }
+
+    /** VHDL design unit list description */
+    DString trDesignUnitListDescription() override
+    {
+      return "エンティティへのリンクを持つ全デザインユニットメンバの一覧です:";
+    }
+
+    /** VHDL design unit index */
+    DString trDesignUnitIndex() override
+    { return "デザインユニット索引"; }
+
+    /** VHDL design units */
+    DString trDesignUnits() override
+    { return "デザインユニット"; }
+
+    /** VHDL functions/procedures/processes */
+    DString trFunctionAndProc() override
+    { return "関数/プロシージャ/プロセス"; }
+
+    /** VHDL type */
+    DString trVhdlType(VhdlSpecifier type, bool single) override
+    {
+      switch(type)
+      {
+        case VhdlSpecifier::LIBRARY:
+          return "ライブラリ";
+        case VhdlSpecifier::PACKAGE:
+          return "パッケージ";
+        case VhdlSpecifier::SIGNAL:
+          return "シグナル";
+        case VhdlSpecifier::COMPONENT:
+          return "コンポーネント";
+        case VhdlSpecifier::CONSTANT:
+          return "定数";
+        case VhdlSpecifier::ENTITY:
+          return "エンティティ";
+        case VhdlSpecifier::TYPE:
+          return "型";
+        case VhdlSpecifier::SUBTYPE:
+          return "サブタイプ";
+        case VhdlSpecifier::FUNCTION:
+          return "関数";
+        case VhdlSpecifier::RECORD:
+          return "レコード";
+        case VhdlSpecifier::PROCEDURE:
+          return "プロシージャ";
+        case VhdlSpecifier::ARCHITECTURE:
+          return "アーキテクチャ";
+        case VhdlSpecifier::ATTRIBUTE:
+          return "属性";
+        case VhdlSpecifier::PROCESS:
+          return "プロセス";
+        case VhdlSpecifier::PORT:
+          return "ポート";
+        case VhdlSpecifier::USE:
+          return "使用節";
+        case VhdlSpecifier::GENERIC:
+          return "ジェネリック";
+        case VhdlSpecifier::PACKAGE_BODY:
+          return "パッケージボディ";
+        case VhdlSpecifier::UNITS:
+          return "ユニット";
+        case VhdlSpecifier::SHAREDVARIABLE:
+          return "共有変数";
+        case VhdlSpecifier::VFILE:
+          return "ファイル";
+        case VhdlSpecifier::GROUP:
+          return "グループ";
+        case VhdlSpecifier::INSTANTIATION:
+          return "インスタンス化";
+        case VhdlSpecifier::ALIAS:
+          return "エイリアス";
+        case VhdlSpecifier::CONFIG:
+          return "コンフィギュレーション";
+        case VhdlSpecifier::MISCELLANEOUS:
+          return "その他";
+        case VhdlSpecifier::UCF_CONST:
+          return "制約";
+        default:
+          return "クラス";
+      }
+    }
+
+    DString trCustomReference(const DString &name) override
+    { return name+" 詳解"; }
+
+    /* Slice */
+    DString trConstants() override
+    { return "定数"; }
+
+    DString trConstantDocumentation() override
+    { return "定数詳解"; }
+
+    DString trSequences() override
+    { return "シーケンス"; }
+
+    DString trSequenceDocumentation() override
+    { return "シーケンス詳解"; }
+
+    DString trDictionaries() override
+    { return "辞書"; }
+
+    DString trDictionaryDocumentation() override
+    { return "辞書詳解"; }
+
+    DString trSliceInterfaces() override
+    { return "インタフェース"; }
+
+    DString trInterfaceIndex() override
+    { return "インタフェース索引"; }
+
+    DString trInterfaceList() override
+    { return "インタフェース一覧"; }
+
+    DString trInterfaceListDescription() override
+    { return "概要付きインタフェースの一覧です:"; }
+
+    DString trInterfaceHierarchy() override
+    { return "インタフェース階層"; }
+
+    DString trInterfaceHierarchyDescription() override
+    { return "クラス階層一覧です。大雑把に文字符号順で並べられています。"; }
+
+    DString trInterfaceDocumentation() override
+    { return "インタフェース詳解"; }
+
+    DString trStructs() override
+    { return "構造体"; }
+
+    DString trStructIndex() override
+    { return "構造体索引"; }
+
+    DString trStructList() override
+    { return "構造体一覧"; }
+
+    DString trStructListDescription() override
+    { return "概要付き構造体の一覧です:"; }
+
+    DString trStructDocumentation() override
+    { return "構造体詳解"; }
+
+    DString trExceptionIndex() override
+    { return "例外索引"; }
+
+    DString trExceptionList() override
+    { return "例外一覧"; }
+
+    DString trExceptionListDescription() override
+    { return "概要付き例外の一覧です:"; }
+
+    DString trExceptionHierarchy() override
+    { return "例外階層"; }
+
+    DString trExceptionHierarchyDescription() override
+    { return "例外階層一覧です。大雑把に文字符号順で並べられています。"; }
+
+    DString trExceptionDocumentation() override
+    { return "例外詳解"; }
+
+    DString trCompoundReferenceSlice(const DString &clName, ClassDef::CompoundType compType, bool isLocal) override
+    {
+      DString result=clName;
+      if (isLocal) result+=" ローカル";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+=" クラス"; break;
+        case ClassDef::Struct:     result+=" 構造体"; break;
+        case ClassDef::Union:      result+=" 共用体"; break;
+        case ClassDef::Interface:  result+=" インタフェース"; break;
+        case ClassDef::Protocol:   result+=" プロトコル"; break;
+        case ClassDef::Category:   result+=" カテゴリ"; break;
+        case ClassDef::Exception:  result+=" 例外"; break;
+        default: break;
+      }
+      result+=" 詳解";
+      return result;
+    }
+
+    DString trOperations() override
+    { return "操作"; }
+
+    DString trOperationDocumentation() override
+    { return "操作詳解"; }
+
+    DString trDataMembers() override
+    { return "データメンバ"; }
+
+    DString trDataMemberDocumentation() override
+    { return "データメンバ詳解"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19
+//////////////////////////////////////////////////////////////////////////
+
+    /** VHDL design unit documentation */
+    DString trDesignUnitDocumentation() override
+    { return "デザインユニット詳解"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.2
+//////////////////////////////////////////////////////////////////////////
+
+    /** C++20 concept */
+    DString trConcept(bool /*first_capital*/, bool /*singular*/) override
+    { return "コンセプト"; }
+
+    /*! used as the title of the HTML page of a C++20 concept page */
+    DString trConceptReference(const DString &conceptName) override
+    {
+      DString result=conceptName;
+      result+=" コンセプト詳解";
+      return result;
+    }
+
+    /*! used as the title of page containing all the index of all concepts. */
+    DString trConceptList() override
+    { return "コンセプト一覧"; }
+
+    /*! used as the title of chapter containing the index listing all concepts. */
+    DString trConceptIndex() override
+    { return "コンセプト索引"; }
+
+    /*! used as the title of chapter containing all information about concepts. */
+    DString trConceptDocumentation() override
+    { return "コンセプト詳解"; }
+
+    /*! used as an introduction to the concept list */
+    DString trConceptListDescription(bool extractAll) override
+    {
+      if (extractAll)
+      {
+        return "全コンセプトの一覧です。";
+      }
+      return "詳解が付けられているコンセプトの一覧です。";
+    }
+
+    /*! used to introduce the definition of the C++20 concept */
+    DString trConceptDefinition() override
+    { return "コンセプトの定義"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.4
+//////////////////////////////////////////////////////////////////////////
+
+    DString trPackageList() override
+    { return "パッケージ一覧"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used for translation of the word that will be
+     *  followed by a single name of the VHDL process flowchart.
+     */
+    DString trFlowchart() override
+    { return "フローチャート:"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.7
+//////////////////////////////////////////////////////////////////////////
+
+    /*! used in the compound documentation before a list of related symbols.
+     *
+     *  Supersedes trRelatedFunctions
+     */
+    DString trRelatedSymbols() override
+    { return "関連シンボル"; }
+
+    /*! subscript for the related symbols
+     *
+     *  Supersedes trRelatedSubscript
+     */
+    DString trRelatedSymbolsSubscript() override
+    { return "（これらはメンバシンボルではありません）"; }
+
+    /*! used in the class documentation as a header before the list of all
+     * related classes.
+     *
+     * Supersedes trRelatedFunctionDocumentation
+     */
+    DString trRelatedSymbolDocumentation() override
+    { return "フレンドと関連シンボルの詳解"; }
+
+    /*! the compound type as used for the xrefitems */
+    DString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang) override
+    {
+      DString result;
+      switch(compType)
+      {
+        case ClassDef::Class:
+          if (lang == SrcLangExt::Fortran) result=trType(true,true);
+          else result=trClass(true,true);
+          break;
+        case ClassDef::Struct:     result="構造体"; break;
+        case ClassDef::Union:      result="共用体"; break;
+        case ClassDef::Interface:  result="インタフェース"; break;
+        case ClassDef::Protocol:   result="プロトコル"; break;
+        case ClassDef::Category:   result="カテゴリ"; break;
+        case ClassDef::Exception:  result="例外"; break;
+        case ClassDef::Service:    result="サービス"; break;
+        case ClassDef::Singleton:  result="シングルトン"; break;
+        default: break;
+      }
+      return result;
+    }
+
+    DString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      DString result;
+      if (extractAll) result += "全";
+      else result += "詳解あり";
+      switch (hl)
+      {
+        case FileMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+            result += "関数・変数・マクロ・列挙・型定義";
+          else
+            result += "ファイルメンバ";
+          break;
+        case FileMemberHighlight::Functions:
+          result += "関数";
+          break;
+        case FileMemberHighlight::Variables:
+          result += "変数";
+          break;
+        case FileMemberHighlight::Typedefs:
+          result += "型定義";
+          break;
+        case FileMemberHighlight::Sequences:
+          result += "シーケンス";
+          break;
+        case FileMemberHighlight::Dictionaries:
+          result += "辞書";
+          break;
+        case FileMemberHighlight::Enums:
+          result += "列挙型";
+          break;
+        case FileMemberHighlight::EnumValues:
+          result += "列挙値";
+          break;
+        case FileMemberHighlight::Defines:
+          result += "マクロ";
+          break;
+        case FileMemberHighlight::Total: // for completeness
+          break;
+      }
+      result += "の一覧です。";
+      if (extractAll)
+        result += "各々が属するファイルへのリンクがあります。";
+      else
+        result += "各詳解へのリンクがあります。";
+      return result;
+    }
+
+    DString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      DString result;
+      if (extractAll) result += "全";
+      else result += "詳解あり";
+      switch (hl)
+      {
+        case ClassMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+            result += "構造体・共用体フィールド";
+          else
+            result += "クラスメンバ";
+          break;
+        case ClassMemberHighlight::Functions:
+          result += "関数";
+          break;
+        case ClassMemberHighlight::Variables:
+          result += "変数";
+          break;
+        case ClassMemberHighlight::Typedefs:
+          result += "型定義";
+          break;
+        case ClassMemberHighlight::Enums:
+          result += "列挙型";
+          break;
+        case ClassMemberHighlight::EnumValues:
+          result += "列挙値";
+          break;
+        case ClassMemberHighlight::Properties:
+          result += "プロパティ";
+          break;
+        case ClassMemberHighlight::Events:
+          result += "イベント";
+          break;
+        case ClassMemberHighlight::Related:
+          result += "関連シンボル";
+          break;
+        case ClassMemberHighlight::Total: // for completeness
+          break;
+      }
+      result += "の一覧です。";
+      if (!extractAll)
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          result += "各フィールドが属する構造体・共用体詳解へのリンクがあります。";
+        else
+          result += "各メンバが属するクラス詳解へのリンクがあります。";
+      }
+      else
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          result += "各フィールドが属する構造体・共用体へのリンクがあります。";
+        else
+          result += "各メンバが属するクラスへのリンクがあります。";
+      }
+      return result;
+    }
+
+    DString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      DString result;
+      if (extractAll) result += "全";
+      else result += "詳解あり";
+      result += "名前空間";
+      switch (hl)
+      {
+        case NamespaceMemberHighlight::All:
+          result += "メンバ";
+          break;
+        case NamespaceMemberHighlight::Functions:
+          result += "関数";
+          break;
+        case NamespaceMemberHighlight::Variables:
+          result += "変数";
+          break;
+        case NamespaceMemberHighlight::Typedefs:
+          result += "型定義";
+          break;
+        case NamespaceMemberHighlight::Sequences:
+          result += "シーケンス";
+          break;
+        case NamespaceMemberHighlight::Dictionaries:
+          result += "辞書";
+          break;
+        case NamespaceMemberHighlight::Enums:
+          result += "列挙型";
+          break;
+        case NamespaceMemberHighlight::EnumValues:
+          result += "列挙値";
+          break;
+        case NamespaceMemberHighlight::Total: // for completeness
+          break;
+      }
+      result += "の一覧です。";
+      if (extractAll)
+        result += "各名前空間メンバの所属名前空間へのリンクがあります。";
+      else
+        result += "各メンバ詳解へのリンクがあります。";
+      return result;
+    }
+
+    DString trDefinition() override
+    { return "定義"; }
+
+    DString trDeclaration() override
+    { return "宣言"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.8
+//////////////////////////////////////////////////////////////////////////
+
+    DString trTopics() override
+    { return "トピック"; }
+
+    DString trTopicDocumentation() override
+    { return "トピック詳解"; }
+
+    DString trTopicList() override
+    { return "トピック一覧"; }
+
+    DString trTopicIndex() override
+    { return "トピック索引"; }
+
+    DString trTopicListDescription() override
+    { return "概要付きトピックの一覧です:"; }
+
+    DString trModuleMembersDescriptionTotal(ModuleMemberHighlight::Enum hl) override
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      DString result;
+      if (extractAll) result += "全";
+      else result += "詳解あり";
+      switch (hl)
+      {
+        case ModuleMemberHighlight::All:
+          result += "モジュールメンバ";
+          break;
+        case ModuleMemberHighlight::Functions:
+          result += "関数";
+          break;
+        case ModuleMemberHighlight::Variables:
+          result += "変数";
+          break;
+        case ModuleMemberHighlight::Typedefs:
+          result += "型定義";
+          break;
+        case ModuleMemberHighlight::Enums:
+          result += "列挙型";
+          break;
+        case ModuleMemberHighlight::EnumValues:
+          result += "列挙値";
+          break;
+        case ModuleMemberHighlight::Total: // for completeness
+          break;
+      }
+      result += "の一覧です。";
+      if (extractAll)
+        result += "各モジュールメンバの所属モジュールへのリンクがあります。";
+      else
+        result += "各メンバ詳解へのリンクがあります。";
+      return result;
+    }
+
+    DString trExportedModules() override
+    { return "エクスポートされたモジュール"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.10.0
+//////////////////////////////////////////////////////////////////////////
+
+    DString trCopyToClipboard() override
+    { return "クリップボードにコピー"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.11.0
+//////////////////////////////////////////////////////////////////////////
+
+    DString trImportant() override
+    { return "重要"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.16.0
+//////////////////////////////////////////////////////////////////////////
+
+    // the title of the requirements overview page
+    DString trRequirements() override
+    { return "要件"; }
+
+    // table header for the column with the requirements IDs
+    DString trRequirementID() override
+    { return "ID"; }
+
+    // indicates a symbol implements (satisfies) a requirement
+    DString trSatisfies(bool /*singular*/) override
+    { return "実装する要件"; }
+
+    // indicates a requirement is satisfied (implemented) by one or more symbols
+    DString trSatisfiedBy(const DString &list) override
+    { return list+" によって実装されています。"; }
+
+    DString trUnsatisfiedRequirements() override
+    { return "未実装の要件"; }
+
+    DString trUnsatisfiedRequirementsText(bool /*singular*/, const DString &list) override
+    { return "要件 "+list+" は '実装' 関係を持っていません。"; }
+
+    // indicates a symbol verifies (tests) a requirement
+    DString trVerifies(bool /*singular*/) override
+    { return "検証する要件"; }
+
+    // indicates a requirement is verified (tested) by one or more symbols
+    DString trVerifiedBy(const DString &list) override
+    { return list+" によって検証されています。"; }
+
+    DString trUnverifiedRequirements() override
+    { return "未検証の要件"; }
+
+    DString trUnverifiedRequirementsText(bool /*singular*/, const DString &list) override
+    { return "要件 "+list+" は '検証' 関係を持っていません。"; }
 
 };
 

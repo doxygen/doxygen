@@ -24,7 +24,7 @@ def main():
         # fix literal strings
         line = re.sub(message_re,'message += reinterpret_cast<const JJChar*>(\\1)',line)
         # fix missing return statements
-        outputFile.write(line.replace("assert(false);","assert(false);return QCString();"))
+        outputFile.write(line.replace("assert(false);","assert(false);return DString();"))
 
 if __name__ == '__main__':
     main()
