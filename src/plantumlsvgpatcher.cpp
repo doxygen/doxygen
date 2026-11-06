@@ -23,7 +23,11 @@
 #include "dir.h"
 #include "regex.h"
 
-PlantumlSvgPatcher::PlantumlSvgPatcher(const QCString &svgFile, const QCString &relPath, const QCString &context)
+namespace {
+    constexpr size_t npos = DString::npos;
+}
+
+PlantumlSvgPatcher::PlantumlSvgPatcher(const DString &svgFile, const DString &relPath, const DString &context)
   : m_svgFile(svgFile), m_relPath(relPath), m_context(context)
 {
 }
@@ -45,17 +49,17 @@ bool PlantumlSvgPatcher::run()
                        std::istreambuf_iterator<char>());
   fi.close();
 
-  QCString svgContent(content);
+  DString svgContent(content);
 
   // Check if there are any bare refs to patch
-  if (svgContent.find("href=\"\\ref\"") == -1 && svgContent.find("xlink:href=\"\\ref\"") == -1)
+  if (svgContent.find("href=\"\\ref\"") == npos && svgContent.find("xlink:href=\"\\ref\"") == npos)
   {
     Debug::print(Debug::Plantuml, 0, "PlantumlSvgPatcher: No bare refs found in {}\n", m_svgFile);
     return true; // Nothing to patch
   }
 
   // Patch the content
-  QCString patchedContent = patchBareRefs(svgContent);
+  DString patchedContent = patchBareRefs(svgContent);
 
   // Write back the patched content
   std::ofstream fo = Portable::openOutputStream(m_svgFile);
@@ -72,71 +76,71 @@ bool PlantumlSvgPatcher::run()
   return true;
 }
 
-QCString PlantumlSvgPatcher::patchBareRefs(const QCString &content) const
+DString PlantumlSvgPatcher::patchBareRefs(const DString &content) const
 {
-  QCString result = content;
+  DString result = content;
 
   // Process all bare refs iteratively
   // Pattern: <a ... href="\ref" ...> ... <text>REFNAME</text> ... </a>
   // We find each occurrence and replace it
 
-  int searchStart = 0;
+  size_t searchStart = 0;
   while (true)
   {
     // Find the next bare ref (either href="\ref" or xlink:href="\ref")
-    int hrefPos = result.find("href=\"\\ref\"", searchStart);
-    int xlinkPos = result.find("xlink:href=\"\\ref\"", searchStart);
+    size_t hrefPos = result.find("href=\"\\ref\"", searchStart);
+    size_t xlinkPos = result.find("xlink:href=\"\\ref\"", searchStart);
 
     // Determine which one comes first
-    int refPos = -1;
-    if (hrefPos != -1 && (xlinkPos == -1 || hrefPos < xlinkPos))
+    size_t refPos = npos;
+    if (hrefPos != npos && (xlinkPos == npos || hrefPos < xlinkPos))
     {
       refPos = hrefPos;
     }
-    else if (xlinkPos != -1)
+    else if (xlinkPos != npos)
     {
       refPos = xlinkPos;
     }
 
-    if (refPos == -1)
+    if (refPos == npos)
     {
       break; // No more bare refs
     }
 
     // Find the containing <a> tag
-    int aTagStart = result.findRev("<a", refPos);
-    if (aTagStart == -1)
+    size_t aTagStart = result.rfind("<a", refPos);
+    if (aTagStart == npos)
     {
       searchStart = refPos + 1;
       continue;
     }
 
     // Find the closing </a> tag
-    int aTagClose = result.find("</a>", refPos);
-    if (aTagClose == -1)
+    size_t aTagClose = result.find("</a>", refPos);
+    if (aTagClose == npos)
     {
       searchStart = refPos + 1;
       continue;
     }
 
     // Find the end of the opening <a ...> tag
-    int aTagOpenEnd = result.find('>', aTagStart);
-    if (aTagOpenEnd == -1 || aTagOpenEnd > aTagClose)
+    size_t aTagOpenEnd = result.find('>', aTagStart);
+    if (aTagOpenEnd == npos || aTagOpenEnd > aTagClose)
     {
       searchStart = refPos + 1;
       continue;
     }
 
     // Extract the opening tag
-    QCString openingTag = result.mid(aTagStart, aTagOpenEnd - aTagStart + 1);
+    DString openingTag = result.mid(aTagStart, aTagOpenEnd - aTagStart + 1);
 
     // Extract the content between <a ...> and </a>
-    QCString anchorContent = result.mid(aTagOpenEnd + 1, aTagClose - aTagOpenEnd - 1);
+    DString anchorContent = result.mid(aTagOpenEnd + 1, aTagClose - aTagOpenEnd - 1);
 
     // Extract the reference name from the text content
-    QCString refName = extractRefNameFromAnchorContent(anchorContent);
+    DString refName = extractRefNameFromAnchorContent(anchorContent);
 
-    if (refName.isEmpty())
+    if (refName.empty())
     {
       Debug::print(Debug::Plantuml, 0, "PlantumlSvgPatcher: Could not extract ref name from anchor content\n");
       searchStart = refPos + 1;
@@ -144,23 +148,23 @@ QCString PlantumlSvgPatcher::patchBareRefs(const QCString &content) const
     }
 
     // Resolve the reference to a URL
-    QCString url = resolveRefToUrl(refName);
+    DString url = resolveRefToUrl(refName);
 
     // Build the new opening tag with all replacements done at once
-    QCString newOpeningTag = openingTag;
+    DString newOpeningTag = openingTag;
 
     // Check which attributes exist in this tag
-    bool hasHref = openingTag.find("href=\"\\ref\"") != -1;
-    bool hasXlinkHref = openingTag.find("xlink:href=\"\\ref\"") != -1;
+    bool hasHref = openingTag.find("href=\"\\ref\"") != npos;
+    bool hasXlinkHref = openingTag.find("xlink:href=\"\\ref\"") != npos;
 
-    if (url.isEmpty())
+    if (url.empty())
     {
       // Unresolved reference - use onclick with postMessage for JavaScript handling
       // Escape single quotes and backslashes in refName for JavaScript string
-      QCString escapedRefName = substitute(refName, "\\", "\\\\");
+      DString escapedRefName = substitute(refName, "\\", "\\\\");
       escapedRefName = substitute(escapedRefName, "'", "\\'");
 
-      QCString onclickHandler = "window.parent.postMessage({type:'unresolved-ref',name:'" + escapedRefName + "'},'*');return false;";
+      DString onclickHandler = "window.parent.postMessage({type:'unresolved-ref',name:'" + escapedRefName + "'},'*');return false;";
 
       // Replace href attributes with # and add onclick only once
       if (hasHref)
@@ -174,8 +178,8 @@ QCString PlantumlSvgPatcher::patchBareRefs(const QCString &content) const
 
       // Add onclick handler before the closing >
       // Find the position of the closing > in the new opening tag
-      int closingBracket = newOpeningTag.findRev('>');
-      if (closingBracket != -1)
+      size_t closingBracket = newOpeningTag.rfind('>');
+      if (closingBracket != npos)
       {
         newOpeningTag = newOpeningTag.left(closingBracket) + " onclick=\"" + onclickHandler + "\"" + newOpeningTag.mid(closingBracket);
       }
@@ -207,7 +211,7 @@ QCString PlantumlSvgPatcher::patchBareRefs(const QCString &content) const
   return result;
 }
 
-QCString PlantumlSvgPatcher::extractRefNameFromAnchorContent(const QCString &anchorContent)
+DString PlantumlSvgPatcher::extractRefNameFromAnchorContent(const DString &anchorContent)
 {
   // Look for <text ...>REFNAME</text> pattern within the anchor content
   static const reg::Ex textPattern(R"(<text[^>]*>([^<]+)</text>)");
@@ -215,16 +219,16 @@ QCString PlantumlSvgPatcher::extractRefNameFromAnchorContent(const QCString &anc
 
   if (reg::search(anchorContent.str(), match, textPattern))
   {
-    QCString refName = match[1].str();
+    DString refName = match[1].str();
     return refName.stripWhiteSpace();
   }
 
-  return QCString();
+  return DString();
 }
 
-QCString PlantumlSvgPatcher::resolveRefToUrl(const QCString &refName) const
+DString PlantumlSvgPatcher::resolveRefToUrl(const DString &refName) const
 {
-  QCString url;
+  DString url;
   bool resolved = false;
 
   auto parser { createDocParser() };
@@ -237,16 +241,16 @@ QCString PlantumlSvgPatcher::resolveRefToUrl(const QCString &refName) const
     if (df)
     {
       // Check if reference was actually resolved (has file or anchor)
-      if (!df->file().isEmpty() || !df->anchor().isEmpty())
+      if (!df->file().empty() || !df->anchor().empty())
       {
-        url = externalRef(m_relPath, df->ref(), TRUE);
-        if (!df->file().isEmpty())
+        url = externalRef(m_relPath, df->ref(), true);
+        if (!df->file().empty())
         {
-          QCString fn = df->file();
+          DString fn = df->file();
           addHtmlExtensionIfMissing(fn);
           url += fn;
         }
-        if (!df->anchor().isEmpty())
+        if (!df->anchor().empty())
         {
           url += "#" + df->anchor();
         }
@@ -259,7 +263,7 @@ QCString PlantumlSvgPatcher::resolveRefToUrl(const QCString &refName) const
   {
     Debug::print(Debug::Plantuml, 0, "PlantumlSvgPatcher: Ref '{}' unresolved\n", refName);
     // Return empty string to signal unresolved - caller will add onclick handler
-    return QCString();
+    return DString();
   }
 
   return url;

@@ -2315,7 +2315,7 @@ void HtmlDocVisitor::writePlantUMLFile(const DString &fileName, const DString &r
   {
     PlantumlManager::instance().generatePlantUMLOutput(fileName,outDir,PlantumlManager::PUML_SVG,true);
     // Register patching info - will patch after PlantUML generates the file
-    QCString svgName = outDir+"/"+baseName+".svg";
+    DString svgName = outDir+"/"+baseName+".svg";
     PlantumlManager::instance().registerSVGPatch(svgName, relPath, context);
     m_t << "<object type=\"image/svg+xml\" data=\"" << relPath << baseName << ".svg\"></object>\n";
   }

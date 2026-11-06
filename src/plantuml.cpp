@@ -369,9 +369,9 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
         {
           for (const auto &str : files_kv->second)
           {
-            QCString svgPath = pumlOutDir + str + ".svg";
+            DString svgPath = pumlOutDir + str + ".svg";
             // Normalize path separators for comparison
-            QCString normalizedSvgPath = svgPath;
+            DString normalizedSvgPath = svgPath;
             for (size_t i = 0; i < normalizedSvgPath.length(); i++)
             {
               if (normalizedSvgPath[i] == '\\') normalizedSvgPath[i] = '/';
@@ -419,7 +419,7 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
   }
 }
 
-void PlantumlManager::registerSVGPatch(const QCString &svgName, const QCString &relPath, const QCString &context)
+void PlantumlManager::registerSVGPatch(const DString &svgName, const DString &relPath, const DString &context)
 {
   SVGPatchInfo info;
   info.relPath = relPath;

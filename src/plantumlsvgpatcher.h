@@ -16,7 +16,7 @@
 #ifndef PLANTUMLSVGPATCHER_H
 #define PLANTUMLSVGPATCHER_H
 
-#include "qcstring.h"
+#include "dstring.h"
 
 /** @brief Utility class to patch PlantUML-generated SVG files.
  *
@@ -33,7 +33,7 @@ class PlantumlSvgPatcher
      *  @param relPath Relative path for resolving links.
      *  @param context Context for resolving `\ref` references.
      */
-    PlantumlSvgPatcher(const QCString &svgFile, const QCString &relPath, const QCString &context);
+    PlantumlSvgPatcher(const DString &svgFile, const DString &relPath, const DString &context);
 
     /** Run the patching process.
      *  @return TRUE if successful, FALSE on error.
@@ -45,23 +45,23 @@ class PlantumlSvgPatcher
      *  @param content The SVG content to process.
      *  @return The patched SVG content.
      */
-    QCString patchBareRefs(const QCString &content) const;
+    DString patchBareRefs(const DString &content) const;
 
     /** Extract the reference name from an anchor tag's text content.
      *  @param anchorContent The content between `<a>` and `</a>` tags.
      *  @return The extracted reference name, or empty string if not found.
      */
-    static QCString extractRefNameFromAnchorContent(const QCString &anchorContent);
+    static DString extractRefNameFromAnchorContent(const DString &anchorContent);
 
     /** Resolve a reference name to a URL.
      *  @param refName The reference name to resolve.
      *  @return The resolved URL, or "#" if unresolved.
      */
-    QCString resolveRefToUrl(const QCString &refName) const;
+    DString resolveRefToUrl(const DString &refName) const;
 
-    QCString m_svgFile;   //!< Path to the SVG file
-    QCString m_relPath;   //!< Relative path for links
-    QCString m_context;   //!< Context for ref resolution
+    DString m_svgFile;   //!< Path to the SVG file
+    DString m_relPath;   //!< Relative path for links
+    DString m_context;   //!< Context for ref resolution
 };
 
 #endif // PLANTUMLSVGPATCHER_H
