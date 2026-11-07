@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="146__copydoc__undocumented__header_8h" kind="file" language="C++">
+    <compoundname>146_copydoc_undocumented_header.h</compoundname>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="146__copydoc__undocumented__header_8h_1a59eb571033d121f8ef9f0b4d5ed5edfe" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dev_open</definition>
+        <argsstring>(int id)</argsstring>
+        <name>dev_open</name>
+        <param>
+          <type>int</type>
+          <declname>id</declname>
+        </param>
+        <briefdescription>
+          <para>Opens the device. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername>id</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The device id. </para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+            <simplesect kind="return">
+              <para>Zero on success. </para>
+            </simplesect>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="146_copydoc_undocumented_header.h" line="9" column="5" declfile="146_copydoc_undocumented_header.h" declline="9" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="146__copydoc__undocumented__header_8h_1aa69694490fc84a3b9d3ae65715c46154" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int dev_reopen</definition>
+        <argsstring>(int id)</argsstring>
+        <name>dev_reopen</name>
+        <param>
+          <type>int</type>
+          <declname>id</declname>
+        </param>
+        <briefdescription>
+          <para>Opens the device.    </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername>id</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The device id. </para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+            <simplesect kind="return">
+              <para>Zero on success.    </para>
+            </simplesect>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="146_copydoc_undocumented_header.h" line="12" column="5" declfile="146_copydoc_undocumented_header.h" declline="12" declcolumn="5"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="146_copydoc_undocumented_header.h"/>
+  </compounddef>
+</doxygen>

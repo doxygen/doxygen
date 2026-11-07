@@ -549,6 +549,12 @@ bool DocParser::findDocsForMemberOrCompound(const DString &commandName,
     input.currentFile=Doxygen::inputNameLinkedMap->findFileDef(context.fileName,ambig);
   }
   GetDefResult result = getDefs(input);
+  if (!result.found && input.currentFile)
+  {
+    // not found via that file, e.g. a function in a header without \file, so retry without it
+    input.currentFile=nullptr;
+    result = getDefs(input);
+  }
   //printf("found=%d context=%s name=%s\n",result.found,qPrint(context.context),qPrint(name));
   if (result.found && result.md)
   {
