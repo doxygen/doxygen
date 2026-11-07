@@ -70,7 +70,7 @@ static bool isLanguageCodeSupported(const QString &langCode)
   }
   QDir resourceDir(QString::fromLatin1(":/i18n"));
   QFileInfoList fileList = resourceDir.entryInfoList();
-  foreach (QFileInfo fileInfo, fileList)
+  for (const QFileInfo &fileInfo : std::as_const(fileList))
   {
     QString filename     = fileInfo.fileName();
     const int underscore = filename.indexOf(QChar::fromLatin1('_'));
@@ -635,7 +635,7 @@ void MainWindow::updateRecentFile(void)
 {
   m_recentMenu->clear();
   int i=0;
-  foreach( QString str, m_recentFiles )
+  for (const QString &str : std::as_const(m_recentFiles))
   {
     m_recentMenu->addAction(str);
     m_settings.setValue(QString::fromLatin1("recent/config%1").arg(i++),str);
@@ -950,7 +950,7 @@ static QString languagesList()
   QDir resourceDir(QString::fromLatin1(":/i18n"));
   QFileInfoList fileList = resourceDir.entryInfoList();
   QString prevLangCode;
-  foreach (QFileInfo fileInfo, fileList)
+  for (const QFileInfo &fileInfo : std::as_const(fileList))
   {
     QString filename     = fileInfo.fileName();
     const int underscore = filename.indexOf(QChar::fromLatin1('_'));

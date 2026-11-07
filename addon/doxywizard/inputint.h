@@ -47,14 +47,14 @@ class InputInt : public QObject, public Input
     void setText(const QString &txt) { m_lab->setText(txt); }
     void setToolTip(const QString &txt) { m_lab->setToolTip(txt); }
 
-  public slots:
+  public Q_SLOTS:
     void reset();
     void setValue(int val);
 
-  private slots:
+  private Q_SLOTS:
     void help();
 
-  signals:
+  Q_SIGNALS:
     void changed();
     void showHelp(Input *);
 

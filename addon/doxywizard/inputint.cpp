@@ -89,7 +89,7 @@ void InputInt::updateDefault()
     {
       m_lab->setText(QString::fromLatin1("<qt><font color='red'>")+m_id+QString::fromLatin1("</font></qt>"));
     }
-    emit changed();
+    Q_EMIT changed();
   }
 }
 

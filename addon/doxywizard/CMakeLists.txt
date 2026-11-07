@@ -52,7 +52,7 @@ include_directories(
 
 file(MAKE_DIRECTORY ${GENERATED_SRC_WIZARD})
 
-add_definitions(-DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DUNICODE)
+add_definitions(-DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_NO_KEYWORDS -DUNICODE)
 if (NOT Qt6Core_FOUND AND NOT Qt5Core_FOUND)
   include(${QT_USE_FILE})
 endif()
