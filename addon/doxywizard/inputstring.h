@@ -67,15 +67,15 @@ class InputString : public QObject, public Input
     bool isEmpty() { return m_str.isEmpty(); }
     QString checkEnumVal(const QString &value);
 
-  public slots:
+  public Q_SLOTS:
     void reset();
     void setValue(const QString&);
 
-  signals:
+  Q_SIGNALS:
     void changed();
     void showHelp(Input *);
 
-  private slots:
+  private Q_SLOTS:
     void browseFile();
     void browseDir();
     void clear();

@@ -50,7 +50,7 @@ class MainWindow : public QMainWindow
     void setLanguage(const QString &langCode);
     void saveConfig(const QString &fileName);
 
-  public slots:
+  public Q_SLOTS:
     void manual();
     void about();
     void openConfig();
@@ -63,7 +63,7 @@ class MainWindow : public QMainWindow
     void switchLanguage();
     void setDocumentationVisibility();
 
-  private slots:
+  private Q_SLOTS:
     void openRecent(QAction *action);
     void selectWorkingDir();
     void updateWorkingDir();

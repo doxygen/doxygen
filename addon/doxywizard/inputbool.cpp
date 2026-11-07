@@ -67,7 +67,7 @@ void InputBool::setValue( bool s )
     updateDependencies();
     m_cb->setChecked( s );
     m_value = m_state;
-    emit changed();
+    Q_EMIT changed();
   }
 }
 
