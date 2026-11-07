@@ -25,10 +25,10 @@ class HelpLabel : public QLabel
       connect(this,SIGNAL(customContextMenuRequested(const QPoint&)),
               this,SLOT(showMenu(const QPoint&)));
     }
-  signals:
+  Q_SIGNALS:
     void enter();
     void reset();
-  private slots:
+  private Q_SLOTS:
     void showMenu(const QPoint &p)
     {
       QMenu menu(this);

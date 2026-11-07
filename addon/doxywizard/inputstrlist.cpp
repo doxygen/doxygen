@@ -48,7 +48,7 @@ InputStrList::InputStrList( QGridLayout *layout,int &row,
 
   m_lb  = new QListWidget;
   //m_lb->setMinimumSize(400,100);
-  foreach (QString s, m_strList) m_lb->addItem(s);
+  for (const QString &s : std::as_const(m_strList)) m_lb->addItem(s);
 
   m_brFile=nullptr;
   m_brDir=nullptr;
@@ -99,7 +99,7 @@ void InputStrList::addString()
     m_strList.append(m_le->text());
     m_value = m_strList;
     updateDefault();
-    emit changed();
+    Q_EMIT changed();
     m_le->clear();
   }
 }
@@ -113,7 +113,7 @@ void InputStrList::delString()
     m_strList.removeAt(itemIndex);
     m_value = m_strList;
     updateDefault();
-    emit changed();
+    Q_EMIT changed();
   }
 }
 
@@ -126,7 +126,7 @@ void InputStrList::updateString()
     m_strList.removeAt(m_lb->currentRow()+1);
     m_value = m_strList;
     updateDefault();
-    emit changed();
+    Q_EMIT changed();
   }
 }
 
@@ -172,7 +172,7 @@ void InputStrList::browseFiles()
       m_strList.append(fileName);
       m_value = m_strList;
       updateDefault();
-      emit changed();
+      Q_EMIT changed();
     }
     m_le->setText(m_strList[0]);
   }
@@ -198,7 +198,7 @@ void InputStrList::browseDir()
     m_strList.append(dirName);
     m_value = m_strList;
     updateDefault();
-    emit changed();
+    Q_EMIT changed();
     m_le->setText(dirName);
   }
 }
@@ -245,7 +245,7 @@ void InputStrList::reset()
 void InputStrList::writeValue(QTextStream &t,TextCodecAdapter *codec,bool convert)
 {
   bool first=true;
-  foreach (QString s, m_strList)
+  for (const QString &s : std::as_const(m_strList))
   {
     if (!first)
     {
@@ -312,7 +312,7 @@ bool InputStrList::isDefault()
 
 bool InputStrList::isEmpty()
 {
-  foreach (QString s, m_strList)
+  for (const QString &s : std::as_const(m_strList))
   {
     if (!s.isEmpty()) return false;
   }

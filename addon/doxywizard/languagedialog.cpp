@@ -66,7 +66,7 @@ LanguageDialog::LanguageDialog(const QString &currentLocale,
   // add additional languages based on embedded info
   QDir resourceDir(QString::fromLatin1(":/i18n"));
   QFileInfoList fileList = resourceDir.entryInfoList();
-  foreach (QFileInfo fileInfo, fileList)
+  for (const QFileInfo &fileInfo : std::as_const(fileList))
   {
     QString filename     = fileInfo.fileName();
     const int underscore = filename.indexOf(QChar::fromLatin1('_'));
