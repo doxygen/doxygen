@@ -434,17 +434,14 @@ DString removeRedundantWhiteSpace(const DString &s)
   // We use a static character array to
   // improve the performance of this function
   // and thread_local is needed to make it multi-thread safe
-  static THREAD_LOCAL char *growBuf = nullptr;
-  static THREAD_LOCAL size_t growBufLen = 0;
-  if (s.length()*3>growBufLen) // For input character we produce at most 3 output characters,
+  static THREAD_LOCAL std::vector<char> growBuf;
+  if (s.length()*3+1 > growBuf.size()) // For input character we produce at most 3 output characters,
   {
-    growBufLen = s.length()*3;
-    growBuf = static_cast<char *>(realloc(growBuf,growBufLen+1)); // add 1 for 0-terminator
+    growBuf.resize(s.length()*3+1); // add 1 for 0-terminator
   }
-  if (growBuf==nullptr) return s; // should not happen, only we run out of memory
 
   const char *src=s.data();
-  char *dst=growBuf;
+  char *dst=growBuf.data();
 
   size_t i=0;
   size_t l=s.length();
@@ -681,8 +678,8 @@ DString removeRedundantWhiteSpace(const DString &s)
     pc=c;
   }
   *dst++='\0';
-  //printf("removeRedundantWhitespace(%s)->%s\n",qPrint(s),growBuf);
-  return growBuf;
+  //printf("removeRedundantWhitespace(%s)->%s\n",qPrint(s),growBuf.data());
+  return growBuf.data();
 }
 
 /**

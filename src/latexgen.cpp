@@ -84,8 +84,7 @@ void LatexCodeGenerator::codify(const DString &str)
     char c = 0;
     //char cs[5];
     int tabSize = Config_getInt(TAB_SIZE);
-    static THREAD_LOCAL char *result = nullptr;
-    static THREAD_LOCAL int lresult = 0;
+    static THREAD_LOCAL std::vector<char> result;
     if (m_hide) // only update column count
     {
       m_col = updateColumnCount(p,m_col);
@@ -138,10 +137,9 @@ void LatexCodeGenerator::codify(const DString &str)
 // helper macro to copy a single utf8 character, dealing with multibyte chars.
 #define COPYCHAR() do {                                             \
                        int bytes = getUTF8CharNumBytes(c);          \
-                       if (lresult < (i + bytes + 1))               \
+                       if (result.size() < static_cast<size_t>(i + bytes + 1)) \
                        {                                            \
-                         lresult += 512;                            \
-                         result = static_cast<char *>(realloc(result, lresult)); \
+                         result.resize(result.size() + 512);       \
                        }                                            \
                        for (int j=0; j<bytes && *p; j++)            \
                        {                                            \
@@ -159,7 +157,7 @@ void LatexCodeGenerator::codify(const DString &str)
                          COPYCHAR();
                        }
                        result[i]=0; // add terminator
-                       filterLatexString(*m_t,result,
+                       filterLatexString(*m_t, result.data(),
                                          m_insideTabbing, // insideTabbing
                                          true,  // insidePre
                                          false, // insideItem
