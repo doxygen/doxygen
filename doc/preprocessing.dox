@@ -74,6 +74,13 @@ and specify the macro definitions after
 the \ref cfg_predefined "PREDEFINED" or
 \ref cfg_expand_as_defined "EXPAND_AS_DEFINED" tag.
 
+Compiler-specific predefined macros are not imported automatically. If the
+input depends on them, provide the definitions for the target compiler using
+\ref cfg_predefined "PREDEFINED". For example, use
+<code>PREDEFINED = __USER_LABEL_PREFIX__=_</code> for a target whose compiler
+defines that macro as an underscore, or <code>__USER_LABEL_PREFIX__=</code>
+for a target where it expands to nothing.
+
 A typically example where some help from the preprocessor is needed is
 when dealing with the language extension from Microsoft: \c __declspec. The same goes
 for GNU's \c __attribute__ extension. Here is an example function.

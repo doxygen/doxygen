@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="structmy__class" kind="struct" language="C++" prot="public">
+    <compoundname>my_class</compoundname>
+    <templateparamlist>
+      <param>
+        <type>typename T</type>
+      </param>
+    </templateparamlist>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structmy__class_1a18c8f0b70248f78358fd917f0de6637e" prot="public" static="no" mutable="no">
+        <type>T</type>
+        <definition>T my_class&lt; T &gt;::m_value</definition>
+        <argsstring/>
+        <name>m_value</name>
+        <qualifiedname>my_class::m_value</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="98" column="7" bodyfile="149_macro_rescan.cpp" bodystart="98" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-static-func">
+      <memberdef kind="function" id="structmy__class_1a299bcca2a99e91263e1ed45296ae9ceb" prot="public" static="yes" constexpr="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename Self</type>
+          </param>
+          <param>
+            <type>typename UnaryOp</type>
+          </param>
+        </templateparamlist>
+        <type>auto</type>
+        <definition>static constexpr auto my_class&lt; T &gt;::__static_transform</definition>
+        <argsstring>(Self &amp;&amp;self, UnaryOp &amp;&amp;unary_op)</argsstring>
+        <name>__static_transform</name>
+        <qualifiedname>my_class::__static_transform</qualifiedname>
+        <param>
+          <type>Self &amp;&amp;</type>
+          <declname>self</declname>
+        </param>
+        <param>
+          <type>UnaryOp &amp;&amp;</type>
+          <declname>unary_op</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="100" column="29" bodyfile="149_macro_rescan.cpp" bodystart="100" bodyend="107"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="structmy__class_1ae661c4c17fdd6bb065c8c1702678e952" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="yes" refqual="rvalue" noexcept="yes" noexceptexpression="noexcept(__static_transform(std::move(*this), static_cast&lt; _Ts &amp;&amp; &gt;(__args)...))" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class...</type>
+            <declname>_Ts</declname>
+            <defname>_Ts</defname>
+          </param>
+        </templateparamlist>
+        <type>decltype(<ref refid="structmy__class_1a299bcca2a99e91263e1ed45296ae9ceb" kindref="member">__static_transform</ref>(std::move(*this), static_cast&lt; _Ts &amp;&amp; &gt;(__args)...))</type>
+        <definition>decltype(__static_transform(std::move(*this), static_cast&lt; _Ts &amp;&amp; &gt;(__args)...)) my_class&lt; T &gt;::transform</definition>
+        <argsstring>(_Ts &amp;&amp;... __args) &amp;&amp;</argsstring>
+        <name>transform</name>
+        <qualifiedname>my_class::transform</qualifiedname>
+        <param>
+          <type>_Ts &amp;&amp;...</type>
+          <declname>__args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="108" column="47" bodyfile="149_macro_rescan.cpp" bodystart="108" bodyend="108"/>
+      </memberdef>
+      <memberdef kind="function" id="structmy__class_1a8b3836beb4e6158554ff44f2b4350fce" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="yes" refqual="lvalue" noexcept="yes" noexceptexpression="noexcept(__static_transform(*this, static_cast&lt; _Ts &amp;&amp; &gt;(__args)...))" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class...</type>
+            <declname>_Ts</declname>
+            <defname>_Ts</defname>
+          </param>
+        </templateparamlist>
+        <type>decltype(<ref refid="structmy__class_1a299bcca2a99e91263e1ed45296ae9ceb" kindref="member">__static_transform</ref>(*this, static_cast&lt; _Ts &amp;&amp; &gt;(__args)...))</type>
+        <definition>decltype(__static_transform(*this, static_cast&lt; _Ts &amp;&amp; &gt;(__args)...)) my_class&lt; T &gt;::transform</definition>
+        <argsstring>(_Ts &amp;&amp;... __args) &amp;</argsstring>
+        <name>transform</name>
+        <qualifiedname>my_class::transform</qualifiedname>
+        <param>
+          <type>_Ts &amp;&amp;...</type>
+          <declname>__args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="108" column="188" bodyfile="149_macro_rescan.cpp" bodystart="108" bodyend="108"/>
+      </memberdef>
+      <memberdef kind="function" id="structmy__class_1aa8433a327470097bdf0025b158ed151e" prot="public" static="no" constexpr="yes" const="yes" explicit="no" inline="yes" refqual="lvalue" noexcept="yes" noexceptexpression="noexcept(__static_transform(*this, static_cast&lt; _Ts &amp;&amp; &gt;(__args)...))" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class...</type>
+            <declname>_Ts</declname>
+            <defname>_Ts</defname>
+          </param>
+        </templateparamlist>
+        <type>decltype(<ref refid="structmy__class_1a299bcca2a99e91263e1ed45296ae9ceb" kindref="member">__static_transform</ref>(*this, static_cast&lt; _Ts &amp;&amp; &gt;(__args)...))</type>
+        <definition>decltype(__static_transform(*this, static_cast&lt; _Ts &amp;&amp; &gt;(__args)...)) my_class&lt; T &gt;::transform</definition>
+        <argsstring>(_Ts &amp;&amp;... __args) const &amp;</argsstring>
+        <name>transform</name>
+        <qualifiedname>my_class::transform</qualifiedname>
+        <param>
+          <type>_Ts &amp;&amp;...</type>
+          <declname>__args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="108" column="318" bodyfile="149_macro_rescan.cpp" bodystart="108" bodyend="108"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="149_macro_rescan.cpp" line="97" column="1" bodyfile="149_macro_rescan.cpp" bodystart="97" bodyend="109"/>
+    <listofallmembers>
+      <member refid="structmy__class_1a299bcca2a99e91263e1ed45296ae9ceb" prot="public" virt="non-virtual">
+        <scope>my_class</scope>
+        <name>__static_transform</name>
+      </member>
+      <member refid="structmy__class_1a18c8f0b70248f78358fd917f0de6637e" prot="public" virt="non-virtual">
+        <scope>my_class</scope>
+        <name>m_value</name>
+      </member>
+      <member refid="structmy__class_1ae661c4c17fdd6bb065c8c1702678e952" prot="public" virt="non-virtual">
+        <scope>my_class</scope>
+        <name>transform</name>
+      </member>
+      <member refid="structmy__class_1a8b3836beb4e6158554ff44f2b4350fce" prot="public" virt="non-virtual">
+        <scope>my_class</scope>
+        <name>transform</name>
+      </member>
+      <member refid="structmy__class_1aa8433a327470097bdf0025b158ed151e" prot="public" virt="non-virtual">
+        <scope>my_class</scope>
+        <name>transform</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

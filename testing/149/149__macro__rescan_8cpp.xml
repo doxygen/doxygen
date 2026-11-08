@@ -1,0 +1,779 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="149__macro__rescan_8cpp" kind="file" language="C++">
+    <compoundname>149_macro_rescan.cpp</compoundname>
+    <innerclass refid="structmy__class" prot="public">my_class</innerclass>
+    <innerclass refid="structattribute__class" prot="public">attribute_class</innerclass>
+    <sectiondef kind="define">
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1ac6d1d5ec91f6e59caef20fc368a90fcd" prot="public" static="no">
+        <name>STDEXEC_PP_LPAREN</name>
+        <param/>
+        <initializer>(</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="20" column="9" bodyfile="149_macro_rescan.cpp" bodystart="20" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a91e929186b4b4da72d675bf3739cf7a1" prot="public" static="no">
+        <name>STDEXEC_PP_RPAREN</name>
+        <param/>
+        <initializer>)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="21" column="9" bodyfile="149_macro_rescan.cpp" bodystart="21" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a3fd0b47b847e75be393ff9184c95edab" prot="public" static="no">
+        <name>STDEXEC_PP_PARENS</name>
+        <param/>
+        <initializer>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="22" column="9" bodyfile="149_macro_rescan.cpp" bodystart="22" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a4010f26541ef2d15a3ab2d435cc0f496" prot="public" static="no">
+        <name>STDEXEC_PP_COMMA</name>
+        <param/>
+        <initializer>,</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="23" column="9" bodyfile="149_macro_rescan.cpp" bodystart="23" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a8340b2a76ed148d4d5931f3f13c56446" prot="public" static="no">
+        <name>STDEXEC_PP_CAT_I</name>
+        <param>
+          <defname>_XP</defname>
+        </param>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer>_XP##__VA_ARGS__</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="24" column="9" bodyfile="149_macro_rescan.cpp" bodystart="24" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a093596be495c38e627df28ff679fc43a" prot="public" static="no">
+        <name>STDEXEC_PP_CAT</name>
+        <param>
+          <defname>_XP</defname>
+        </param>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer><ref refid="149__macro__rescan_8cpp_1a8340b2a76ed148d4d5931f3f13c56446" kindref="member">STDEXEC_PP_CAT_I</ref>(_XP, __VA_ARGS__)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="25" column="9" bodyfile="149_macro_rescan.cpp" bodystart="25" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a26c396be14e3452c5c4041f926e0b7b7" prot="public" static="no">
+        <name>STDEXEC_PP_EXPAND</name>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer>__VA_ARGS__</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="26" column="9" bodyfile="149_macro_rescan.cpp" bodystart="26" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1ab5f8680706573cc613f358d0e9f7d132" prot="public" static="no">
+        <name>STDEXEC_PP_EVAL</name>
+        <param>
+          <defname>_MACRO</defname>
+        </param>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer>_MACRO(__VA_ARGS__)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="27" column="9" bodyfile="149_macro_rescan.cpp" bodystart="27" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a2b6ec8e51217570c9234351472104f40" prot="public" static="no">
+        <name>STDEXEC_PP_IIF_0</name>
+        <param>
+          <defname>_YP</defname>
+        </param>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer>__VA_ARGS__</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="28" column="9" bodyfile="149_macro_rescan.cpp" bodystart="28" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a5a95ca81ac3b64292c86d38c6b55c42a" prot="public" static="no">
+        <name>STDEXEC_PP_IIF_1</name>
+        <param>
+          <defname>_YP</defname>
+        </param>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer>_YP</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="29" column="9" bodyfile="149_macro_rescan.cpp" bodystart="29" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a70cda4f9ae5b806c5a884656002ab4fb" prot="public" static="no">
+        <name>STDEXEC_PP_IIF_EVAL</name>
+        <param>
+          <defname>_MACRO</defname>
+        </param>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer>_MACRO(__VA_ARGS__)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="30" column="9" bodyfile="149_macro_rescan.cpp" bodystart="30" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1ad4aae7ac4040d9cc128788a4b56de57d" prot="public" static="no">
+        <name>STDEXEC_PP_IIF_CAT</name>
+        <param>
+          <defname>_XP</defname>
+        </param>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer>_XP##__VA_ARGS__</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="31" column="9" bodyfile="149_macro_rescan.cpp" bodystart="31" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a3d1cdb42439287170ceb856d9ab71769" prot="public" static="no">
+        <name>STDEXEC_PP_IIF</name>
+        <param>
+          <defname>_XP</defname>
+        </param>
+        <param>
+          <defname>_YP</defname>
+        </param>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer><ref refid="149__macro__rescan_8cpp_1a70cda4f9ae5b806c5a884656002ab4fb" kindref="member">STDEXEC_PP_IIF_EVAL</ref>(<ref refid="149__macro__rescan_8cpp_1ad4aae7ac4040d9cc128788a4b56de57d" kindref="member">STDEXEC_PP_IIF_CAT</ref>(STDEXEC_PP_IIF_, _XP), _YP, __VA_ARGS__)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="32" column="9" bodyfile="149_macro_rescan.cpp" bodystart="32" bodyend="33"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a2c4bb8542750a5518f273553e2595eeb" prot="public" static="no">
+        <name>STDEXEC_PP_CHECK_EXPAND</name>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer>__VA_ARGS__</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="34" column="9" bodyfile="149_macro_rescan.cpp" bodystart="34" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a3c46b98c5fed13e236408c2e2edbf50c" prot="public" static="no">
+        <name>STDEXEC_PP_CHECK_I</name>
+        <param>
+          <defname>_XP</defname>
+        </param>
+        <param>
+          <defname>_NP</defname>
+        </param>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer>_NP</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="35" column="9" bodyfile="149_macro_rescan.cpp" bodystart="35" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a0959cbe580238660fb1c301762d9e414" prot="public" static="no">
+        <name>STDEXEC_PP_CHECK</name>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer><ref refid="149__macro__rescan_8cpp_1a2c4bb8542750a5518f273553e2595eeb" kindref="member">STDEXEC_PP_CHECK_EXPAND</ref>(<ref refid="149__macro__rescan_8cpp_1a3c46b98c5fed13e236408c2e2edbf50c" kindref="member">STDEXEC_PP_CHECK_I</ref>(__VA_ARGS__, 0, ))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="36" column="9" bodyfile="149_macro_rescan.cpp" bodystart="36" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a97e2684ed28c90780e9f7a047f4cb2be" prot="public" static="no">
+        <name>STDEXEC_PP_PROBE_I</name>
+        <param>
+          <defname>_XP</defname>
+        </param>
+        <param>
+          <defname>_NP</defname>
+        </param>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer>_XP, _NP,</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="37" column="9" bodyfile="149_macro_rescan.cpp" bodystart="37" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1ab3a497511b673a4d648ab8094f0ade8d" prot="public" static="no">
+        <name>STDEXEC_PP_PROBE</name>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer><ref refid="149__macro__rescan_8cpp_1a97e2684ed28c90780e9f7a047f4cb2be" kindref="member">STDEXEC_PP_PROBE_I</ref>(__VA_ARGS__, 1)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="38" column="9" bodyfile="149_macro_rescan.cpp" bodystart="38" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1adf69c33d2ab42a5819effeddf172bb14" prot="public" static="no">
+        <name>STDEXEC_PP_FRONT_I</name>
+        <param>
+          <defname>_A1</defname>
+        </param>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer>_A1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="39" column="9" bodyfile="149_macro_rescan.cpp" bodystart="39" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1af286232e4a2d94336ce69eb926e09e1e" prot="public" static="no">
+        <name>STDEXEC_PP_FRONT</name>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer>__VA_OPT__(<ref refid="149__macro__rescan_8cpp_1adf69c33d2ab42a5819effeddf172bb14" kindref="member">STDEXEC_PP_FRONT_I</ref>(__VA_ARGS__))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="40" column="9" bodyfile="149_macro_rescan.cpp" bodystart="40" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1ac2ea8f32bb91eef3e0f0cd057ee8425b" prot="public" static="no">
+        <name>STDEXEC_PP_CASE_LABEL_</name>
+        <param>
+          <defname>_PREFIX</defname>
+        </param>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer><ref refid="149__macro__rescan_8cpp_1ab5f8680706573cc613f358d0e9f7d132" kindref="member">STDEXEC_PP_EVAL</ref>(<ref refid="149__macro__rescan_8cpp_1a0959cbe580238660fb1c301762d9e414" kindref="member">STDEXEC_PP_CHECK</ref>, \
+                <ref refid="149__macro__rescan_8cpp_1a093596be495c38e627df28ff679fc43a" kindref="member">STDEXEC_PP_CAT</ref>(_PREFIX##_SWITCH_, <ref refid="149__macro__rescan_8cpp_1af286232e4a2d94336ce69eb926e09e1e" kindref="member">STDEXEC_PP_FRONT</ref>(__VA_ARGS__)), \
+                DEFAULT(<ref refid="149__macro__rescan_8cpp_1af286232e4a2d94336ce69eb926e09e1e" kindref="member">STDEXEC_PP_FRONT</ref>(__VA_ARGS__)), )</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="41" column="9" bodyfile="149_macro_rescan.cpp" bodystart="41" bodyend="44"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a901ba2dedc10412e64dc80ea384c7580" prot="public" static="no">
+        <name>STDEXEC_PP_CASE</name>
+        <param>
+          <defname>_ARG</defname>
+        </param>
+        <initializer><ref refid="149__macro__rescan_8cpp_1ab3a497511b673a4d648ab8094f0ade8d" kindref="member">STDEXEC_PP_PROBE</ref>(~, _ARG)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="45" column="9" bodyfile="149_macro_rescan.cpp" bodystart="45" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1aaa0236d7c9669edec50672979db4e198" prot="public" static="no">
+        <name>STDEXEC_PP_SWITCH</name>
+        <param>
+          <defname>_PREFIX</defname>
+        </param>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer><ref refid="149__macro__rescan_8cpp_1a093596be495c38e627df28ff679fc43a" kindref="member">STDEXEC_PP_CAT</ref>(_PREFIX##_CASE_, <ref refid="149__macro__rescan_8cpp_1ac2ea8f32bb91eef3e0f0cd057ee8425b" kindref="member">STDEXEC_PP_CASE_LABEL_</ref>(_PREFIX, __VA_ARGS__))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="46" column="9" bodyfile="149_macro_rescan.cpp" bodystart="46" bodyend="47"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a628113c064958f780ce920f3c05ab11d" prot="public" static="no">
+        <name>STDEXEC_PP_EXPAND_R3</name>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer><ref refid="149__macro__rescan_8cpp_1a26c396be14e3452c5c4041f926e0b7b7" kindref="member">STDEXEC_PP_EXPAND</ref>(<ref refid="149__macro__rescan_8cpp_1a26c396be14e3452c5c4041f926e0b7b7" kindref="member">STDEXEC_PP_EXPAND</ref>(<ref refid="149__macro__rescan_8cpp_1a26c396be14e3452c5c4041f926e0b7b7" kindref="member">STDEXEC_PP_EXPAND</ref>(<ref refid="149__macro__rescan_8cpp_1a26c396be14e3452c5c4041f926e0b7b7" kindref="member">STDEXEC_PP_EXPAND</ref>(__VA_ARGS__))))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="48" column="9" bodyfile="149_macro_rescan.cpp" bodystart="48" bodyend="49"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1ae63e6d4994ddee7bf4c5093c2b484099" prot="public" static="no">
+        <name>STDEXEC_PP_EXPAND_R2</name>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer><ref refid="149__macro__rescan_8cpp_1a628113c064958f780ce920f3c05ab11d" kindref="member">STDEXEC_PP_EXPAND_R3</ref>(<ref refid="149__macro__rescan_8cpp_1a628113c064958f780ce920f3c05ab11d" kindref="member">STDEXEC_PP_EXPAND_R3</ref>(<ref refid="149__macro__rescan_8cpp_1a628113c064958f780ce920f3c05ab11d" kindref="member">STDEXEC_PP_EXPAND_R3</ref>(<ref refid="149__macro__rescan_8cpp_1a628113c064958f780ce920f3c05ab11d" kindref="member">STDEXEC_PP_EXPAND_R3</ref>(__VA_ARGS__))))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="50" column="9" bodyfile="149_macro_rescan.cpp" bodystart="50" bodyend="51"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a23b07589d5937df3db297f3ef2ebb619" prot="public" static="no">
+        <name>STDEXEC_PP_EXPAND_R1</name>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer><ref refid="149__macro__rescan_8cpp_1ae63e6d4994ddee7bf4c5093c2b484099" kindref="member">STDEXEC_PP_EXPAND_R2</ref>(<ref refid="149__macro__rescan_8cpp_1ae63e6d4994ddee7bf4c5093c2b484099" kindref="member">STDEXEC_PP_EXPAND_R2</ref>(<ref refid="149__macro__rescan_8cpp_1ae63e6d4994ddee7bf4c5093c2b484099" kindref="member">STDEXEC_PP_EXPAND_R2</ref>(<ref refid="149__macro__rescan_8cpp_1ae63e6d4994ddee7bf4c5093c2b484099" kindref="member">STDEXEC_PP_EXPAND_R2</ref>(__VA_ARGS__))))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="52" column="9" bodyfile="149_macro_rescan.cpp" bodystart="52" bodyend="53"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a36e314a2f7185dd8478a6b42b0594aa3" prot="public" static="no">
+        <name>STDEXEC_PP_EXPAND_R</name>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer><ref refid="149__macro__rescan_8cpp_1a23b07589d5937df3db297f3ef2ebb619" kindref="member">STDEXEC_PP_EXPAND_R1</ref>(<ref refid="149__macro__rescan_8cpp_1a23b07589d5937df3db297f3ef2ebb619" kindref="member">STDEXEC_PP_EXPAND_R1</ref>(<ref refid="149__macro__rescan_8cpp_1a23b07589d5937df3db297f3ef2ebb619" kindref="member">STDEXEC_PP_EXPAND_R1</ref>(<ref refid="149__macro__rescan_8cpp_1a23b07589d5937df3db297f3ef2ebb619" kindref="member">STDEXEC_PP_EXPAND_R1</ref>(__VA_ARGS__))))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="54" column="9" bodyfile="149_macro_rescan.cpp" bodystart="54" bodyend="55"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a2d1d5d8053adf8a3224d992a3afdad47" prot="public" static="no">
+        <name>STDEXEC_PP_FOR_EACH_AGAIN</name>
+        <param/>
+        <initializer>
+          <ref refid="149__macro__rescan_8cpp_1a6b244d7eca775b473d146e0fbe3e3e91" kindref="member">STDEXEC_PP_FOR_EACH_HELPER</ref>
+        </initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="56" column="9" bodyfile="149_macro_rescan.cpp" bodystart="56" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a6b244d7eca775b473d146e0fbe3e3e91" prot="public" static="no">
+        <name>STDEXEC_PP_FOR_EACH_HELPER</name>
+        <param>
+          <defname>_MACRO</defname>
+        </param>
+        <param>
+          <defname>_A1</defname>
+        </param>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer>_MACRO(_A1) __VA_OPT__(<ref refid="149__macro__rescan_8cpp_1a2d1d5d8053adf8a3224d992a3afdad47" kindref="member">STDEXEC_PP_FOR_EACH_AGAIN</ref> <ref refid="149__macro__rescan_8cpp_1a3fd0b47b847e75be393ff9184c95edab" kindref="member">STDEXEC_PP_PARENS</ref>()(_MACRO, __VA_ARGS__))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="57" column="9" bodyfile="149_macro_rescan.cpp" bodystart="57" bodyend="58"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1ac8739bf2f93c728d4d00eccdcceaa394" prot="public" static="no">
+        <name>STDEXEC_PP_FOR_EACH</name>
+        <param>
+          <defname>_MACRO</defname>
+        </param>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer>__VA_OPT__(<ref refid="149__macro__rescan_8cpp_1a36e314a2f7185dd8478a6b42b0594aa3" kindref="member">STDEXEC_PP_EXPAND_R</ref>(<ref refid="149__macro__rescan_8cpp_1a6b244d7eca775b473d146e0fbe3e3e91" kindref="member">STDEXEC_PP_FOR_EACH_HELPER</ref>(_MACRO, __VA_ARGS__)))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="59" column="9" bodyfile="149_macro_rescan.cpp" bodystart="59" bodyend="60"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a252a1ce05a74c401a332f18521f6819e" prot="public" static="no">
+        <name>STDEXEC_ATTRIBUTE_CASE_DEFAULT</name>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer>[[__VA_ARGS__]]</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="61" column="9" bodyfile="149_macro_rescan.cpp" bodystart="61" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a88721393d5345518ae7417e37b3e8354" prot="public" static="no">
+        <name>STDEXEC_ATTRIBUTE_I</name>
+        <param>
+          <defname>_ATTR</defname>
+        </param>
+        <initializer><ref refid="149__macro__rescan_8cpp_1aaa0236d7c9669edec50672979db4e198" kindref="member">STDEXEC_PP_SWITCH</ref>(<ref refid="149__macro__rescan_8cpp_1a99b671e7da668ba8c68eda6d75ba7aad" kindref="member">STDEXEC_ATTRIBUTE</ref>, _ATTR)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="62" column="9" bodyfile="149_macro_rescan.cpp" bodystart="62" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a99b671e7da668ba8c68eda6d75ba7aad" prot="public" static="no">
+        <name>STDEXEC_ATTRIBUTE</name>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer><ref refid="149__macro__rescan_8cpp_1ac8739bf2f93c728d4d00eccdcceaa394" kindref="member">STDEXEC_PP_FOR_EACH</ref>(<ref refid="149__macro__rescan_8cpp_1a88721393d5345518ae7417e37b3e8354" kindref="member">STDEXEC_ATTRIBUTE_I</ref>, __VA_ARGS__)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="63" column="9" bodyfile="149_macro_rescan.cpp" bodystart="63" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a38259c6b855bf51ac3b5712a40cdc822" prot="public" static="no">
+        <name>STDEXEC_EXPLICIT_THIS_CALL_OPERATOR_PROBE_operator</name>
+        <param/>
+        <initializer><ref refid="149__macro__rescan_8cpp_1ab3a497511b673a4d648ab8094f0ade8d" kindref="member">STDEXEC_PP_PROBE</ref>(~, 1)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="65" column="9" bodyfile="149_macro_rescan.cpp" bodystart="65" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1ae730b9867c782bf19e29c709cf02be29" prot="public" static="no">
+        <name>STDEXEC_EXPLICIT_THIS_CALL_OPERATOR_PROBE</name>
+        <param>
+          <defname>_NAME</defname>
+        </param>
+        <initializer><ref refid="149__macro__rescan_8cpp_1a0959cbe580238660fb1c301762d9e414" kindref="member">STDEXEC_PP_CHECK</ref>(<ref refid="149__macro__rescan_8cpp_1a093596be495c38e627df28ff679fc43a" kindref="member">STDEXEC_PP_CAT</ref>(STDEXEC_EXPLICIT_THIS_CALL_OPERATOR_PROBE_, _NAME))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="66" column="9" bodyfile="149_macro_rescan.cpp" bodystart="66" bodyend="67"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a9b9e8fc0a5162adb33e08ccf2ed7cb51" prot="public" static="no">
+        <name>STDEXEC_EXPLICIT_THIS_MANGLE</name>
+        <param>
+          <defname>_NAME</defname>
+        </param>
+        <initializer><ref refid="149__macro__rescan_8cpp_1a093596be495c38e627df28ff679fc43a" kindref="member">STDEXEC_PP_CAT</ref>(__static_, \
+               <ref refid="149__macro__rescan_8cpp_1a3d1cdb42439287170ceb856d9ab71769" kindref="member">STDEXEC_PP_IIF</ref>(<ref refid="149__macro__rescan_8cpp_1ae730b9867c782bf19e29c709cf02be29" kindref="member">STDEXEC_EXPLICIT_THIS_CALL_OPERATOR_PROBE</ref>(_NAME), \
+                              _call, \
+                              _NAME))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="68" column="9" bodyfile="149_macro_rescan.cpp" bodystart="68" bodyend="72"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1af08002c6a111920d45007bb137db2b19" prot="public" static="no">
+        <name>STDEXEC_EXPLICIT_THIS_EAT_this</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="73" column="9" bodyfile="149_macro_rescan.cpp" bodystart="73" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1af10d6b7d5da3cb3d7fdfd6003760d58c" prot="public" static="no">
+        <name>STDEXEC_EXPLICIT_THIS_MANGLE_auto</name>
+        <initializer>auto <ref refid="149__macro__rescan_8cpp_1a9b9e8fc0a5162adb33e08ccf2ed7cb51" kindref="member">STDEXEC_EXPLICIT_THIS_MANGLE</ref> <ref refid="149__macro__rescan_8cpp_1ac6d1d5ec91f6e59caef20fc368a90fcd" kindref="member">STDEXEC_PP_LPAREN</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="74" column="9" bodyfile="149_macro_rescan.cpp" bodystart="74" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1ac4c715641169397b8af2e31a2a124cbb" prot="public" static="no">
+        <name>STDEXEC_EXPLICIT_THIS_ARGS</name>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer><ref refid="149__macro__rescan_8cpp_1a093596be495c38e627df28ff679fc43a" kindref="member">STDEXEC_PP_CAT</ref>(STDEXEC_EXPLICIT_THIS_EAT_, __VA_ARGS__) <ref refid="149__macro__rescan_8cpp_1a91e929186b4b4da72d675bf3739cf7a1" kindref="member">STDEXEC_PP_RPAREN</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="75" column="9" bodyfile="149_macro_rescan.cpp" bodystart="75" bodyend="76"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1aba60f3019ae35dcfae074c42e513fcb3" prot="public" static="no">
+        <name>STDEXEC_EXPLICIT_THIS_BEGIN</name>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer>static <ref refid="149__macro__rescan_8cpp_1a26c396be14e3452c5c4041f926e0b7b7" kindref="member">STDEXEC_PP_EXPAND</ref>(<ref refid="149__macro__rescan_8cpp_1a093596be495c38e627df28ff679fc43a" kindref="member">STDEXEC_PP_CAT</ref>(STDEXEC_EXPLICIT_THIS_MANGLE_, __VA_ARGS__) \
+                         <ref refid="149__macro__rescan_8cpp_1a91e929186b4b4da72d675bf3739cf7a1" kindref="member">STDEXEC_PP_RPAREN</ref>()) <ref refid="149__macro__rescan_8cpp_1ac6d1d5ec91f6e59caef20fc368a90fcd" kindref="member">STDEXEC_PP_LPAREN</ref>() <ref refid="149__macro__rescan_8cpp_1ac4c715641169397b8af2e31a2a124cbb" kindref="member">STDEXEC_EXPLICIT_THIS_ARGS</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="77" column="9" bodyfile="149_macro_rescan.cpp" bodystart="77" bodyend="79"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a93afa1925dcd6e7c690c22f2d9524b4e" prot="public" static="no">
+        <name>STDEXEC_AUTO_RETURN</name>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer>noexcept(noexcept(__VA_ARGS__))-&gt;decltype(__VA_ARGS__) { return __VA_ARGS__; }</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="80" column="9" bodyfile="149_macro_rescan.cpp" bodystart="80" bodyend="81"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1abb89f46492900e249bdd2f55aa41f215" prot="public" static="no">
+        <name>STDEXEC_EXPLICIT_THIS_END</name>
+        <param>
+          <defname>_NAME</defname>
+        </param>
+        <initializer>template &lt;class... _Ts&gt; \
+<ref refid="149__macro__rescan_8cpp_1a99b671e7da668ba8c68eda6d75ba7aad" kindref="member">STDEXEC_ATTRIBUTE</ref>(always_inline, host, device) \
+constexpr auto _NAME(_Ts&amp;&amp;... __args) &amp;&amp; <ref refid="149__macro__rescan_8cpp_1a93afa1925dcd6e7c690c22f2d9524b4e" kindref="member">STDEXEC_AUTO_RETURN</ref> \
+  (<ref refid="149__macro__rescan_8cpp_1a9b9e8fc0a5162adb33e08ccf2ed7cb51" kindref="member">STDEXEC_EXPLICIT_THIS_MANGLE</ref>(_NAME)(std::move(*this), static_cast&lt;_Ts&amp;&amp;&gt;(__args)...)) \
+template &lt;class... _Ts&gt; \
+<ref refid="149__macro__rescan_8cpp_1a99b671e7da668ba8c68eda6d75ba7aad" kindref="member">STDEXEC_ATTRIBUTE</ref>(always_inline, host, device) \
+constexpr auto _NAME(_Ts&amp;&amp;... __args) &amp; <ref refid="149__macro__rescan_8cpp_1a93afa1925dcd6e7c690c22f2d9524b4e" kindref="member">STDEXEC_AUTO_RETURN</ref> \
+  (<ref refid="149__macro__rescan_8cpp_1a9b9e8fc0a5162adb33e08ccf2ed7cb51" kindref="member">STDEXEC_EXPLICIT_THIS_MANGLE</ref>(_NAME)(*this, static_cast&lt;_Ts&amp;&amp;&gt;(__args)...)) \
+template &lt;class... _Ts&gt; \
+<ref refid="149__macro__rescan_8cpp_1a99b671e7da668ba8c68eda6d75ba7aad" kindref="member">STDEXEC_ATTRIBUTE</ref>(always_inline, host, device) \
+constexpr auto _NAME(_Ts&amp;&amp;... __args) const &amp; <ref refid="149__macro__rescan_8cpp_1a93afa1925dcd6e7c690c22f2d9524b4e" kindref="member">STDEXEC_AUTO_RETURN</ref> \
+  (<ref refid="149__macro__rescan_8cpp_1a9b9e8fc0a5162adb33e08ccf2ed7cb51" kindref="member">STDEXEC_EXPLICIT_THIS_MANGLE</ref>(_NAME)(*this, static_cast&lt;_Ts&amp;&amp;&gt;(__args)...))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="82" column="9" bodyfile="149_macro_rescan.cpp" bodystart="82" bodyend="94"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a143a4d3affa927f7c2f8fa7d4d4f74ba" prot="public" static="no">
+        <name>RESCAN_LPAREN</name>
+        <param/>
+        <initializer>(</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="115" column="9" bodyfile="149_macro_rescan.cpp" bodystart="116" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a08068fd1838b1622a0998d731dad2dd9" prot="public" static="no">
+        <name>RESCAN_RPAREN</name>
+        <param/>
+        <initializer>)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="116" column="9" bodyfile="149_macro_rescan.cpp" bodystart="117" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a27dff790706fd852a9b5bf05f25fda63" prot="public" static="no">
+        <name>RESCAN_CALL</name>
+        <param>
+          <defname>x</defname>
+        </param>
+        <initializer>[x]</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="117" column="9" bodyfile="149_macro_rescan.cpp" bodystart="118" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a6494a712d80d496820fd7ec78a6d6b52" prot="public" static="no">
+        <name>RESCAN_ALIAS</name>
+        <initializer>
+          <ref refid="149__macro__rescan_8cpp_1a27dff790706fd852a9b5bf05f25fda63" kindref="member">RESCAN_CALL</ref>
+        </initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="118" column="9" bodyfile="149_macro_rescan.cpp" bodystart="119" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a97327d9efff1c1b4b7433311b7b1e0ce" prot="public" static="no">
+        <name>RESCAN_DEFER</name>
+        <param/>
+        <initializer><ref refid="149__macro__rescan_8cpp_1a27dff790706fd852a9b5bf05f25fda63" kindref="member">RESCAN_CALL</ref><ref refid="149__macro__rescan_8cpp_1a143a4d3affa927f7c2f8fa7d4d4f74ba" kindref="member">RESCAN_LPAREN</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="119" column="9" bodyfile="149_macro_rescan.cpp" bodystart="120" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1ac971814f3771c21bb4e12d0cde2949e2" prot="public" static="no">
+        <name>RESCAN_EXPAND</name>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer>__VA_ARGS__</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="120" column="9" bodyfile="149_macro_rescan.cpp" bodystart="121" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a110126af68a8edb7fd66c65845a561d4" prot="public" static="no">
+        <name>RESCAN_RECURSE</name>
+        <param>
+          <defname>x</defname>
+        </param>
+        <initializer>RESCAN_RECURSE   (x)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="121" column="9" bodyfile="149_macro_rescan.cpp" bodystart="122" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a7b3be58a1542cdbb161119546bf6c465" prot="public" static="no">
+        <name>RESCAN_MUTUAL_A</name>
+        <param>
+          <defname>x</defname>
+        </param>
+        <initializer><ref refid="149__macro__rescan_8cpp_1a8a54e43851016feb36018f65dff27867" kindref="member">RESCAN_MUTUAL_B</ref>(x)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="122" column="9" bodyfile="149_macro_rescan.cpp" bodystart="123" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="149__macro__rescan_8cpp_1a8a54e43851016feb36018f65dff27867" prot="public" static="no">
+        <name>RESCAN_MUTUAL_B</name>
+        <param>
+          <defname>x</defname>
+        </param>
+        <initializer><ref refid="149__macro__rescan_8cpp_1a7b3be58a1542cdbb161119546bf6c465" kindref="member">RESCAN_MUTUAL_A</ref>(x)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="123" column="9" bodyfile="149_macro_rescan.cpp" bodystart="124" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="149_macro_rescan.cpp"/>
+  </compounddef>
+</doxygen>

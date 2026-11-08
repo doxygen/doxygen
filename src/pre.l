@@ -275,6 +275,7 @@ struct preYY_state
   DString           guardExpr;
   int                curlyCount     = 0;
   bool               nospaces       = false; // add extra spaces during macro expansion
+  bool               boundedExpansion = false;
   int                javaBlock      = 0;
 
   bool               macroExpansion = false; // from the configuration
@@ -2532,6 +2533,17 @@ static int getNextChar(yyscan_t yyscanner,const DString &expr,DString *rest,uint
 static int getCurrentChar(yyscan_t yyscanner,const DString &expr,DString *rest,uint32_t pos);
 static void unputChar(yyscan_t yyscanner,const DString &expr,DString *rest,uint32_t &pos,char c);
 static bool expandExpression(yyscan_t yyscanner,DString &expr,DString *rest,int pos,int level);
+static DString removeMarkers(const DString &s);
+
+static void expandArgument(yyscan_t yyscanner,DString &arg,int level)
+{
+  YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
+  // Argument prescan cannot consume tokens from the enclosing input stream.
+  bool previous = state->boundedExpansion;
+  state->boundedExpansion = true;
+  expandExpression(yyscanner,arg,nullptr,0,level);
+  state->boundedExpansion = previous;
+}
 
 static DString stringize(const DString &s)
 {
@@ -2629,6 +2641,45 @@ static void processConcatOperators(DString &expr)
       size_t n = match.position();
       size_t l = match.length();
       //printf("Match: '%s'\n",qPrint(expr.mid(i)));
+      // A pasted placemarker disappears, but must not join neighboring tokens.
+      bool leftEmpty = n>=2 && e.compare(n-2,2,"@E")==0 && (n<3 || e[n-3]!='@');
+      bool rightEmpty = e.compare(n+l,2,"@E")==0;
+      if (leftEmpty && rightEmpty)
+      {
+        e.erase(n,l+2);
+        i=n-2;
+        continue;
+      }
+      if (leftEmpty)
+      {
+        if (e.compare(n+l,2,"@-")==0) e.erase(n+l,2);
+        e.replace(n-2,l+2," ");
+        i=n-1;
+        continue;
+      }
+      if (rightEmpty)
+      {
+        int k=static_cast<int>(n)-1;
+        while (k>=0 && isId(e[k])) k--;
+        if (k>0 && e[k]=='-' && e[k-1]=='@')
+        {
+          e.erase(k-1,2);
+          n-=2;
+        }
+        size_t next=e.find_first_not_of(" \t\r\n",n+l+2);
+        if (next!=std::string::npos && e.compare(next,2,"##")==0)
+        {
+          // Keep the remaining paste operator for chains such as a##empty##b.
+          e.erase(n,l+2);
+          i=n;
+        }
+        else
+        {
+          e.replace(n,l+2," ");
+          i=n+1;
+        }
+        continue;
+      }
       if (n+l+1<e.length() && e[static_cast<int>(n+l)]=='@' && expr[static_cast<int>(n+l+1)]=='-')
       {
         // remove no-rescan marker after ID
@@ -2730,6 +2781,36 @@ static void skipCommentMacroName(yyscan_t yyscanner, const DString &expr, DStrin
   } while (changed);
 }
 
+static bool isFunctionMacroCall(yyscan_t yyscanner,const DString &expr,DString *rest,int pos)
+{
+  DString remaining=expr.mid(pos);
+  if (rest) remaining+=*rest;
+  uint32_t cursor=0;
+  std::string readAhead;
+  auto next = [&]() -> int
+  {
+    bool fromStream=cursor>=remaining.length() && !preYYget_extra(yyscanner)->boundedExpansion;
+    int c=getNextChar(yyscanner,remaining,nullptr,cursor);
+    if (fromStream && c!=EOF && c!=0) readAhead+=static_cast<char>(c);
+    return c;
+  };
+  int c=next();
+  for (;;)
+  {
+    while (c!=EOF && c!=0 && c!='\n' && isspace(static_cast<unsigned char>(c))) c=next();
+    if (c!='/') break;
+    c=next();
+    if (c!='*') break;
+    int previous=0;
+    while ((c=next())!=EOF && c!=0 && !(previous=='*' && c=='/')) previous=c;
+    if (c==EOF || c==0) break;
+    c=next();
+  }
+  // Lookahead must not consume characters from the enclosing scanner.
+  for (auto it=readAhead.rbegin();it!=readAhead.rend();++it) returnCharToStream(yyscanner,*it);
+  return c=='(';
+}
+
 // Expand C++20's __VA_OPT__(x) to either x if hasOptionalArgs==true or to the empty string if false
 static DString expandVAOpt(const DString &vaStr,bool hasOptionalArgs)
 {
@@ -2803,8 +2884,16 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const DString &expr,DString 
   }
   getNextChar(yyscanner,expr,rest,j); // eat the '(' character
 
-  std::map<std::string,std::string> argTable;  // list of arguments
+  struct MacroArgument
+  {
+    DString raw;
+    DString expanded;
+  };
+  std::map<std::string,MacroArgument> argTable;
   DString arg;
+  DString rawArg;
+  // The variadic argument may contain an already-expanded prefix.
+  size_t expandedPrefixLength=0;
   int argCount=0;
   int argCountNonEmpty=0;
   bool done=false;
@@ -2871,20 +2960,28 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const DString &expr,DString 
       {
         if (c==',' && argCount==def->nargs-1 && def->varArgs)
         {
-          expandExpression(yyscanner,arg,nullptr,0,level+1);
+          rawArg+=arg.mid(expandedPrefixLength);
+          rawArg+=',';
+          expandArgument(yyscanner,arg,level+1);
           arg=arg.stripWhiteSpace();
           arg+=',';
+          expandedPrefixLength=arg.length();
         }
         else
         {
-          expandExpression(yyscanner,arg,nullptr,0,level+1);
-          arg=arg.stripWhiteSpace();
+          rawArg+=arg.mid(expandedPrefixLength);
+          rawArg=rawArg.stripWhiteSpace();
+          DString expandedArg=arg;
+          expandArgument(yyscanner,expandedArg,level+1);
+          expandedArg=expandedArg.stripWhiteSpace();
           DString argKey;
           argKey.sprintf("@%d",argCount++); // key name
-          if (c==',' || !arg.empty()) argCountNonEmpty++;
+          if (c==',' || !expandedArg.empty()) argCountNonEmpty++;
           // add argument to the lookup table
-          argTable.emplace(toStdString(argKey), toStdString(arg));
+          argTable.emplace(toStdString(argKey), MacroArgument{rawArg,expandedArg});
           arg.clear();
+          rawArg.clear();
+          expandedPrefixLength=0;
           if (c==')') // end of the argument list
           {
             done=true;
@@ -2998,13 +3095,12 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const DString &expr,DString 
           auto it = argTable.find(key.str());
           if (it!=argTable.end())
           {
-            DString substArg = it->second;
+            DString substArg = hash || inString ? it->second.raw : it->second.expanded;
             //printf("substArg='%s'\n",qPrint(substArg));
-            // only if no ## operator is before or after the argument
-            // marker we do macro expansion.
-            if (!hash)
+            // Stringified and pasted arguments are substituted without prescan.
+            if (!hash && !inString)
             {
-              expandExpression(yyscanner,substArg,nullptr,0,level+1);
+              expandArgument(yyscanner,substArg,level+1);
             }
             if (inString)
             {
@@ -3012,13 +3108,13 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const DString &expr,DString 
 
               // if the marker is inside a string (because a # was put
               // before the macro name) we must escape " and \ characters
-              resExpr+=stringize(substArg);
+              resExpr+=stringize(removeMarkers(substArg));
             }
             else
             {
               if (hash && substArg.empty())
               {
-                resExpr+="@E"; // empty argument will be remove later on
+                resExpr+="@E"; // placemarker for an empty argument next to ##
               }
               resExpr+=substArg;
             }
@@ -3237,7 +3333,8 @@ static bool expandExpression(yyscan_t yyscanner,DString &expr,DString *rest,int 
           {
             //printf("expanded '%s' + '%s' + '%s'\n",qPrint(expr.left(p)),qPrint(resultExpr),qPrint(restExpr));
             expr=expr.left(p)+resultExpr+restExpr;
-            i=p;
+            // The replacement has already been rescanned; continue with the remaining input.
+            i=p+static_cast<int>(resultExpr.length());
           }
           else
           {
@@ -3254,10 +3351,17 @@ static bool expandExpression(yyscan_t yyscanner,DString &expr,DString *rest,int 
       }
       else // move to the next macro name
       {
-        expr=expr.left(p)+"@-"+expr.mid(p);
-        //printf("macro already expanded, moving to the next macro expr=%s\n",qPrint(expr));
-        i=p+l+2;
-        //i=p+l;
+        const Define *def=state->expandedDict.find(macroName.str())->second;
+        // A function-like macro without an opening parenthesis is not an invocation.
+        if (def->nargs>=0 && !isFunctionMacroCall(yyscanner,expr,rest,p+l))
+        {
+          i=p+l;
+        }
+        else
+        {
+          expr=expr.left(p)+"@-"+expr.mid(p);
+          i=p+l+2;
+        }
       }
       // check for too many inplace expansions without making progress
       if (i==startPos)
@@ -3323,7 +3427,7 @@ static const char *processUntilMatchingTerminator(const char *inputStr,DString &
 }
 
 /*! replaces all occurrences of @@@@ in \a s by @@
- *  and removes all occurrences of @@E.
+ *  and replaces empty-argument markers with spaces.
  *  All identifiers found are replaced by 0L
  */
 static DString removeIdsAndMarkers(const DString &s)
@@ -3421,7 +3525,7 @@ static DString removeIdsAndMarkers(const DString &s)
         }
         else if (*(p+1)=='E')
         {
-          // skip
+          result+=' ';
         }
         p+=2;
       }
@@ -3517,10 +3621,7 @@ nextChar:
   return result;
 }
 
-/*! replaces all occurrences of @@ in \a s by @
- *  \par assumption:
- *   \a s only contains pairs of @@'s
- */
+/*! Replaces escaped @ characters and removes internal expansion markers. */
 static DString removeMarkers(const DString &s)
 {
   if (s.empty()) return s;
@@ -3538,6 +3639,10 @@ static DString removeMarkers(const DString &s)
             if (*(p+1)=='@')
             {
               result+=c;
+            }
+            else if (*(p+1)=='E')
+            {
+              result+=' ';
             }
             p+=2;
           }
@@ -4070,12 +4175,13 @@ static int getNextChar(yyscan_t yyscanner,const DString &expr,DString *rest,uint
     //printf("  rest='%c'\n",cc);
     return cc;
   }
-  else
+  else if (!preYYget_extra(yyscanner)->boundedExpansion)
   {
     int cc=yyinput(yyscanner);
     //printf("  yyinput()='%c' %d\n",cc,EOF);
     return cc;
   }
+  return EOF;
 }
 
 static int getCurrentChar(yyscan_t yyscanner,const DString &expr,DString *rest,uint32_t pos)
@@ -4092,13 +4198,14 @@ static int getCurrentChar(yyscan_t yyscanner,const DString &expr,DString *rest,u
     //printf("%c=rest\n",cc);
     return cc;
   }
-  else
+  else if (!preYYget_extra(yyscanner)->boundedExpansion)
   {
     int cc=yyinput(yyscanner);
     returnCharToStream(yyscanner,(char)cc);
     //printf("%c=yyinput()\n",cc);
     return cc;
   }
+  return EOF;
 }
 
 static void unputChar(yyscan_t yyscanner,const DString &expr,DString *rest,uint32_t &pos,char c)
@@ -4114,7 +4221,7 @@ static void unputChar(yyscan_t yyscanner,const DString &expr,DString *rest,uint3
     char cs[2];cs[0]=c;cs[1]='\0';
     rest->prepend(cs);
   }
-  else
+  else if (!preYYget_extra(yyscanner)->boundedExpansion)
   {
     //printf("  yyunput()='%c'\n",c);
     returnCharToStream(yyscanner,c);
