@@ -318,7 +318,13 @@ void DocInclude::parse()
       // check here for the existence of the blockId inside the file, so we
       // only generate the warning once.
       int count = 0;
-      if (!m_blockId.empty() && (count=m_text.contains(m_blockId.data()))!=2)
+      if (m_blockId == "[]")
+      {
+        warn_doc_error(parser()->context.fileName,
+                       parser()->tokenizer.getLineNr(),
+                       "no block identification found in \\snippet command, skipping");
+      }
+      else if (!m_blockId.empty() && (count=m_text.contains(m_blockId.data()))!=2)
       {
         warn_doc_error(parser()->context.fileName,
                        parser()->tokenizer.getLineNr(),
@@ -4046,6 +4052,12 @@ void DocPara::handleInclude(const DString &cmdName,DocInclude::Type t)
     isBlock = (parser()->context.token->name.stripWhiteSpace() == "block");
     parser()->tokenizer.setStatePara();
     parser()->tokenizer.lex();
+  }
+  else if (tok.is(TokenRetval::TK_NEWPARA))
+  {
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected filename after \\{} command",
+        saveCmdName);
+    return;
   }
   else if (!tok.is(TokenRetval::TK_WHITESPACE))
   {
