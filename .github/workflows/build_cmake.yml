@@ -267,7 +267,7 @@ jobs:
       if: matrix.config.os == 'windows-2022'
 
     - name: Setup VS Environment (Windows)
-      uses: seanmiddleditch/gha-setup-vsdevenv@master
+      uses: step-security/gha-setup-vsdevenv@v6
       if: matrix.config.os == 'windows-2022'
 
     #- name: Setup VS Environment (Windows)
