@@ -73,6 +73,7 @@ struct doctokenizerYY_state
   // context for tokenizer phase
   int commentState;
   TokenInfo token;
+  int snippetRtn = 0;
   yy_size_t inputPos = 0;
   const char *inputString = nullptr;
   DString fileName;
@@ -424,6 +425,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_Para>{BLANK}*\n{CLISTITEM}   { /* checkbox item on next line */
                          DString text=yytext;
                          text=text.mid(text.find('\n')+1);
+                         lineCount(yytext,yyleng);
                          size_t dashPos = text.rfind('-');
                          yyextra->token.isEnumList = false;
                          yyextra->token.isCheckedList = true;
@@ -723,6 +725,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          {
                            REJECT;
                          }
+                         lineCount(yytext,yyleng);
                        }
 <St_Para>({BLANK}*(\n|"\\ilinebr"))+{BLANK}*\n/{MLISTITEM} { /* skip trailing paragraph followed by new list item */
                          if (!yyextra->markdownSupport || yyextra->insidePre || yyextra->autoListLevel==0)
@@ -1621,9 +1624,17 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          yyextra->token.name += yytext;
                        }
 <St_Snippet>(\n|"\\ilinebr")  {
-                         unput_string(yytext,yyleng);
-                         yyextra->token.name = yyextra->token.name.stripWhiteSpace();
-                         return Token::make_TK_WORD();
+                         if (yyextra->token.name.stripWhiteSpace().empty() && !yyextra->snippetRtn)
+                         {
+                           lineCount(yytext,yyleng);
+                           yyextra->snippetRtn++;
+                         }
+                         else
+                         {
+                           unput_string(yytext,yyleng);
+                           yyextra->token.name = yyextra->token.name.stripWhiteSpace();
+                           return Token::make_TK_WORD();
+                         }
                        }
 
      /* Generic rules that work for all states */
@@ -2181,6 +2192,7 @@ void DocTokenizer::setStateSnippet()
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->token.name="";
+  yyextra->snippetRtn=0;
   BEGIN(St_Snippet);
 }
 

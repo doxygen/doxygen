@@ -155,6 +155,7 @@ struct commentcnvYY_state
   std::vector<std::string> expandedAliases;
   DString snippetFileName;
   DString snippetName;
+  int snippetRtn = 0;
   DString delimiter;
 };
 
@@ -1277,6 +1278,7 @@ SLASHopt [/]*
                                        yyextra->insertCppCommentMarker = yyextra->mlBrief;
                                      }
                                      //printf("blockHeadCol=%d insertCommentCol=%d\n",yyextra->blockHeadCol, yyextra->insertCommentCol);
+                                     yyextra->snippetRtn = 0;
                                      BEGIN(IncludeDoc);
                                    }
 <CComment,ReadLine,IncludeFile>{CMD}("snippet"{OPTS}|"snippetdoc"{OPTS}*) {
@@ -1289,8 +1291,21 @@ SLASHopt [/]*
                                        yyextra->insertCppCommentMarker = yyextra->mlBrief;
                                      }
                                      //printf("blockHeadCol=%d insertCommentCol=%d\n",yyextra->blockHeadCol, yyextra->insertCommentCol);
+                                     yyextra->snippetRtn = 0;
                                      BEGIN(SnippetDoc);
                                    }
+<IncludeDoc,SnippetDoc>{B}*{CCE}     {
+                                       warn(yyextra->fileName,yyextra->lineNr,"Found \\{}{{doc}} command without valid file name argument",
+                                            YY_START==IncludeDoc? "include" : "snippet"
+                                       );
+                                       for (int i=(int)yyleng-1;i>=0;i--) unput(yytext[i]);
+                                       DString lineStr= " \\iline "+DString().setNum(yyextra->lineNr)+" ";
+                                       copyToOutput(yyscanner,lineStr.view());
+                                       BEGIN(yyextra->includeCtx);
+                                     }
+<IncludeDoc,SnippetDoc>^{B}*"*"+{B}* {
+                                       if (!(yyextra->snippetRtn && (yyextra->includeCtx==CComment || yyextra->includeCtx==CNComment))) REJECT;
+                                     }
 <IncludeDoc,SnippetDoc>{B}*
 <IncludeDoc>{FILEMASK}|"\""[^\n\"]+"\"" {
                                      DString fileName=yytext;
@@ -1307,41 +1322,150 @@ SLASHopt [/]*
                                        BEGIN(yyextra->includeCtx);
                                      }
                                    }
-<SnippetDoc>({FILEMASK}|"\""[^\n\"]+"\""){B}+ {
+<SnippetDoc>({FILEMASK}|"\""[^\n\"]+"\"") {
                                      yyextra->snippetFileName=yytext;
                                      yyextra->snippetFileName=yyextra->snippetFileName.stripWhiteSpace();
                                      if (yyextra->snippetFileName == "this") yyextra->snippetFileName=yyextra->fileName;
                                      yyextra->snippetName = "";
+                                     yyextra->snippetRtn = 0;
                                      BEGIN(SnippetDocTag);
                                    }
-<SnippetDocTag>[^\\@\n]+            {
+<SnippetDocTag>\n{B}*{CPPC}[\/!]{B}*/\n   {
+                                     if (!yyextra->snippetName.stripWhiteSpace().empty()) REJECT;
+
+                                     warn_doc_error(yyextra->fileName,yyextra->lineNr,"no block identification found in \\snippet{{doc}} command, skipping");
+                                     yyextra->lineNr++;
+                                     DString lineStr= " \\iline "+DString().setNum(yyextra->lineNr)+" ";
+                                     copyToOutput(yyscanner,lineStr.view());
+                                     BEGIN(yyextra->includeCtx);
+                                   }
+<SnippetDocTag>\n{B}*{CPPC}[\/!]   {
+                                     if (yyextra->snippetName.stripWhiteSpace().empty())
+                                     {
+                                       if (yyextra->snippetRtn)
+                                       {
+                                         warn_doc_error(yyextra->fileName,yyextra->lineNr,"no block identification found in \\snippet{{doc}} command, skipping");
+                                         yyextra->lineNr++;
+                                         DString lineStr= " \\iline "+DString().setNum(yyextra->lineNr)+" ";
+                                         copyToOutput(yyscanner,lineStr.view());
+                                         BEGIN(yyextra->includeCtx);
+                                       }
+                                       else
+                                       {
+                                         yyextra->lineNr++;
+                                       }
+                                     }
+                                     else
+                                     {
+                                       REJECT;
+                                     }
+                                   }
+<SnippetDocTag>{B}*{CCE}           {
+                                     if (!yyextra->snippetName.stripWhiteSpace().empty()) REJECT;
+
+                                     warn_doc_error(yyextra->fileName,yyextra->lineNr,"no block identification found in \\snippet{{doc}} command, skipping");
+                                     for (int i=(int)yyleng-1;i>=0;i--) unput(yytext[i]);
+                                     DString lineStr= " \\iline "+DString().setNum(yyextra->lineNr)+" ";
+                                     copyToOutput(yyscanner,lineStr.view());
+                                     BEGIN(yyextra->includeCtx);
+                                   }
+<SnippetDocTag>^{B}*"*"+{B}*       {
+                                     if (!(yyextra->snippetRtn && (yyextra->includeCtx==CComment || yyextra->includeCtx==CNComment))) REJECT;
+                                   }
+<SnippetDocTag>[^\\@\n]+           {
                                      yyextra->snippetName += yytext;
                                    }
 <SnippetDocTag>{CMD}               {
                                      yyextra->snippetName += yytext;
                                    }
-<SnippetDocTag>(\n|{CMD}"ilinebr") {
-                                     for (int i=(int)yyleng-1;i>=0;i--) unput(yytext[i]);
-                                     yyextra->snippetName = yyextra->snippetName.stripWhiteSpace();
-                                     DString blockId = "["+yyextra->snippetName+"]";
-                                     if (readIncludeFile(yyscanner,yyextra->snippetFileName,blockId))
+
+<SnippetDocTag>(\n|{CMD}"ilinebr")/{B}*("*/")? |
+<SnippetDocTag>(\n|{CMD}"ilinebr"){B}*"*" {
+                                     if (!yyextra->snippetName.stripWhiteSpace().empty() || yyextra->snippetRtn)
                                      {
-                                       BEGIN(IncludeFile);
+                                       for (int i=(int)yyleng-1;i>=0;i--) unput(yytext[i]);
+                                       yyextra->snippetName = yyextra->snippetName.stripWhiteSpace();
+                                       DString blockId = "["+yyextra->snippetName+"]";
+                                       if (readIncludeFile(yyscanner,yyextra->snippetFileName,blockId))
+                                       {
+                                         BEGIN(IncludeFile);
+                                       }
+                                       else
+                                       {
+                                         BEGIN(yyextra->includeCtx);
+                                       }
+                                     }
+                                     else if (yyextra->snippetName.stripWhiteSpace().empty() && !yyextra->snippetRtn &&
+                                              yyextra->includeCtx == ReadLine)
+                                     {
+                                       warn_doc_error(yyextra->fileName,yyextra->lineNr,"no block identification found in \\snippet{{doc}} command, skipping");
+                                       for (int i=(int)yyleng-1;i>=0;i--) unput(yytext[i]);
+                                       DString lineStr= " \\iline "+DString().setNum(yyextra->lineNr)+" ";
+                                       copyToOutput(yyscanner,lineStr.view());
+                                       BEGIN(yyextra->includeCtx);
                                      }
                                      else
                                      {
-                                       BEGIN(yyextra->includeCtx);
+                                       if (yytext[0] == '\n')
+                                       {
+                                         yyextra->lineNr++;
+                                         yyextra->col=0;
+                                       }
+                                       else
+                                       {
+                                         yyextra->col+=8;
+                                       }
+                                       yyextra->snippetRtn++;
                                      }
                                    }
 
-<IncludeDoc,SnippetDoc>\n          {
-                                     copyToOutput(yyscanner,yytext,yyleng);
-                                     insertCommentStart(yyscanner);
-                                     // missing file name
-                                     //warn(yyextra->fileName,yyextra->lineNr,"Found \\include{{doc}} command without valid file name argument");
+<IncludeDoc,SnippetDoc>\n{B}*{CPPC}[\/!]{B}*/\n   {
+                                     warn(yyextra->fileName,yyextra->lineNr,"Found \\{}{{doc}} command without valid file name argument",
+                                       YY_START==IncludeDoc? "include" : "snippet"
+                                     );
+                                     yyextra->lineNr++;
+                                     DString lineStr= " \\iline "+DString().setNum(yyextra->lineNr)+" ";
+                                     copyToOutput(yyscanner,lineStr.view());
                                      BEGIN(yyextra->includeCtx);
                                    }
+<IncludeDoc,SnippetDoc>\n{B}*{CPPC}[\/!] {
+                                     yyextra->lineNr++;
+                                   }
+<IncludeDoc,SnippetDoc>\n          {
+                                     if (yyextra->snippetRtn)
+                                     {
+                                       insertCommentStart(yyscanner);
+
+                                       // missing file name
+                                       warn(yyextra->fileName,yyextra->lineNr,"Found \\{}{{doc}} command without valid file name argument",
+                                         YY_START==IncludeDoc? "include" : "snippet"
+                                       );
+                                       copyToOutput(yyscanner,yytext,yyleng);
+                                       DString lineStr= " \\iline "+DString().setNum(yyextra->lineNr)+" ";
+                                       copyToOutput(yyscanner,lineStr.view());
+                                       BEGIN(yyextra->includeCtx);
+                                     }
+                                     else if (yyextra->includeCtx == ReadLine)
+                                     {
+                                       unput('\n');
+                                       warn(yyextra->fileName,yyextra->lineNr,"Found \\{}{{doc}} command without valid file name argument",
+                                         YY_START==IncludeDoc? "include" : "snippet"
+                                       );
+                                       BEGIN(yyextra->includeCtx);
+                                     }
+                                     else
+                                     {
+                                       yyextra->lineNr++;
+                                       yyextra->col=0;
+                                       yyextra->snippetRtn++;
+                                     }
+                                   }
 <IncludeDoc,SnippetDoc>.           { // invalid character
+                                     warn(yyextra->fileName,yyextra->lineNr,"Found invalid character for file name of \\{}{{doc}} command",
+                                       YY_START==IncludeDoc? "include" : "snippet"
+                                     );
+                                     DString lineStr= " \\iline "+DString().setNum(yyextra->lineNr)+" ";
+                                     copyToOutput(yyscanner,lineStr.view());
                                      copyToOutput(yyscanner,yytext,yyleng);
                                      BEGIN(yyextra->includeCtx);
                                    }
@@ -1953,6 +2077,8 @@ static bool readIncludeFile(yyscan_t yyscanner,const DString &inc,const DString 
     {
       warn_doc_error(yyextra->fileName,yyextra->lineNr,"included file name '{}' is ambiguous"
                      "Possible candidates:\n{}",inc, Doxygen::exampleNameLinkedMap->showFileDefMatches(inc));
+      DString lineStr= " \\iline "+DString().setNum(yyextra->lineNr)+" ";
+      copyToOutput(yyscanner,lineStr.view());
     }
     bool alreadyProcessed = std::any_of(
       yyextra->includeStack.begin(),
@@ -1971,6 +2097,8 @@ static bool readIncludeFile(yyscan_t yyscanner,const DString &inc,const DString 
       else
       {
         warn_doc_error(yyextra->fileName,yyextra->lineNr,"recursive usage of '\\include{{doc}}' with file name '{}', skipping", absFileName);
+        DString lineStr= " \\iline "+DString().setNum(yyextra->lineNr)+" ";
+        copyToOutput(yyscanner,lineStr.view());
       }
       return false;
     }
@@ -1979,6 +2107,8 @@ static bool readIncludeFile(yyscan_t yyscanner,const DString &inc,const DString 
     if (!readInputFile(absFileName,fs->fileBuf,false))
     {
       warn_doc_error(yyextra->fileName,yyextra->lineNr,"\\{}{{doc}} file '{}' could not be read",blockId.empty()?"include":"snippet",absFileName);
+      DString lineStr= " \\iline "+DString().setNum(yyextra->lineNr)+" ";
+      copyToOutput(yyscanner,lineStr.view());
       fs.reset();
       return false;
     }
@@ -1986,9 +2116,19 @@ static bool readIncludeFile(yyscan_t yyscanner,const DString &inc,const DString 
     DString incText { fs->fileBuf };
     if (!blockId.empty())
     {
+      if (blockId == "[]")
+      {
+        DString lineStr= " \\iline "+DString().setNum(yyextra->lineNr)+" ";
+        copyToOutput(yyscanner,lineStr.view());
+        warn_doc_error(yyextra->fileName,yyextra->lineNr,"no block identification found in \\snippet{{doc}} command, skipping");
+        return false;
+      }
+
       int count = incText.contains(blockId.data());
       if (count!=2)
       {
+        DString lineStr= " \\iline "+DString().setNum(yyextra->lineNr)+" ";
+        copyToOutput(yyscanner,lineStr.view());
         warn_doc_error(yyextra->fileName,yyextra->lineNr,"block marked with {} for \\snippet{{doc}} should appear twice in file {}, found it {:d} times, skipping",
             blockId,absFileName,count);
         return false;
@@ -2095,6 +2235,8 @@ static bool readIncludeFile(yyscan_t yyscanner,const DString &inc,const DString 
   else
   {
     warn_doc_error(yyextra->fileName,yyextra->lineNr,"\\{}{{doc}} file '{}' not found",blockId.empty()?"include":"snippet",inc);
+    DString lineStr= " \\iline "+DString().setNum(yyextra->lineNr)+" ";
+    copyToOutput(yyscanner,lineStr.view());
     return false;
   }
   return true;
