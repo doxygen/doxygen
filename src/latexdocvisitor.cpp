@@ -1524,7 +1524,7 @@ void LatexDocVisitor::operator()(const DocDiaFile &df)
   if (m_hide) return;
   bool exists = false;
   std::string inBuf;
-  if (readInputFile(df.file(),inBuf))
+  if (readInputFile(df.file(),inBuf,false,false,true))
   {
     auto fileName = writeInlineGraph(Config_getString(LATEX_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
                                      ".dia",                                                      // extension
