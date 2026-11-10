@@ -57,7 +57,7 @@ DString fileToString(const DString &name,bool filter=false,bool isSourceCode=fal
 
 //! read a file name \a fileName and optionally filter and transcode it
 bool readInputFile(const DString &fileName,std::string &contents,
-                   bool filter=true,bool isSourceCode=false);
+                   bool filter=true,bool isSourceCode=false,bool binary=false);
 
 /*! Thread-safe function to write a string representing an inline graph to a file.
  *  The contents will be used to create a hash that will be used to make the name unique.

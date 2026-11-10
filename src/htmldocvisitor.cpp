@@ -1812,7 +1812,7 @@ void HtmlDocVisitor::operator()(const DocDiaFile &df)
   forceEndParagraph(df);
   bool exists = false;
   std::string inBuf;
-  if (readInputFile(df.file(),inBuf))
+  if (readInputFile(df.file(),inBuf,false,false,true))
   {
     auto fileName = writeInlineGraph(Config_getString(HTML_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
                                      ".dia",                                                     // extension

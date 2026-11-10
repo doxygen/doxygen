@@ -1280,7 +1280,7 @@ DB_VIS_C
   if (m_hide) return;
   bool exists = false;
   std::string inBuf;
-  if (readInputFile(df.file(),inBuf))
+  if (readInputFile(df.file(),inBuf,false,false,true))
   {
     auto fileName = writeInlineGraph(Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
                                      ".dia",                                                        // extension

@@ -4377,7 +4377,7 @@ static void transcodeCharacterBuffer(const DString &fileName,std::string &conten
 }
 
 //! read a file name \a fileName and optionally filter and transcode it
-bool readInputFile(const DString &fileName,std::string &contents,bool filter,bool isSourceCode)
+bool readInputFile(const DString &fileName,std::string &contents,bool filter,bool isSourceCode,bool binary)
 {
   // try to open file
   FileInfo fi(fileName.str());
@@ -4423,6 +4423,7 @@ bool readInputFile(const DString &fileName,std::string &contents,bool filter,boo
     Debug::print(Debug::FilterOutput, 0, "Filter output\n");
     Debug::print(Debug::FilterOutput,0,"-------------\n{}\n-------------\n",contents);
   }
+  if (binary) return true;
 
   if (contents.size()>=2 &&
       static_cast<uint8_t>(contents[0])==0xFF &&
