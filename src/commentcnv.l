@@ -1976,7 +1976,7 @@ static bool readIncludeFile(yyscan_t yyscanner,const DString &inc,const DString 
     }
 
     auto fs = std::make_unique<commentcnv_FileState>();
-    if (!readInputFile(absFileName,fs->fileBuf,false))
+    if (!readInputFile(absFileName,fs->fileBuf,ReadInputFileOptions().setFilter(false)))
     {
       warn_doc_error(yyextra->fileName,yyextra->lineNr,"\\{}{{doc}} file '{}' could not be read",blockId.empty()?"include":"snippet",absFileName);
       fs.reset();

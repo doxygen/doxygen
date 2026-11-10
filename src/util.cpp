@@ -1078,7 +1078,7 @@ DString fileToString(const DString &name,bool filter,bool isSourceCode)
       return "";
     }
     std::string buf;
-    fileOpened=readInputFile(name,buf,filter,isSourceCode);
+    fileOpened=readInputFile(name,buf,ReadInputFileOptions().setFilter(filter).setIsSourceCode(isSourceCode));
     if (fileOpened)
     {
       addTerminalCharIfMissing(buf,'\n');
@@ -4377,13 +4377,13 @@ static void transcodeCharacterBuffer(const DString &fileName,std::string &conten
 }
 
 //! read a file name \a fileName and optionally filter and transcode it
-bool readInputFile(const DString &fileName,std::string &contents,bool filter,bool isSourceCode)
+bool readInputFile(const DString &fileName,std::string &contents,const ReadInputFileOptions &options)
 {
   // try to open file
   FileInfo fi(fileName.str());
   if (!fi.exists()) return false;
-  DString filterName = getFileFilter(fileName,isSourceCode);
-  if (filterName.empty() || !filter)
+  DString filterName = getFileFilter(fileName,options.isSourceCode());
+  if (filterName.empty() || !options.filter())
   {
     std::ifstream f = Portable::openInputStream(fileName,true);
     if (!f.is_open())
@@ -4422,6 +4422,10 @@ bool readInputFile(const DString &fileName,std::string &contents,bool filter,boo
     Portable::pclose(f);
     Debug::print(Debug::FilterOutput, 0, "Filter output\n");
     Debug::print(Debug::FilterOutput,0,"-------------\n{}\n-------------\n",contents);
+  }
+  if (options.binary())
+  {
+    return true;
   }
 
   if (contents.size()>=2 &&
