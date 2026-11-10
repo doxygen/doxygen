@@ -1304,7 +1304,7 @@ void RTFDocVisitor::operator()(const DocDiaFile &df)
   DBG_RTF("{\\comment RTFDocVisitor::operator()(const DocDiaFile &)}\n");
   bool exists = false;
   std::string inBuf;
-  if (readInputFile(df.file(),inBuf,false,false,true))
+  if (readInputFile(df.file(),inBuf,ReadInputFileOptions().setFilter(false).setBinary(true)))
   {
     auto fileName = writeInlineGraph(Config_getString(RTF_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
                                      ".dia",                                                    // extension
