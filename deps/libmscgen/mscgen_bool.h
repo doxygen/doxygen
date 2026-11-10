@@ -23,6 +23,14 @@
 #ifndef MSCGEN_BOOL_H
 #define MSCGEN_BOOL_H
 
+/* System headers (like AIX sys/types.h) may define TRUE/FALSE macros */
+#ifdef TRUE
+#undef TRUE
+#endif
+#ifdef FALSE
+#undef FALSE
+#endif
+
 typedef enum
 {
     FALSE = 0,
