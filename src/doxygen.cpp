@@ -1918,7 +1918,9 @@ static void findTagLessClasses(std::set<const Definition *> &candidates,const Co
 {
   for (const auto &icd : cd->getClasses())
   {
-    if (icd->name().find('@')==DString::npos) // process all non-anonymous inner classes
+    // process all non-anonymous inner classes, but skip aliases (e.g. from inline namespaces),
+    // as these share the members of the aliased class, which is processed already
+    if (!icd->isAlias() && icd->name().find('@')==DString::npos)
     {
       findTagLessClasses(candidates,icd);
     }
@@ -1932,6 +1934,7 @@ static void findTagLessClasses()
   std::set<const Definition *> candidates;
   for (auto &cd : *Doxygen::classLinkedMap)
   {
+    if (cd->isAlias()) continue;
     Definition *scope = cd->getOuterScope();
     //printf("  scope=%s for class %s\n",qPrint(scope?scope->name():"<null>"),qPrint(cd->name()));
     if (scope && scope->definitionType()==Definition::TypeNamespace) // class that is not nested

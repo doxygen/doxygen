@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="classfmt_1_1v12_1_1basic__format__args" kind="class" language="C++" prot="public">
+    <compoundname>fmt::v12::basic_format_args</compoundname>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classfmt_1_1v12_1_1basic__format__args_1acd20f808c19888c953e1d56baf2a14c5" prot="private" static="no" mutable="no">
+        <type>const int</type>
+        <definition>const int fmt::v12::basic_format_args::@314376345302363210027374023052231204255216300204::values_</definition>
+        <argsstring/>
+        <name>values_</name>
+        <qualifiedname>[union].__unnamed0__::values_</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="150_anonymous_inline_namespace.cpp" line="13" column="21"/>
+      </memberdef>
+      <memberdef kind="variable" id="classfmt_1_1v12_1_1basic__format__args_1ace8afd027e6c9e84740e741360cd6ff1" prot="private" static="no" mutable="no">
+        <type>const int</type>
+        <definition>const int fmt::v12::basic_format_args::@314376345302363210027374023052231204255216300204::args_</definition>
+        <argsstring/>
+        <name>args_</name>
+        <qualifiedname>[union].__unnamed0__::args_</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="150_anonymous_inline_namespace.cpp" line="14" column="21"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="150_anonymous_inline_namespace.cpp" line="10" column="5" bodyfile="150_anonymous_inline_namespace.cpp" bodystart="10" bodyend="16"/>
+    <listofallmembers>
+      <member refid="classfmt_1_1v12_1_1basic__format__args_1ace8afd027e6c9e84740e741360cd6ff1" prot="private" virt="non-virtual">
+        <scope>fmt::v12::basic_format_args</scope>
+        <name>args_</name>
+      </member>
+      <member refid="classfmt_1_1v12_1_1basic__format__args_1acd20f808c19888c953e1d56baf2a14c5" prot="private" virt="non-virtual">
+        <scope>fmt::v12::basic_format_args</scope>
+        <name>values_</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
