@@ -10261,7 +10261,7 @@ static void buildExampleList(Entry *root)
     {
       PageDef *pd = Doxygen::exampleLinkedMap->add(root->name,
                createPageDef(root->fileName,root->startLine,
-                 root->name,root->brief+root->doc+root->inbodyDocs,root->args));
+                 root->name,root->doc+root->inbodyDocs,root->args));
       pd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
       pd->setFileName(convertNameToFile(pd->name()+"-example",false,true));
       pd->addSectionsToDefinition(root->anchors);
