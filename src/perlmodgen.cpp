@@ -1353,7 +1353,8 @@ void PerlModDocVisitor::operator()(const DocParBlock &pb)
 }
 
 
-static void addTemplateArgumentList(const ArgumentList &al,PerlModOutput &output,const DString &)
+static void addTemplateArgumentList(const ArgumentList &al,PerlModOutput &output,const DString &,
+                                    const ArgumentList &typeConstraints=ArgumentList())
 {
   if (!al.hasParameters()) return;
   output.openList("template_parameters");
@@ -1367,6 +1368,19 @@ static void addTemplateArgumentList(const ArgumentList &al,PerlModOutput &output
             .addFieldQuotedString("definition_name", a.name);
     if (!a.defval.empty())
       output.addFieldQuotedString("default", a.defval);
+    DString typeConstraint = a.typeConstraint;
+    // C# where clauses, with one entry per constraint. A C# type parameter has its name in type.
+    const DString &paramName = a.name.empty() ? a.type : a.name;
+    for (const Argument &tc : typeConstraints)
+    {
+      if (tc.name==paramName && !tc.type.empty())
+      {
+        if (!typeConstraint.empty()) typeConstraint+=", ";
+        typeConstraint+=tc.type;
+      }
+    }
+    if (!typeConstraint.empty())
+      output.addFieldQuotedString("type_constraint", typeConstraint);
     output.closeHash();
   }
   output.closeList();
@@ -1374,7 +1388,7 @@ static void addTemplateArgumentList(const ArgumentList &al,PerlModOutput &output
 
 static void addTemplateList(const ClassDef *cd,PerlModOutput &output)
 {
-  addTemplateArgumentList(cd->templateArguments(),output,cd->name());
+  addTemplateArgumentList(cd->templateArguments(),output,cd->name(),cd->typeConstraints());
 }
 
 static void addTemplateList(const ConceptDef *cd,PerlModOutput &output)
@@ -1515,6 +1529,19 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
     .addFieldQuotedString("virtualness", getVirtualnessName(md->virtualness()))
     .addFieldQuotedString("protection", getProtectionName(md->protection()))
     .addFieldBoolean("static", md->isStatic());
+
+  if (md->memberType()==MemberType::Property)
+  {
+    m_output.addFieldBoolean("readable", md->isReadable())
+            .addFieldBoolean("writable", md->isWritable())
+            .addFieldBoolean("gettable", md->isGettable())
+            .addFieldBoolean("private_gettable", md->isPrivateGettable())
+            .addFieldBoolean("protected_gettable", md->isProtectedGettable())
+            .addFieldBoolean("settable", md->isSettable())
+            .addFieldBoolean("private_settable", md->isPrivateSettable())
+            .addFieldBoolean("protected_settable", md->isProtectedSettable())
+            .addFieldBoolean("initonly", md->isInitonly());
+  }
 
   addPerlModDocBlock(m_output,"brief",md->briefFile(),md->briefLine(),md->getOuterScope(),md,md->briefDescription());
   addPerlModDocBlock(m_output,"detailed",md->docFile(),md->docLine(),md->getOuterScope(),md,md->documentation());
@@ -1757,6 +1784,10 @@ void PerlModGenerator::generatePerlModForClass(const ClassDef *cd)
     .addFieldQuotedString("name", cd->name());
   /* DGA: fix # #7547 Perlmod does not generate "kind" information to discriminate struct/union */
   m_output.addFieldQuotedString("kind", cd->compoundTypeString());
+  m_output.addFieldBoolean("final", cd->isFinal())
+          .addFieldBoolean("sealed", cd->isSealed())
+          .addFieldBoolean("abstract", cd->isAbstract())
+          .addFieldBoolean("ref", cd->isRef());
 
   if (!cd->baseClasses().empty())
   {
