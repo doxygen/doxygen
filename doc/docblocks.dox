@@ -254,6 +254,12 @@ or
 int var; ///< Detailed description after the member
          ///<
 \endverbatim
+The markers of the following lines of such a block should start in the same
+column as the first one. A following line with the \< marker that is not
+aligned still documents the same member, after the lines that come before it.
+With \ref cfg_multiline_cpp_is_brief "MULTILINE_CPP_IS_BRIEF" set to \c NO
+(the default), a following line without the marker that is not aligned
+documents what comes after it instead.
 
 Most often one only wants to put a brief description after a member.
 This is done as follows:

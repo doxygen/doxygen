@@ -210,10 +210,11 @@ struct LayoutNavEntry
       : m_parent(parent), m_kind(k), m_visible(vs), m_baseFile(bf), m_title(tl), m_intro(intro) {}
     LayoutNavEntry *parent() const   { return m_parent; }
     Kind kind() const                { return m_kind; }
-    DString baseFile() const        { return m_baseFile; }
+    DString baseFile() const         { return m_baseFile; }
     std::string id() const           { return navToString()+":"+m_baseFile.str(); }
-    DString title() const           { return m_title; }
-    DString intro() const           { return m_intro; }
+    DString title() const;
+    DString titleAsHtml() const;
+    DString intro() const            { return m_intro; }
     DString url() const;
     const LayoutNavEntryList &children() const { return m_children; }
     LayoutNavEntryList &children()   { return m_children; }
@@ -240,10 +241,10 @@ struct LayoutNavEntry
     }
 
   private:
-    LayoutNavEntry() : m_parent(nullptr), m_kind(None), m_visible(true) {}
-    LayoutNavEntry *m_parent;
-    Kind m_kind;
-    bool m_visible;
+    LayoutNavEntry() = default;
+    LayoutNavEntry *m_parent = nullptr;
+    Kind m_kind = None;
+    bool m_visible = true;
     DString m_baseFile;
     DString m_title;
     DString m_intro;

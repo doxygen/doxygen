@@ -84,13 +84,13 @@ jobs:
           }
         - {
             name: "macOS Latest Release (Apple Silicon)",
-            os: macos-14,
+            os: macos-15,
             build_type: "Release", cc: "clang", cxx: "clang++",
             build_gen: "Unix Makefiles"
           }
         - {
             name: "macOS Latest Debug (Apple Silicon)",
-            os: macos-14,
+            os: macos-15,
             build_type: "Debug", cc: "clang", cxx: "clang++",
             build_gen: "Unix Makefiles"
           }
@@ -168,10 +168,27 @@ jobs:
       with:
         timeout_minutes: 15
         max_attempts: 5
-        retry_wait_seconds: 60
+        retry_wait_seconds: 120
+        shell: pwsh
         command: |
+          # remove state left over from a failed attempt
+          choco uninstall miktex miktex.install -y --force --no-progress 2>$null
+          Remove-Item -Recurse -Force "$env:ChocolateyInstall\lib-bad\miktex*" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "$env:ChocolateyInstall\lib\miktex*" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "$env:TEMP\chocolatey\MiKTeX-repository" -ErrorAction SilentlyContinue
+          # fail fast only if the MiKTeX API cannot be reached at all (timeout / DNS / connection).
+          # Any HTTP response (even 4xx) means the host is reachable.
+          try {
+            Invoke-WebRequest -Uri https://api2.miktex.org/hello -UseBasicParsing -TimeoutSec 30 | Out-Null
+          } catch {
+            if (-not $_.Exception.Response) {
+              Write-Host "api2.miktex.org not reachable: $($_.Exception.Message)"
+              exit 1
+            }
+            Write-Host "api2.miktex.org reachable (HTTP $([int]$_.Exception.Response.StatusCode))"
+          }
           choco install miktex --debug --verbose --no-progress --params "/Set:basic" -y
-          if ($?) { echo "C:\Program Files\MiKTeX\miktex\bin\x64" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 }
+          if ($LASTEXITCODE -eq 0) { echo "C:\Program Files\MiKTeX\miktex\bin\x64" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append } else { exit $LASTEXITCODE }
       if: matrix.config.os == 'windows-2022'
 
     - name: Configure MikTeX (Windows)
@@ -250,7 +267,7 @@ jobs:
       if: matrix.config.os == 'windows-2022'
 
     - name: Setup VS Environment (Windows)
-      uses: seanmiddleditch/gha-setup-vsdevenv@master
+      uses: step-security/gha-setup-vsdevenv@v6
       if: matrix.config.os == 'windows-2022'
 
     #- name: Setup VS Environment (Windows)

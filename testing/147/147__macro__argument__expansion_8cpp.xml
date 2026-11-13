@@ -1,0 +1,499 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="147__macro__argument__expansion_8cpp" kind="file" language="C++">
+    <compoundname>147_macro_argument_expansion.cpp</compoundname>
+    <sectiondef kind="define">
+      <memberdef kind="define" id="147__macro__argument__expansion_8cpp_1a24a2b024b341c646841ffe24c27cd3d7" prot="public" static="no">
+        <name>__REDIRECT</name>
+        <param>
+          <defname>name</defname>
+        </param>
+        <param>
+          <defname>proto</defname>
+        </param>
+        <param>
+          <defname>alias</defname>
+        </param>
+        <initializer>name proto __asm__ (<ref refid="147__macro__argument__expansion_8cpp_1a1775e944d513ec475ddd339fc2d61587" kindref="member">__ASMNAME</ref> (#alias))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="7" column="9" bodyfile="147_macro_argument_expansion.cpp" bodystart="7" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="147__macro__argument__expansion_8cpp_1a1775e944d513ec475ddd339fc2d61587" prot="public" static="no">
+        <name>__ASMNAME</name>
+        <param>
+          <defname>cname</defname>
+        </param>
+        <initializer><ref refid="147__macro__argument__expansion_8cpp_1ada50b1fb162d4c8e7c42a31360027fcb" kindref="member">__ASMNAME2</ref> (<ref refid="147__macro__argument__expansion_8cpp_1aff6bf0ff0fa3b5cbd23a8ae1131c87a9" kindref="member">__USER_LABEL_PREFIX__</ref>, cname)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="8" column="9" bodyfile="147_macro_argument_expansion.cpp" bodystart="8" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="147__macro__argument__expansion_8cpp_1ada50b1fb162d4c8e7c42a31360027fcb" prot="public" static="no">
+        <name>__ASMNAME2</name>
+        <param>
+          <defname>prefix</defname>
+        </param>
+        <param>
+          <defname>cname</defname>
+        </param>
+        <initializer><ref refid="147__macro__argument__expansion_8cpp_1a375c4dc9f0fb338999de81aab826f9d6" kindref="member">__STRING</ref> (prefix) cname</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="9" column="9" bodyfile="147_macro_argument_expansion.cpp" bodystart="9" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="147__macro__argument__expansion_8cpp_1a375c4dc9f0fb338999de81aab826f9d6" prot="public" static="no">
+        <name>__STRING</name>
+        <param>
+          <defname>x</defname>
+        </param>
+        <initializer>#x</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="10" column="9" bodyfile="147_macro_argument_expansion.cpp" bodystart="10" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="147__macro__argument__expansion_8cpp_1aff6bf0ff0fa3b5cbd23a8ae1131c87a9" prot="public" static="no">
+        <name>__USER_LABEL_PREFIX__</name>
+        <initializer>_</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="18" column="9" bodyfile="147_macro_argument_expansion.cpp" bodystart="18" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="147__macro__argument__expansion_8cpp_1aa0b03826c8f7cc324ac2db0ada2dce0a" prot="public" static="no">
+        <name>VALUE</name>
+        <initializer>
+          <ref refid="147__macro__argument__expansion_8cpp_1a32a6ecfefbcd1542324cc91cff0eaf0e" kindref="member">expanded_identifier</ref>
+        </initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="21" column="9" bodyfile="147_macro_argument_expansion.cpp" bodystart="21" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="147__macro__argument__expansion_8cpp_1a9e9c7019565ee800abaf5fef300b73db" prot="public" static="no">
+        <name>STRING</name>
+        <param>
+          <defname>x</defname>
+        </param>
+        <initializer>#x</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="22" column="9" bodyfile="147_macro_argument_expansion.cpp" bodystart="22" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="147__macro__argument__expansion_8cpp_1afd9fe5a2f1b457b69c7e2742630e5a52" prot="public" static="no">
+        <name>STRING_EXPANDED</name>
+        <param>
+          <defname>x</defname>
+        </param>
+        <initializer><ref refid="147__macro__argument__expansion_8cpp_1a9e9c7019565ee800abaf5fef300b73db" kindref="member">STRING</ref>(x)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="23" column="9" bodyfile="147_macro_argument_expansion.cpp" bodystart="23" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="147__macro__argument__expansion_8cpp_1a079e482f6b959c59cb2564da9e035ae2" prot="public" static="no">
+        <name>MIX</name>
+        <param>
+          <defname>x</defname>
+        </param>
+        <initializer>#x, x</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="24" column="9" bodyfile="147_macro_argument_expansion.cpp" bodystart="24" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="147__macro__argument__expansion_8cpp_1a9ac9dd35b93432c0b194466d2aa84788" prot="public" static="no">
+        <name>PASTE</name>
+        <param>
+          <defname>x</defname>
+        </param>
+        <param>
+          <defname>y</defname>
+        </param>
+        <initializer>x##y</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="25" column="9" bodyfile="147_macro_argument_expansion.cpp" bodystart="25" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="147__macro__argument__expansion_8cpp_1a03f46e91ef54f6da95e8bdfa56c6395d" prot="public" static="no">
+        <name>PASTE_EXPANDED</name>
+        <param>
+          <defname>x</defname>
+        </param>
+        <param>
+          <defname>y</defname>
+        </param>
+        <initializer><ref refid="147__macro__argument__expansion_8cpp_1a9ac9dd35b93432c0b194466d2aa84788" kindref="member">PASTE</ref>(x, y)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="26" column="9" bodyfile="147_macro_argument_expansion.cpp" bodystart="26" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="147__macro__argument__expansion_8cpp_1a19bfeb9c2ce2910f14ba36b0cf268215" prot="public" static="no">
+        <name>STRING_ARGS</name>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer>#__VA_ARGS__</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="27" column="9" bodyfile="147_macro_argument_expansion.cpp" bodystart="27" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="147__macro__argument__expansion_8cpp_1a8d4afc18652047cd7478f3503a46cd15" prot="public" static="no">
+        <name>STRING_ARGS_EXPANDED</name>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer><ref refid="147__macro__argument__expansion_8cpp_1a19bfeb9c2ce2910f14ba36b0cf268215" kindref="member">STRING_ARGS</ref>(__VA_ARGS__)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="28" column="9" bodyfile="147_macro_argument_expansion.cpp" bodystart="28" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="147__macro__argument__expansion_8cpp_1a2b7cf2a3641be7b89138615764d60ba3" prot="public" static="no">
+        <name>EMPTY</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="29" column="9" bodyfile="147_macro_argument_expansion.cpp" bodystart="29" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="147__macro__argument__expansion_8cpp_1a5000a21d910631ee50858bf8251ac89e" prot="public" static="no">
+        <name>OPTIONAL</name>
+        <param>
+          <defname>...</defname>
+        </param>
+        <initializer>"before" __VA_OPT__("present") "after"</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="30" column="9" bodyfile="147_macro_argument_expansion.cpp" bodystart="30" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="147__macro__argument__expansion_8cpp_1a6233123742aa307f2a5ce737acca67f0" prot="public" static="no">
+        <name>SELF</name>
+        <initializer>SELF</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="31" column="9" bodyfile="147_macro_argument_expansion.cpp" bodystart="31" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="var">
+      <memberdef kind="variable" id="147__macro__argument__expansion_8cpp_1a5d614de90087fe1378b4eaae50efa44d" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* nested</definition>
+        <argsstring/>
+        <name>nested</name>
+        <initializer>=   "_" "target"</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="13" column="12" bodyfile="147_macro_argument_expansion.cpp" bodystart="13" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="147__macro__argument__expansion_8cpp_1ae936e8704bbe32d92e83ee8f93f602c7" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* direct</definition>
+        <argsstring/>
+        <name>direct</name>
+        <initializer>=  "_" "harumph"</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="14" column="12" bodyfile="147_macro_argument_expansion.cpp" bodystart="14" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="147__macro__argument__expansion_8cpp_1a2a39281fa0b3d60164159f48b1db2604" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* undefined_prefix</definition>
+        <argsstring/>
+        <name>undefined_prefix</name>
+        <initializer>=  "__USER_LABEL_PREFIX__" "harumph"</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="17" column="12" bodyfile="147_macro_argument_expansion.cpp" bodystart="17" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="147__macro__argument__expansion_8cpp_1a4418cfa4d5da71bc93e2b037b01a1a05" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* source_prefix</definition>
+        <argsstring/>
+        <name>source_prefix</name>
+        <initializer>=  "_" "harumph"</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="19" column="12" bodyfile="147_macro_argument_expansion.cpp" bodystart="19" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="147__macro__argument__expansion_8cpp_1a32a6ecfefbcd1542324cc91cff0eaf0e" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* expanded_identifier</definition>
+        <argsstring/>
+        <name>expanded_identifier</name>
+        <initializer>= "value"</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="33" column="12" bodyfile="147_macro_argument_expansion.cpp" bodystart="33" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="147__macro__argument__expansion_8cpp_1a8129637af8920bc9328bbce2a00bfeb4" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* raw</definition>
+        <argsstring/>
+        <name>raw</name>
+        <initializer>=  "VALUE"</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="34" column="12" bodyfile="147_macro_argument_expansion.cpp" bodystart="34" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="147__macro__argument__expansion_8cpp_1afa963d2550157a368b47030b95330f1d" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* expanded</definition>
+        <argsstring/>
+        <name>expanded</name>
+        <initializer>=  "expanded_identifier"</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="35" column="12" bodyfile="147_macro_argument_expansion.cpp" bodystart="35" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="147__macro__argument__expansion_8cpp_1a8f4f785a8ac61043c3fd411668049e32" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* mixed[]</definition>
+        <argsstring>[]</argsstring>
+        <name>mixed</name>
+        <initializer>= {  "VALUE", <ref refid="147__macro__argument__expansion_8cpp_1a32a6ecfefbcd1542324cc91cff0eaf0e" kindref="member">expanded_identifier</ref> }</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="36" column="12" bodyfile="147_macro_argument_expansion.cpp" bodystart="36" bodyend="36"/>
+      </memberdef>
+      <memberdef kind="variable" id="147__macro__argument__expansion_8cpp_1acd7b88645dd8886501d1239ba10dfa4a" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int VALUE_suffix</definition>
+        <argsstring/>
+        <name>VALUE_suffix</name>
+        <initializer>= 1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="37" column="6" bodyfile="147_macro_argument_expansion.cpp" bodystart="37" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="147__macro__argument__expansion_8cpp_1a4b7c7e4dedd49a630ca4f0302499915b" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int expanded_identifier_suffix</definition>
+        <argsstring/>
+        <name>expanded_identifier_suffix</name>
+        <initializer>= 2</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="38" column="6" bodyfile="147_macro_argument_expansion.cpp" bodystart="38" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="147__macro__argument__expansion_8cpp_1a86600cfd8fd0ff76e2ac00c9996a4615" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* variadic_raw</definition>
+        <argsstring/>
+        <name>variadic_raw</name>
+        <initializer>=  "VALUE, tail"</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="39" column="12" bodyfile="147_macro_argument_expansion.cpp" bodystart="39" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="147__macro__argument__expansion_8cpp_1a4d1e9497e841354fa731dbba802ec315" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* variadic_expanded</definition>
+        <argsstring/>
+        <name>variadic_expanded</name>
+        <initializer>=  "expanded_identifier, tail"</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="40" column="12" bodyfile="147_macro_argument_expansion.cpp" bodystart="40" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="147__macro__argument__expansion_8cpp_1a82beb3af8c8b0b9b6b35a9724db8670f" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* quoted</definition>
+        <argsstring/>
+        <name>quoted</name>
+        <initializer>=  "\"a\\\\b\""</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="41" column="12" bodyfile="147_macro_argument_expansion.cpp" bodystart="41" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="147__macro__argument__expansion_8cpp_1ab585b2e8f16d957713364d3ae66e66b9" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* quoted_at</definition>
+        <argsstring/>
+        <name>quoted_at</name>
+        <initializer>=  "\"a@b\""</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="42" column="12" bodyfile="147_macro_argument_expansion.cpp" bodystart="42" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="147__macro__argument__expansion_8cpp_1aedb6ee7ce43e4b9641da6df7c2e5b524" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* optional_empty</definition>
+        <argsstring/>
+        <name>optional_empty</name>
+        <initializer>=  "before"  "after"</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="43" column="12" bodyfile="147_macro_argument_expansion.cpp" bodystart="43" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="147__macro__argument__expansion_8cpp_1a57dcb3443612a74737f594546c30aa7c" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* optional_present</definition>
+        <argsstring/>
+        <name>optional_present</name>
+        <initializer>=  "before" "present" "after"</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="44" column="12" bodyfile="147_macro_argument_expansion.cpp" bodystart="44" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="147__macro__argument__expansion_8cpp_1a5412e2e0e185db1438bfa9b76f6c4649" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* selfref</definition>
+        <argsstring/>
+        <name>selfref</name>
+        <initializer>=  "SELF"</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="45" column="12" bodyfile="147_macro_argument_expansion.cpp" bodystart="45" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="147__macro__argument__expansion_8cpp_1a02774b1e68d05e9b4c50b1b752ec8a4c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int redirected</definition>
+        <argsstring>(void) __asm__("_" "target")</argsstring>
+        <name>redirected</name>
+        <param>
+          <type>void</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="147_macro_argument_expansion.cpp" line="12" column="6" declfile="147_macro_argument_expansion.cpp" declline="12" declcolumn="6"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="147_macro_argument_expansion.cpp"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_derived_tuple_property" kind="class" language="C#" prot="public">
+    <compoundname>DerivedTupleProperty</compoundname>
+    <basecompoundref refid="class_tuple_property" prot="public" virt="non-virtual">TupleProperty</basecompoundref>
+    <sectiondef kind="property">
+      <memberdef kind="property" id="class_derived_tuple_property_1ad418b933fbd09c0cf9d3c061e44a4775" prot="public" static="no" readable="no" writable="no" gettable="yes" privategettable="no" protectedgettable="no" settable="no" privatesettable="no" protectedsettable="no">
+        <type>(int, int)</type>
+        <definition>(int, int) DerivedTupleProperty.Tuple</definition>
+        <argsstring/>
+        <name>Tuple</name>
+        <qualifiedname>DerivedTupleProperty.Tuple</qualifiedname>
+        <briefdescription>
+          <para>The hidden tuple property documentation. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="141_csharp_tuple_property.cs" line="17" column="15" bodyfile="141_csharp_tuple_property.cs" bodystart="18" bodyend="20"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>A class hiding a tuple property. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="1">
+        <label>DerivedTupleProperty</label>
+        <link refid="class_derived_tuple_property"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>TupleProperty</label>
+        <link refid="class_tuple_property"/>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="1">
+        <label>DerivedTupleProperty</label>
+        <link refid="class_derived_tuple_property"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>TupleProperty</label>
+        <link refid="class_tuple_property"/>
+      </node>
+    </collaborationgraph>
+    <location file="141_csharp_tuple_property.cs" line="14" column="7" bodyfile="141_csharp_tuple_property.cs" bodystart="15" bodyend="21"/>
+    <listofallmembers>
+      <member refid="class_derived_tuple_property_1ad418b933fbd09c0cf9d3c061e44a4775" prot="public" virt="non-virtual">
+        <scope>DerivedTupleProperty</scope>
+        <name>Tuple</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

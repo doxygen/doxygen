@@ -672,6 +672,12 @@ NONLopt [^\n]*
 <FindMembers>{B}*"private"{BN}*":"{BN}* {
                                           initMethodProtection(yyscanner,Protection::Private);
                                         }
+<FindMembers>{B}*("private"{BN}+"protected"|"protected"{BN}+"private")/{BN} { // C# "private protected" is only visible to derived classes in the same assembly
+                                          if (!yyextra->insideCS) REJECT;
+                                          lineCount(yyscanner);
+                                          addType(yyscanner);
+                                          yyextra->current->protection = Protection::Package;
+                                        }
 <FindMembers>{B}*"public"/({BN}|{CCS}|{CPPC}) {
                                           if (!yyextra->insideCpp) REJECT;
                                           initMethodProtection(yyscanner,Protection::Public);
@@ -2607,11 +2613,20 @@ NONLopt [^\n]*
                                             }
                                             else if ((yyextra->insideCS || yyextra->insideD || yyextra->insidePHP || yyextra->insideJS) && dstrcmp(yytext,"internal")==0)
                                             {
-                                              yyextra->current->protection = Protection::Package;
+                                              // C# "protected internal" is also visible to derived classes in other assemblies
+                                              if (!(yyextra->insideCS && yyextra->current->protection==Protection::Protected))
+                                              {
+                                                yyextra->current->protection = Protection::Package;
+                                              }
                                             }
                                             else if (javaLike && dstrcmp(yytext,"private")==0)
                                             {
                                               yyextra->current->protection = Protection::Private;
+                                            }
+                                            else if (yyextra->insideCS && YY_START==FindMembers && dstrcmp(yytext,"new")==0)
+                                            {
+                                              // C# new modifier hides an inherited member; it is not the member name.
+                                              yyextra->current->spec.setNew(true);
                                             }
                                             else if (javaLike && dstrcmp(yytext,"static")==0)
                                             {
@@ -4000,6 +4015,14 @@ NONLopt [^\n]*
                                           *yyextra->pCopyCurlyGString << *yytext;
                                           yyextra->curlyCount++;
                                         }
+<GCopyCurly>"}"/{BN}*("||"|"&&")         { // requires { ... } || or requires { ... } &&
+                                          *yyextra->pCopyCurlyGString << *yytext;
+                                          if (--yyextra->curlyCount<0)
+                                          {
+                                            yyextra->current->endBodyLine = yyextra->yyLineNr;
+                                            BEGIN(yyextra->lastCurlyContext);
+                                          }
+                                        }
 <GCopyCurly>"}"                         {
                                           *yyextra->pCopyCurlyGString << *yytext;
                                           if (--yyextra->curlyCount<0)
@@ -5219,7 +5242,18 @@ NONLopt [^\n]*
                                           BEGIN( FuncPtr );
                                         }
 <FindMembers>"("                        {
-                                          if (!yyextra->current->name.empty())
+                                          if (yyextra->insideCS && yyextra->current->name.empty())
+                                          {
+                                            // A parenthesized type in C# is a tuple type,
+                                            // not the start of a function argument list.
+                                            addType(yyscanner);
+                                            yyextra->current->type += *yytext;
+                                            yyextra->lastRoundContext = FindMembers;
+                                            yyextra->pCopyRoundString = &yyextra->current->type;
+                                            yyextra->roundCount = 0;
+                                            BEGIN(CopyRound);
+                                          }
+                                          else if (!yyextra->current->name.empty())
                                           {
                                             yyextra->current->args = yytext;
                                             yyextra->current->bodyLine = yyextra->yyLineNr;
@@ -7432,10 +7466,12 @@ NONLopt [^\n]*
 <CSAccessorDecl>"protected "{BN}*"get"  { if (yyextra->curlyCount==0) yyextra->current->spec.setProtectedGettable(true); }
 <CSAccessorDecl>"set"                   { if (yyextra->curlyCount==0) yyextra->current->spec.setSettable(true);          }
 <CSAccessorDecl>"get"                   { if (yyextra->curlyCount==0) yyextra->current->spec.setGettable(true);          }
+<CSAccessorDecl>"init"                  { if (yyextra->curlyCount==0) yyextra->current->spec.setInitonly(true);          }
 <CSAccessorDecl>"add"                   { if (yyextra->curlyCount==0) yyextra->current->spec.setAddable(true);           }
 <CSAccessorDecl>"remove"                { if (yyextra->curlyCount==0) yyextra->current->spec.setRemovable(true);         }
 <CSAccessorDecl>"raise"                 { if (yyextra->curlyCount==0) yyextra->current->spec.setRaisable(true);          }
 <CSAccessorDecl>{CHARLIT}               {}
+<CSAccessorDecl>{ID}                    {} // skip identifiers that contain a keyword, such as offset
 <CSAccessorDecl>"\""                    { BEGIN(CSString);}
 <CSAccessorDecl>"."                     {}
 <CSAccessorDecl>\n                      { lineCount(yyscanner); }
@@ -8711,6 +8747,12 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
           if (ce->lang==SrcLangExt::ObjC)
           {
             yyextra->current->protection = yyextra->protection = Protection::Protected ;
+          }
+          else if (!ce->name.empty() && ce->name.at(ni)=='@' && (ce->spec.isStruct() || ce->spec.isUnion()))
+          {
+            // members of an anonymous struct/union are members of the enclosing class
+            // and thus share its protection
+            yyextra->current->protection = yyextra->protection = ce->protection;
           }
           else
           {

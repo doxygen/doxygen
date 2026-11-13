@@ -42,7 +42,7 @@ class TuneColorDialog : public QDialog
     int getSaturation() const;
     int getGamma() const;
 
-  private slots:
+  private Q_SLOTS:
     void updateImage(int hue,int sat,int val);
     void tabChanged(int);
 
@@ -65,11 +65,11 @@ public:
     ColorPicker(Mode m);
     ~ColorPicker();
 
-public slots:
+public Q_SLOTS:
     void setCol(int h, int s, int g);
     //void setCol(int h, int s);
 
-signals:
+Q_SIGNALS:
     void newHsv(int h, int s, int g);
 
 protected:
@@ -106,7 +106,7 @@ class Step1 : public QWidget
     Step1(Wizard *parent,const QHash<QString,Input*> &modelData);
     void init();
 
-  private slots:
+  private Q_SLOTS:
     void selectSourceDir();
     void selectDestinationDir();
     void selectProjectIcon();
@@ -138,7 +138,7 @@ class Step2 : public QWidget
     Step2(Wizard *parent,const QHash<QString,Input*> &modelData);
     void init();
 
-  private slots:
+  private Q_SLOTS:
     void optimizeFor(int choice);
     void extractMode(int choice);
     void changeCrossRefState(int choice);
@@ -161,7 +161,7 @@ class Step3 : public QWidget
     Step3(Wizard *parent,const QHash<QString,Input*> &modelData);
     void init();
 
-  private slots:
+  private Q_SLOTS:
     void setHtmlEnabled(bool);
     void setLatexEnabled(bool);
     void setManEnabled(int);
@@ -198,7 +198,7 @@ class Step4 : public QWidget
     Step4(Wizard *parent,const QHash<QString,Input*> &modelData);
     void init();
 
-  private slots:
+  private Q_SLOTS:
     void diagramModeChanged(int);
     void setClassGraphEnabled(int state);
     void setCollaborationGraphEnabled(int state);
@@ -230,15 +230,15 @@ class Wizard : public QSplitter
     Wizard(const QHash<QString,Input*> &modelData, QWidget *parent=nullptr);
    ~Wizard();
 
-  public slots:
+  public Q_SLOTS:
     void refresh();
 
-  private slots:
+  private Q_SLOTS:
     void activateTopic(QTreeWidgetItem *item,QTreeWidgetItem *);
     void nextTopic();
     void prevTopic();
 
-  signals:
+  Q_SIGNALS:
     void done();
 
   private:

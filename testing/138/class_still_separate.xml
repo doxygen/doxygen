@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_still_separate" kind="class" language="C++" prot="public">
+    <compoundname>StillSeparate</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="class_still_separate_1a66a7f82c32904aeb9cb2d000b2a97d4c" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int StillSeparate::a</definition>
+        <argsstring/>
+        <name>a</name>
+        <qualifiedname>StillSeparate::a</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>doc for a more doc for a </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="138_member_comment_alignment.cpp" line="59" column="9" bodyfile="138_member_comment_alignment.cpp" bodystart="59" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_still_separate_1a1fb625ad7e0b78f7b2ca3af7e2e6b764" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int StillSeparate::b</definition>
+        <argsstring/>
+        <name>b</name>
+        <qualifiedname>StillSeparate::b</qualifiedname>
+        <briefdescription>
+          <para>doc for b </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="138_member_comment_alignment.cpp" line="62" column="9" bodyfile="138_member_comment_alignment.cpp" bodystart="62" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_still_separate_1a5e8dbb494d73aa3af4f256ef6c31ef86" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int StillSeparate::c</definition>
+        <argsstring/>
+        <name>c</name>
+        <qualifiedname>StillSeparate::c</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>doc for c more doc for c </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="138_member_comment_alignment.cpp" line="65" column="9" bodyfile="138_member_comment_alignment.cpp" bodystart="65" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="class_still_separate_1a9771f33efc66c76aa950326d62ddf708" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int StillSeparate::d</definition>
+        <argsstring/>
+        <name>d</name>
+        <qualifiedname>StillSeparate::d</qualifiedname>
+        <briefdescription>
+          <para>doc for d </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="138_member_comment_alignment.cpp" line="69" column="9" bodyfile="138_member_comment_alignment.cpp" bodystart="69" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>A line without '&lt;' that is not aligned still starts a block of its own. </para>
+    </detaileddescription>
+    <location file="138_member_comment_alignment.cpp" line="55" column="1" bodyfile="138_member_comment_alignment.cpp" bodystart="56" bodyend="70"/>
+    <listofallmembers>
+      <member refid="class_still_separate_1a66a7f82c32904aeb9cb2d000b2a97d4c" prot="public" virt="non-virtual">
+        <scope>StillSeparate</scope>
+        <name>a</name>
+      </member>
+      <member refid="class_still_separate_1a1fb625ad7e0b78f7b2ca3af7e2e6b764" prot="public" virt="non-virtual">
+        <scope>StillSeparate</scope>
+        <name>b</name>
+      </member>
+      <member refid="class_still_separate_1a5e8dbb494d73aa3af4f256ef6c31ef86" prot="public" virt="non-virtual">
+        <scope>StillSeparate</scope>
+        <name>c</name>
+      </member>
+      <member refid="class_still_separate_1a9771f33efc66c76aa950326d62ddf708" prot="public" virt="non-virtual">
+        <scope>StillSeparate</scope>
+        <name>d</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -191,6 +191,16 @@ DString LayoutNavEntry::url() const
   return url;
 }
 
+DString LayoutNavEntry::title() const
+{
+  return parseCommentAsText(nullptr,nullptr,m_title,"DoxygenLayout",1);
+}
+
+DString LayoutNavEntry::titleAsHtml() const
+{
+  return parseCommentAsHtml(nullptr,nullptr,m_title,"DoxygenLayout",1);
+}
+
 //---------------------------------------------------------------------------------
 
 class LayoutParser

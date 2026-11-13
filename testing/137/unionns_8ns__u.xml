@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="unionns_8ns__u" kind="union" language="C++" prot="public">
+    <compoundname>ns.ns_u</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="unionns_8ns__u_1a56b8bf4ead155c11644fb4eb9838ca66" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int ns::@276010222033333353077152315127022227347170247323::ns_ui</definition>
+        <argsstring/>
+        <name>ns_ui</name>
+        <qualifiedname>ns::ns.ns_u::ns_ui</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>namespace union member ui </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="137_anonymous_flat.cpp" line="36" column="9"/>
+      </memberdef>
+      <memberdef kind="variable" id="unionns_8ns__u_1aea6e395d3dac27a1bf131663938a35fd" prot="public" static="no" mutable="no">
+        <type>char</type>
+        <definition>char ns::@276010222033333353077152315127022227347170247323::ns_uc</definition>
+        <argsstring/>
+        <name>ns_uc</name>
+        <qualifiedname>ns::ns.ns_u::ns_uc</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>namespace union member uc </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="137_anonymous_flat.cpp" line="37" column="10"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="137_anonymous_flat.cpp" line="34" column="3" bodyfile="137_anonymous_flat.cpp" bodystart="35" bodyend="38"/>
+    <listofallmembers>
+      <member refid="unionns_8ns__u_1aea6e395d3dac27a1bf131663938a35fd" prot="public" virt="non-virtual">
+        <scope>ns.ns_u</scope>
+        <name>ns_uc</name>
+      </member>
+      <member refid="unionns_8ns__u_1a56b8bf4ead155c11644fb4eb9838ca66" prot="public" virt="non-virtual">
+        <scope>ns.ns_u</scope>
+        <name>ns_ui</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

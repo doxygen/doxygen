@@ -380,6 +380,7 @@ static const char constScope[]    = { 'c', 'o', 'n', 's', 't', ':' };
 static const char volatileScope[] = { 'v', 'o', 'l', 'a', 't', 'i', 'l', 'e', ':' };
 static const char virtualScope[]  = { 'v', 'i', 'r', 't', 'u', 'a', 'l', ':' };
 static const char operatorScope[] = { 'o', 'p', 'e', 'r', 'a', 't', 'o', 'r', '?', '?', '?' };
+static const char staticScope[]   = { 's', 't', 'a', 't', 'i', 'c', ' ' };
 
 struct CharAroundSpace
 {
@@ -433,17 +434,14 @@ DString removeRedundantWhiteSpace(const DString &s)
   // We use a static character array to
   // improve the performance of this function
   // and thread_local is needed to make it multi-thread safe
-  static THREAD_LOCAL char *growBuf = nullptr;
-  static THREAD_LOCAL size_t growBufLen = 0;
-  if (s.length()*3>growBufLen) // For input character we produce at most 3 output characters,
+  static THREAD_LOCAL std::vector<char> growBuf;
+  if (s.length()*3+1 > growBuf.size()) // For input character we produce at most 3 output characters,
   {
-    growBufLen = s.length()*3;
-    growBuf = static_cast<char *>(realloc(growBuf,growBufLen+1)); // add 1 for 0-terminator
+    growBuf.resize(s.length()*3+1); // add 1 for 0-terminator
   }
-  if (growBuf==nullptr) return s; // should not happen, only we run out of memory
 
   const char *src=s.data();
-  char *dst=growBuf;
+  char *dst=growBuf.data();
 
   size_t i=0;
   size_t l=s.length();
@@ -451,6 +449,7 @@ DString removeRedundantWhiteSpace(const DString &s)
   size_t vosp=0;
   size_t vsp=0;
   size_t osp=0;
+  size_t ssp=0;
   char pc=0;
   // skip leading whitespace
   while (i<l && isspace(static_cast<uint8_t>(src[i])))
@@ -477,6 +476,7 @@ DString removeRedundantWhiteSpace(const DString &s)
     searchForKeyword(constScope,    csp,  5); // keyword: const
     searchForKeyword(volatileScope, vosp, 8); // keyword: volatile
     searchForKeyword(virtualScope,  vsp,  7); // keyword: virtual
+    searchForKeyword(staticScope,   ssp,  6); // keyword: static
 
     // search for "operator"
     if (osp<11 && (osp>=8 || c==operatorScope[osp]) && // character matches substring "operator" followed by 3 arbitrary characters
@@ -635,6 +635,11 @@ DString removeRedundantWhiteSpace(const DString &s)
           { // keep space
             *dst++=' ';
           }
+          else if (ssp==7 && nc=='(') // keep space for 'static ('
+          {
+            *dst++=' ';
+            ssp=0;
+          }
           else if ((pc=='*' || pc=='&' || pc=='.') && nc=='>')
           {
             *dst++=' ';
@@ -673,8 +678,8 @@ DString removeRedundantWhiteSpace(const DString &s)
     pc=c;
   }
   *dst++='\0';
-  //printf("removeRedundantWhitespace(%s)->%s\n",qPrint(s),growBuf);
-  return growBuf;
+  //printf("removeRedundantWhitespace(%s)->%s\n",qPrint(s),growBuf.data());
+  return growBuf.data();
 }
 
 /**
@@ -1073,7 +1078,7 @@ DString fileToString(const DString &name,bool filter,bool isSourceCode)
       return "";
     }
     std::string buf;
-    fileOpened=readInputFile(name,buf,filter,isSourceCode);
+    fileOpened=readInputFile(name,buf,ReadInputFileOptions().setFilter(filter).setIsSourceCode(isSourceCode));
     if (fileOpened)
     {
       addTerminalCharIfMissing(buf,'\n');
@@ -4372,13 +4377,13 @@ static void transcodeCharacterBuffer(const DString &fileName,std::string &conten
 }
 
 //! read a file name \a fileName and optionally filter and transcode it
-bool readInputFile(const DString &fileName,std::string &contents,bool filter,bool isSourceCode)
+bool readInputFile(const DString &fileName,std::string &contents,const ReadInputFileOptions &options)
 {
   // try to open file
   FileInfo fi(fileName.str());
   if (!fi.exists()) return false;
-  DString filterName = getFileFilter(fileName,isSourceCode);
-  if (filterName.empty() || !filter)
+  DString filterName = getFileFilter(fileName,options.isSourceCode());
+  if (filterName.empty() || !options.filter())
   {
     std::ifstream f = Portable::openInputStream(fileName,true);
     if (!f.is_open())
@@ -4417,6 +4422,10 @@ bool readInputFile(const DString &fileName,std::string &contents,bool filter,boo
     Portable::pclose(f);
     Debug::print(Debug::FilterOutput, 0, "Filter output\n");
     Debug::print(Debug::FilterOutput,0,"-------------\n{}\n-------------\n",contents);
+  }
+  if (options.binary())
+  {
+    return true;
   }
 
   if (contents.size()>=2 &&
@@ -5338,13 +5347,31 @@ int computeQualifiedIndex(const DString &name)
 // A      -> A
 // A<T>   -> A-1-g
 // A<T,S> -> A-2-g
+// A<T>::B -> A-1-g::B
 DString mangleCSharpGenericName(const DString &name)
 {
-  if (size_t idx = name.find('<'); idx!=DString::npos)
+  DString result;
+  size_t p=0;
+  size_t idx;
+  while ((idx=name.find('<',p))!=DString::npos)
   {
-    return name.left(idx)+"-"+DString().setNum(name.contains(",")+1)+"-g";
+    result+=name.mid(p,idx-p);
+    // count the top level arguments of the balanced <...> group
+    int depth=0;
+    int count=1;
+    size_t i=idx;
+    for (; i<name.length(); i++)
+    {
+      char c=name[i];
+      if      (c=='<')               depth++;
+      else if (c=='>' && --depth==0) break;
+      else if (c==',' && depth==1)   count++;
+    }
+    result+="-"+DString().setNum(count)+"-g";
+    p=i+1;
   }
-  return name;
+  if (p<name.length()) result+=name.mid(p);
+  return result;
 }
 
 DString demangleCSharpGenericName(const DString &name,const DString &templArgs)

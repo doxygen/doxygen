@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="structattribute__class" kind="struct" language="C++" prot="public">
+    <compoundname>attribute_class</compoundname>
+    <templateparamlist>
+      <param>
+        <type>typename T</type>
+      </param>
+    </templateparamlist>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structattribute__class_1a3fe25548e3ce58f1be590b2d425c05f7" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int attribute_class&lt; T &gt;::attribute_test</definition>
+        <argsstring/>
+        <name>attribute_test</name>
+        <qualifiedname>attribute_class::attribute_test</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="149_macro_rescan.cpp" line="113" column="30" bodyfile="149_macro_rescan.cpp" bodystart="113" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="149_macro_rescan.cpp" line="112" column="1" bodyfile="149_macro_rescan.cpp" bodystart="112" bodyend="114"/>
+    <listofallmembers>
+      <member refid="structattribute__class_1a3fe25548e3ce58f1be590b2d425c05f7" prot="public" virt="non-virtual">
+        <scope>attribute_class</scope>
+        <name>attribute_test</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

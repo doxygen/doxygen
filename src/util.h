@@ -55,9 +55,25 @@ DString getLanguageSpecificSeparator(SrcLangExt lang,bool classScope=false);
  */
 DString fileToString(const DString &name,bool filter=false,bool isSourceCode=false);
 
+struct ReadInputFileOptions
+{
+  public:
+    bool filter()       const { return m_filter;       }
+    bool isSourceCode() const { return m_isSourceCode; }
+    bool binary()       const { return m_binary;       }
+
+    ReadInputFileOptions &setFilter(bool b)       { m_filter=b;       return *this; }
+    ReadInputFileOptions &setIsSourceCode(bool b) { m_isSourceCode=b; return *this; }
+    ReadInputFileOptions &setBinary(bool b)       { m_binary=b;       return *this; }
+
+  private:
+    bool m_filter = true;
+    bool m_isSourceCode = false;
+    bool m_binary = false;
+};
+
 //! read a file name \a fileName and optionally filter and transcode it
-bool readInputFile(const DString &fileName,std::string &contents,
-                   bool filter=true,bool isSourceCode=false);
+bool readInputFile(const DString &fileName,std::string &contents, const ReadInputFileOptions &options = ReadInputFileOptions());
 
 /*! Thread-safe function to write a string representing an inline graph to a file.
  *  The contents will be used to create a hash that will be used to make the name unique.

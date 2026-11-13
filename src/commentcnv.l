@@ -94,6 +94,14 @@ struct commentcnv_FileState
   int oldRaiseLvl = 0;
   DString oldRaiseLbl;
 };
+struct commentcnv_Repl
+{
+  commentcnv_Repl(std::string &&r, std::string &&repl, bool gl)
+    : re(r), replacement(std::move(repl)), global(std::move(gl)) {}
+  std::string re;
+  std::string replacement;
+  bool global;
+};
 
 struct commentcnvYY_state
 {
@@ -103,6 +111,7 @@ struct commentcnvYY_state
   int      inBufPos = 0;
   size_t   col = 0;
   size_t   blockHeadCol = 0;        // column at which the start of a special comment block was found
+  size_t   blockHeadPos = 0;        // position in outBuf at which the start of a C++ special comment block was written
   size_t   insertCommentCol = 0;    // column at which an include or snippet command was found
   bool     mlBrief = false;
   int      readLineCtx = 0;
@@ -111,6 +120,7 @@ struct commentcnvYY_state
   DString raiseLabel;
   int      raiseIncrement = 0;
   DString raisePrefix;
+  std::vector<commentcnv_Repl> replacements;
   bool     skip = false;
   DString fileName;
   int      lineNr = 0;
@@ -428,6 +438,7 @@ SLASHopt [/]*
                                          while (i<(int)yyleng && yytext[i]=='/') i++;
                                        }
                                        yyextra->blockHeadCol=yyextra->col+1;
+                                       yyextra->blockHeadPos=yyextra->skip ? std::string::npos : yyextra->outBuf.size(); // see replaceComment()
                                        if (yytext[2] == '!')
                                        {
                                          copyToOutput(yyscanner,"/*!");
@@ -447,6 +458,7 @@ SLASHopt [/]*
                                      if (yyextra->mlBrief) REJECT;
                                      int i=17; //=strlen("//##Documentation");
                                      yyextra->blockHeadCol=yyextra->col+1;
+                                     yyextra->blockHeadPos=yyextra->skip ? std::string::npos : yyextra->outBuf.size(); // see replaceComment()
                                      copyToOutput(yyscanner,"/**");
                                      if (i<yyleng) replaceAliases(yyscanner,yytext+i);
                                      yyextra->inRoseComment=true;
@@ -1557,29 +1569,33 @@ static bool parseIncludeOptions(yyscan_t yyscanner,std::string_view s)
     cmdName = stripWhiteSpace(s.substr(1,optIdxStart-1)); // to remove {CMD}
     optList = split(std::string{s.substr(optIdxStart+1,optIdxEnd-optIdxStart-1)},",");
   }
+  DString docOption;
   bool isDoc = cmdName=="includedoc" || cmdName=="snippetdoc";
   for (const auto &opt : optList)
   {
     if (stripWhiteSpace(opt)==std::string_view{"doc"})
     {
       isDoc=true;
+      docOption = "{doc}";
       break;
     }
   }
 
   if (isDoc)
   {
+    yyextra->replacements.clear();
     for (const auto &opt : optList)
     {
       std::string_view locOpt = stripWhiteSpace(opt);
       size_t posEqual = locOpt.find('=');
-      std::string_view option = posEqual!=std::string::npos ? stripWhiteSpace(locOpt.substr(0,posEqual)) : locOpt;
-      std::string_view value  = posEqual!=std::string::npos ? stripWhiteSpace(locOpt.substr(posEqual+1)) : std::string_view();
+      auto option = std::string{posEqual!=std::string::npos ? stripWhiteSpace(locOpt.substr(0,posEqual)) : locOpt};
+      auto value  = std::string{posEqual!=std::string::npos ? stripWhiteSpace(locOpt.substr(posEqual+1)) : std::string()};
 
-      if (option==std::string_view{"doc"} && value.empty())
+      if (option=="doc" && value.empty())
       {
+        // ok
       }
-      else if (option==std::string_view{"raise"} && !value.empty())
+      else if (option=="raise" && !value.empty())
       {
         yyextra->raiseIncrement = atoi(value.data());
         if (yyextra->raiseLevel+yyextra->raiseIncrement>=SectionType::MaxLevel) // check range
@@ -1589,13 +1605,31 @@ static bool parseIncludeOptions(yyscan_t yyscanner,std::string_view s)
           yyextra->raiseIncrement = std::max(0,SectionType::MaxLevel-1-yyextra->raiseLevel);
         }
       }
-      else if (option==std::string_view{"prefix"} && !value.empty())
+      else if (option=="prefix" && !value.empty())
       {
         yyextra->raisePrefix = value;
       }
+      else if (option=="replace" && !value.empty())
+      {
+        bool global = false;
+        StringVector replVec = split(value, std::string{value[0]}, true);
+        size_t replSize = replVec.size();
+        if ((replSize!=2 && replSize!=3) || (replSize==3 && replVec[2]!="g"))
+        {
+          warn(yyextra->fileName,yyextra->lineNr,"Incorrect replace option '{}' for {} command with value '{}'",option, cmdName, value);
+        }
+        else
+        {
+          if (replSize==3 && !replVec[0].empty())
+          {
+            global = !(replVec[0][0]=='^' || replVec[0][replVec[0].length()-1]=='$');
+          }
+          yyextra->replacements.emplace_back(std::move(replVec[0]), std::move(replVec[1]), global);
+        }
+      }
       else
       {
-        warn(yyextra->fileName,yyextra->lineNr,"Unsupported option '{}' for {} command",option, cmdName);
+        warn(yyextra->fileName,yyextra->lineNr,"Unsupported option '{}' for {}{} command",option, cmdName, docOption);
       }
     }
   }
@@ -1942,16 +1976,16 @@ static bool readIncludeFile(yyscan_t yyscanner,const DString &inc,const DString 
     }
 
     auto fs = std::make_unique<commentcnv_FileState>();
-    if (!readInputFile(absFileName,fs->fileBuf,false))
+    if (!readInputFile(absFileName,fs->fileBuf,ReadInputFileOptions().setFilter(false)))
     {
       warn_doc_error(yyextra->fileName,yyextra->lineNr,"\\{}{{doc}} file '{}' could not be read",blockId.empty()?"include":"snippet",absFileName);
       fs.reset();
       return false;
     }
     int lineNr=1;
+    DString incText { fs->fileBuf };
     if (!blockId.empty())
     {
-      DString incText { fs->fileBuf };
       int count = incText.contains(blockId.data());
       if (count!=2)
       {
@@ -1962,12 +1996,66 @@ static bool readIncludeFile(yyscan_t yyscanner,const DString &inc,const DString 
       lineNr = lineBlock(incText, blockId);
       size_t blockPos = 0;
       incText = extractBlock(incText, blockId, blockPos);
+    }
+
+    if (!yyextra->replacements.empty())
+    {
+      StringVector txtVec = split(incText.str(), "\n", true);
+      for (const auto &replElem : yyextra->replacements)
+      {
+        reg::Ex re(replElem.re);
+        size_t pos = 0;
+        reg::Match match;
+        int i = 0;
+        for (const auto &line : txtVec)
+        {
+          std::string newLine;
+          if (replElem.re == "^")
+          {
+            newLine += replElem.replacement;
+            newLine += line;
+          }
+          else if (replElem.re == "$")
+          {
+            newLine += line;
+            newLine += replElem.replacement;
+          }
+          else if ((replElem.re == "^$") && (line.length() == 0))
+          {
+            newLine += replElem.replacement;
+          }
+          else // normal case
+          {
+            pos = 0;
+            while (reg::search(line,match,re,pos))
+            {
+              if (match.length() == 0) break; // e.g. re="a*"
+              newLine += line.substr(pos,match.position() - pos);
+              newLine += replElem.replacement;
+              pos=match.position()+match.length();
+              if (!replElem.global) break; // single replacement only
+            }
+            newLine += line.substr(pos);
+          }
+          txtVec[i++] = newLine;
+        }
+      }
+      fs->fileBuf.clear();
+      if (!incText.empty())
+      {
+        fs->fileBuf.append(join(txtVec,"\n"));
+        fs->fileBuf.append("\n");
+      }
+    }
+    else
+    {
       fs->fileBuf.clear();
       if (!incText.empty())
       {
         fs->fileBuf.append(incText.str());
       }
     }
+
     int oldRaiseLevel = yyextra->raiseLevel;
     DString oldRaiseLabel = yyextra->raiseLabel;
     yyextra->raiseLevel+=yyextra->raiseIncrement;
@@ -2113,10 +2201,41 @@ static void replaceComment(yyscan_t yyscanner,int offset)
   else
   {
     size_t i=computeIndent(&yytext[offset]);
+    // A line in another column starts a new block, since it may document something
+    // else. If both the block and the line have a marker ending in '<' (//!< or ///<),
+    // they both document the member in front of them. The line then still starts a new
+    // block, but a C style one: handed back to the scanner as a single //!< line it
+    // would become the brief description, ahead of the lines that come before it
+    // (see issue #5266).
+    bool afterMember     = yyleng>0 && yytext[yyleng-1]=='<';
+    // The '<' of the line that started the block is not part of the text matched at that
+    // point, so look at what was written for it: "/*!" or "/**", then '<' if it had one.
+    bool headAfterMember = yyextra->blockHeadPos!=std::string::npos &&
+                           yyextra->blockHeadPos+3<yyextra->outBuf.size() &&
+                           yyextra->outBuf[yyextra->blockHeadPos+3]=='<';
+    bool sameEntity      = afterMember && headAfterMember;
     //printf("i=%d blockHeadCol=%d\n",i,yyextra->blockHeadCol);
     if (i==yyextra->blockHeadCol || i+1==yyextra->blockHeadCol)
     {
       replaceCommentMarker(yyscanner,std::string_view(yytext,yyleng));
+    }
+    else if (sameEntity)
+    {
+      // start the new block on this line, after the newline and the indentation
+      size_t p=offset;
+      while (p<(size_t)yyleng && (yytext[p]==' ' || yytext[p]=='\t')) p++;
+      bool javadoc = yytext[p+2]=='/';
+      copyToOutput(yyscanner," */");
+      copyToOutput(yyscanner,std::string_view(yytext,p));
+      yyextra->blockHeadCol=i+1;
+      yyextra->blockHeadPos=yyextra->outBuf.size();
+      // With AUTOBRIEF the first sentence of this block would become the brief description
+      // when the lines before it did not give one, so use the style AUTOBRIEF does not apply to.
+      bool qtAuto = Config_getBool(QT_AUTOBRIEF);
+      bool jdAuto = Config_getBool(JAVADOC_AUTOBRIEF);
+      if (javadoc && jdAuto && !qtAuto) javadoc=false;
+      else if (!javadoc && qtAuto && !jdAuto) javadoc=true;
+      copyToOutput(yyscanner,javadoc ? "/**<" : "/*!<");
     }
     else
     {
@@ -2163,6 +2282,7 @@ void convertCppComments(const std::string &inBuf,std::string &outBuf,const std::
   yyextra->raisePrefix = "";
   yyextra->insertCppCommentMarker=false;
   yyextra->expandedAliases.clear();
+  yyextra->replacements.clear();
   while (!yyextra->condStack.empty()) yyextra->condStack.pop();
   clearCommentStack(yyscanner);
   yyextra->vhdl = false;

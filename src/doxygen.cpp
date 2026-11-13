@@ -1571,21 +1571,40 @@ static void associateVariableWithAnonymousEnumType(const MemberDef *md,
 
 static ClassDefMutable *createTagLessInstance(const Definition *root,const ClassDef *templ,const DString &fieldName,bool hasNamedVariable)
 {
-  DString n = templ->name();
-  // replace e.g. X::@1343:@4343::Y -> X::[struct]::Y
-  if (size_t sn = n.find('@'); sn!=DString::npos)
+  DString fullName;
+  if (Config_getEnum(TAGLESS_NAMESTYLE)==TAGLESS_NAMESTYLE_t::flat)
   {
-    const char *p = n.data()+sn;
-    char c;
-    while ((c=*p))
-    {
-      if (!isdigit(c) && c!='@' &&  c!=':') break;
-      p++;
-    }
-    n = n.left(sn)+"["+templ->compoundTypeString().str()+"]"+p;
+    // "flat" style: refer to the anonymous compound via its flattened scope and
+    // member names, e.g. 'struct A { struct { int x; } y; };' yields 'A.y'.
+    // This matches the pre-1.18 naming and is friendlier for consumers of the
+    // XML output that cannot handle type names starting with '[' (e.g. mkdoxy).
+    fullName = removeAnonymousScopes(templ->name());
+    if (fullName.endsWith("::")) fullName = fullName.left(fullName.length()-2);
+    // add the field name as a suffix to make the name unique again; the
+    // separator is only added when there is a flattened scope left (a
+    // file-scope anonymous compound has none and would otherwise get a
+    // leading '.').
+    if (!fullName.empty()) fullName += ".";
+    fullName += fieldName;
   }
-  // add field name to the class name to make it unique again, e.g. X::[struct]::Y.m
-  DString fullName = n+"."+fieldName;
+  else // "marker" style (the default)
+  {
+    DString n = templ->name();
+    // replace e.g. X::@1343:@4343::Y -> X::[struct]::Y
+    if (size_t sn = n.find('@'); sn!=DString::npos)
+    {
+      const char *p = n.data()+sn;
+      char c;
+      while ((c=*p))
+      {
+        if (!isdigit(c) && c!='@' &&  c!=':') break;
+        p++;
+      }
+      n = n.left(sn)+"["+templ->compoundTypeString().str()+"]"+p;
+    }
+    // add field name to the class name to make it unique again, e.g. X::[struct]::Y.m
+    fullName = n+"."+fieldName;
+  }
 
   //printf("** adding class %s based on %s in %s\n",qPrint(fullName),qPrint(templ->name()),qPrint(root->name()));
   ClassDefMutable *cd = toClassDefMutable(
@@ -1899,7 +1918,9 @@ static void findTagLessClasses(std::set<const Definition *> &candidates,const Co
 {
   for (const auto &icd : cd->getClasses())
   {
-    if (icd->name().find('@')==DString::npos) // process all non-anonymous inner classes
+    // process all non-anonymous inner classes, but skip aliases (e.g. from inline namespaces),
+    // as these share the members of the aliased class, which is processed already
+    if (!icd->isAlias() && icd->name().find('@')==DString::npos)
     {
       findTagLessClasses(candidates,icd);
     }
@@ -1913,6 +1934,7 @@ static void findTagLessClasses()
   std::set<const Definition *> candidates;
   for (auto &cd : *Doxygen::classLinkedMap)
   {
+    if (cd->isAlias()) continue;
     Definition *scope = cd->getOuterScope();
     //printf("  scope=%s for class %s\n",qPrint(scope?scope->name():"<null>"),qPrint(cd->name()));
     if (scope && scope->definitionType()==Definition::TypeNamespace) // class that is not nested
@@ -5637,7 +5659,7 @@ static void computeTemplateClassRelations()
       for (const auto &ti : cd->getTemplateInstances()) // for each template instance
       {
         ClassDefMutable *tcd=toClassDefMutable(ti.classDef);
-        if (tcd)
+        if (tcd && tcd->isImplicitTemplateInstance()) // (partial) specializations have their own base classes
         {
           AUTO_TRACE_ADD("Template instance '{}'",tcd->name());
           DString templSpec = ti.templSpec;
@@ -6564,10 +6586,19 @@ static void addMemberFunction(const Entry *root,
       {
         DString memType = md->typeString();
         memType.stripPrefix("static "); // see bug700696
+        // a member defined outside its namespace may use the namespace-qualified
+        // name for its return type ("N::C" instead of "C"), while the in-class
+        // declaration uses the unqualified name, so strip the leading namespace
+        // before comparing the return types, see issue #12379
         funcType=substitute(stripTemplateSpecifiersFromScope(funcType,true),
             className+"::",""); // see bug700693 & bug732594
         memType=substitute(stripTemplateSpecifiersFromScope(memType,true),
             className+"::",""); // see bug758900
+        if (!namespaceName.empty())
+        {
+          funcType.stripPrefix(namespaceName+"::");
+          memType.stripPrefix(namespaceName+"::");
+        }
         if (memType=="auto" && !argList.trailingReturnType().empty())
         {
           memType = argList.trailingReturnType();
@@ -8653,7 +8684,7 @@ static void vhdlCorrectMemberProperties()
 
 // recursive helper function looking for reimplements/implemented
 // by relations between class cd and direct or indirect base class bcd
-static void computeMemberRelationsForBaseClass(const ClassDef *cd,const BaseClassDef *bcd)
+static void computeMemberRelationsForBaseClass(const ClassDef *cd,const BaseClassDef *bcd,const ArgumentList *actualArgs)
 {
   for (const auto &mn : cd->memberNameInfoLinkedMap()) // for each member in class cd with a unique name
   {
@@ -8685,13 +8716,44 @@ static void computeMemberRelationsForBaseClass(const ClassDef *cd,const BaseClas
                 {
                   const ArgumentList &bmdAl = bmd->argumentList();
                   const ArgumentList &mdAl =  md->argumentList();
+                  const ClassDef *baseClass = bcd->classDef;
+                  const ClassDef *baseTemplate = baseClass->templateMaster() ? baseClass->templateMaster() : baseClass;
+                  const ClassDef *memberClass = bmd->getClassDef();
+                  bool instantiateBaseMember = actualArgs &&
+                                               (memberClass==baseClass || memberClass==baseTemplate) &&
+                                               !baseTemplate->templateArguments().empty();
+                  bool useDerivedScope = false;
+                  ArgumentList instantiatedBmdAl;
+                  DString instantiatedBmdType = bmd->typeString();
+                  if (instantiateBaseMember)
+                  {
+                    instantiatedBmdAl = bmdAl;
+                    for (Argument &arg : instantiatedBmdAl)
+                    {
+                      DString substitutedType = substituteTemplateArgumentsInString(
+                          arg.type,baseTemplate->templateArguments(),actualArgs);
+                      useDerivedScope = useDerivedScope || substitutedType!=arg.type;
+                      arg.type = substitutedType;
+                    }
+                    DString substitutedTrailingReturnType = substituteTemplateArgumentsInString(
+                        instantiatedBmdAl.trailingReturnType(),baseTemplate->templateArguments(),actualArgs);
+                    useDerivedScope = useDerivedScope ||
+                                      substitutedTrailingReturnType!=instantiatedBmdAl.trailingReturnType();
+                    instantiatedBmdAl.setTrailingReturnType(substitutedTrailingReturnType);
+                    DString substitutedType = substituteTemplateArgumentsInString(
+                        instantiatedBmdType,baseTemplate->templateArguments(),actualArgs);
+                    useDerivedScope = useDerivedScope || substitutedType!=instantiatedBmdType;
+                    instantiatedBmdType = substitutedType;
+                  }
                   //printf(" Base argList='%s'\n Super argList='%s'\n",
                   //        qPrint(argListToString(bmdAl)),
                   //        qPrint(argListToString(mdAl))
                   //      );
                   if (
                       lang==SrcLangExt::Python ||
-                      matchArguments2(bmd->getOuterScope(),bmd->getFileDef(),bmd->typeString(),&bmdAl,
+                      matchArguments2(useDerivedScope ? cd : bmd->getOuterScope(),
+                        useDerivedScope ? cd->getFileDef() : bmd->getFileDef(),
+                        instantiatedBmdType,instantiateBaseMember ? &instantiatedBmdAl : &bmdAl,
                         md->getOuterScope(), md->getFileDef(), md->typeString(),&mdAl,
                         true,lang
                         )
@@ -8724,7 +8786,15 @@ static void computeMemberRelationsForBaseClass(const ClassDef *cd,const BaseClas
   // do also for indirect base classes
   for (const auto &bbcd : bcd->classDef->baseClasses())
   {
-    computeMemberRelationsForBaseClass(cd,&bbcd);
+    DString templSpec = bbcd.templSpecifiers;
+    const ClassDef *baseClass = bcd->classDef;
+    const ClassDef *baseTemplate = baseClass->templateMaster() ? baseClass->templateMaster() : baseClass;
+    if (actualArgs)
+    {
+      templSpec = substituteTemplateArgumentsInString(templSpec,baseTemplate->templateArguments(),actualArgs);
+    }
+    auto nextActualArgs = stringToArgumentList(baseClass->getLanguage(),templSpec);
+    computeMemberRelationsForBaseClass(cd,&bbcd,nextActualArgs.get());
   }
 }
 
@@ -8741,7 +8811,8 @@ static void computeMemberRelations()
     {
       for (const auto &bcd : cd->baseClasses())
       {
-        computeMemberRelationsForBaseClass(cd.get(),&bcd);
+        auto actualArgs = stringToArgumentList(cd->getLanguage(),bcd.templSpecifiers);
+        computeMemberRelationsForBaseClass(cd.get(),&bcd,actualArgs.get());
       }
     }
   }
@@ -8758,7 +8829,7 @@ static void createTemplateInstanceMembers()
     for (const auto &ti : cd->getTemplateInstances())
     {
       ClassDefMutable *tcdm = toClassDefMutable(ti.classDef);
-      if (tcdm)
+      if (tcdm && tcdm->isImplicitTemplateInstance()) // (partial) specializations have their own members
       {
         tcdm->addMembersToTemplateInstance(cd.get(),cd->templateArguments(),ti.templSpec);
       }

@@ -57,14 +57,14 @@ class InputStrList : public QObject, public Input
     void setToolTip(const QString &txt) { m_lab->setToolTip(txt); }
     bool isEmpty();
 
-  public slots:
+  public Q_SLOTS:
     void reset();
 
-  signals:
+  Q_SIGNALS:
     void changed();
     void showHelp(Input *);
 
-  private slots:
+  private Q_SLOTS:
     void addString();
     void delString();
     void updateString();

@@ -1180,10 +1180,16 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
               switch (prot)
               {
                 case Protection::Protected:
-                  addMemberToList(MemberListType::ProAttribs(),md,true);
+                  if (md->anonymousMemberForDeclaration()==nullptr) // not a split member that has a separate declaration member
+                  {
+                    addMemberToList(MemberListType::ProAttribs(),md,true);
+                  }
                   break;
                 case Protection::Package:
-                  addMemberToList(MemberListType::PacAttribs(),md,true);
+                  if (md->anonymousMemberForDeclaration()==nullptr) // not a split member that has a separate declaration member
+                  {
+                    addMemberToList(MemberListType::PacAttribs(),md,true);
+                  }
                   break;
                 case Protection::Public:
                   {
@@ -1197,7 +1203,10 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
                   }
                   break;
                 case Protection::Private:
-                  addMemberToList(MemberListType::PriAttribs(),md,true);
+                  if (md->anonymousMemberForDeclaration()==nullptr) // not a split member that has a separate declaration member
+                  {
+                    addMemberToList(MemberListType::PriAttribs(),md,true);
+                  }
                   break;
               }
             }
@@ -1369,7 +1378,7 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
   {
     AUTO_TRACE_ADD("member {} of class {} with template instance {}\n",md->name(),name(),ti.templSpec);
     ClassDefMutable *cdm = toClassDefMutable(ti.classDef);
-    if (cdm)
+    if (cdm && cdm->isImplicitTemplateInstance()) // (partial) specializations have their own members
     {
       cdm->addMemberToTemplateInstance(md,templateArguments(),ti.templSpec);
     }
@@ -1435,7 +1444,11 @@ void ClassDefImpl::insertUsedFile(const FileDef *fd)
 
   for (const auto &ti : m_templateInstances)
   {
-    if (ClassDefMutable *cdm = toClassDefMutable(ti.classDef)) cdm->insertUsedFile(fd);
+    ClassDefMutable *cdm = toClassDefMutable(ti.classDef);
+    if (cdm && cdm->isImplicitTemplateInstance()) // (partial) specializations have their own files
+    {
+      cdm->insertUsedFile(fd);
+    }
   }
 }
 
@@ -1687,6 +1700,7 @@ bool ClassDefImpl::hasDetailedDescription() const
   bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
   return ((!briefDescription().empty() && repeatBrief) ||
           (!documentation().empty() || m_tempArgs.hasTemplateDocumentation()) ||
+          !typeConstraints().empty() ||
           (sourceBrowser && getStartBodyLine()!=-1 && getBodyDef()) ||
           hasRequirementRefs());
 }

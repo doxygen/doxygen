@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="148__empty__token__pasting_8cpp" kind="file" language="C++">
+    <compoundname>148_empty_token_pasting.cpp</compoundname>
+    <sectiondef kind="define">
+      <memberdef kind="define" id="148__empty__token__pasting_8cpp_1aa0b03826c8f7cc324ac2db0ada2dce0a" prot="public" static="no">
+        <name>VALUE</name>
+        <initializer>expanded_identifier</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="148_empty_token_pasting.cpp" line="15" column="9" bodyfile="148_empty_token_pasting.cpp" bodystart="15" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="148__empty__token__pasting_8cpp_1a065c54256621771237ea4dda2e6bb671" prot="public" static="no">
+        <name>EMPTY_WITH_LEADING_SPACE</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="148_empty_token_pasting.cpp" line="16" column="9" bodyfile="148_empty_token_pasting.cpp" bodystart="16" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="148__empty__token__pasting_8cpp_1a25f0693c0656868151d5937c11b4f716" prot="public" static="no">
+        <name>f</name>
+        <param>
+          <defname>x</defname>
+        </param>
+        <param>
+          <defname>y</defname>
+        </param>
+        <initializer>:x: -y##&gt; -##y&gt;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="148_empty_token_pasting.cpp" line="17" column="9" bodyfile="148_empty_token_pasting.cpp" bodystart="17" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="148__empty__token__pasting_8cpp_1a07a0df2d905ef01ca46ada26170abc14" prot="public" static="no">
+        <name>g</name>
+        <param>
+          <defname>x</defname>
+        </param>
+        <param>
+          <defname>y</defname>
+        </param>
+        <initializer>:x: :y##2 2##y:</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="148_empty_token_pasting.cpp" line="18" column="9" bodyfile="148_empty_token_pasting.cpp" bodystart="18" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="148__empty__token__pasting_8cpp_1adfb8cf77acc9f1d718918651a0d841c8" prot="public" static="no">
+        <name>EMPTY_PASTE_LEFT</name>
+        <param>
+          <defname>x</defname>
+        </param>
+        <initializer>EMPTY_PASTE_LEFT: left+x##+right</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="148_empty_token_pasting.cpp" line="19" column="9" bodyfile="148_empty_token_pasting.cpp" bodystart="19" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="148__empty__token__pasting_8cpp_1a8a15be286a8cb847de8112eba52cde6a" prot="public" static="no">
+        <name>EMPTY_PASTE_RIGHT</name>
+        <param>
+          <defname>x</defname>
+        </param>
+        <initializer>EMPTY_PASTE_RIGHT: left+##x+right</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="148_empty_token_pasting.cpp" line="20" column="9" bodyfile="148_empty_token_pasting.cpp" bodystart="20" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="148__empty__token__pasting_8cpp_1a124ea44b6766f0e9db10efa6ff470c2e" prot="public" static="no">
+        <name>EMPTY_PASTE_CHAIN</name>
+        <param>
+          <defname>x</defname>
+        </param>
+        <initializer>EMPTY_PASTE_CHAIN: left##x##right</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="148_empty_token_pasting.cpp" line="21" column="9" bodyfile="148_empty_token_pasting.cpp" bodystart="21" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="148__empty__token__pasting_8cpp_1a6561f79832df726d1e0d86382dfb6c1c" prot="public" static="no">
+        <name>EMPTY_PASTE_BOTH</name>
+        <param>
+          <defname>x</defname>
+        </param>
+        <param>
+          <defname>y</defname>
+        </param>
+        <initializer>EMPTY_PASTE_BOTH: -x##y&gt;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="148_empty_token_pasting.cpp" line="22" column="9" bodyfile="148_empty_token_pasting.cpp" bodystart="22" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="148__empty__token__pasting_8cpp_1a3d0421e2b021df7d966b787a0a1e0aad" prot="public" static="no">
+        <name>EMPTY_PASTE_RESCAN</name>
+        <param>
+          <defname>x</defname>
+        </param>
+        <initializer>EMPTY_PASTE_RESCAN: x##<ref refid="148__empty__token__pasting_8cpp_1aa0b03826c8f7cc324ac2db0ada2dce0a" kindref="member">VALUE</ref></initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="148_empty_token_pasting.cpp" line="23" column="9" bodyfile="148_empty_token_pasting.cpp" bodystart="23" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="148_empty_token_pasting.cpp"/>
+  </compounddef>
+</doxygen>

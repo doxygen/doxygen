@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_static_tuple_property" kind="class" language="C#" prot="public">
+    <compoundname>StaticTupleProperty</compoundname>
+    <sectiondef kind="property">
+      <memberdef kind="property" id="class_static_tuple_property_1a516fc78894196acdea64c6d6adc5e125" prot="public" static="yes" readable="no" writable="no" gettable="yes" privategettable="no" protectedgettable="no" settable="no" privatesettable="no" protectedsettable="no">
+        <type>(int, int)</type>
+        <definition>(int, int) StaticTupleProperty.Tuple</definition>
+        <argsstring/>
+        <name>Tuple</name>
+        <qualifiedname>StaticTupleProperty.Tuple</qualifiedname>
+        <briefdescription>
+          <para>The static tuple property documentation. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="141_csharp_tuple_property.cs" line="27" column="18" bodyfile="141_csharp_tuple_property.cs" bodystart="28" bodyend="30"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>A class with a tuple property. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="141_csharp_tuple_property.cs" line="24" column="7" bodyfile="141_csharp_tuple_property.cs" bodystart="25" bodyend="31"/>
+    <listofallmembers>
+      <member refid="class_static_tuple_property_1a516fc78894196acdea64c6d6adc5e125" prot="public" virt="non-virtual">
+        <scope>StaticTupleProperty</scope>
+        <name>Tuple</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

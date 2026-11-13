@@ -376,7 +376,8 @@ static void writeTemplateArgumentList(TextStream &t,
                                       const ArgumentList &al,
                                       const Definition *scope,
                                       const FileDef *fileScope,
-                                      int indent)
+                                      int indent,
+                                      const ArgumentList &typeConstraints=ArgumentList())
 {
   DString indentStr;
   indentStr.fill(' ',indent);
@@ -405,10 +406,21 @@ static void writeTemplateArgumentList(TextStream &t,
         linkifyText(TextGeneratorXMLImpl(t),a.defval,options);
         t << "</defval>\n";
       }
-      if (!a.typeConstraint.empty())
+      DString typeConstraint = a.typeConstraint;
+      // C# where clauses, with one entry per constraint. A C# type parameter has its name in type.
+      const DString &paramName = a.name.empty() ? a.type : a.name;
+      for (const Argument &tc : typeConstraints)
+      {
+        if (tc.name==paramName && !tc.type.empty())
+        {
+          if (!typeConstraint.empty()) typeConstraint+=", ";
+          typeConstraint+=tc.type;
+        }
+      }
+      if (!typeConstraint.empty())
       {
         t << indentStr << "    <typeconstraint>";
-        linkifyText(TextGeneratorXMLImpl(t),a.typeConstraint,options);
+        linkifyText(TextGeneratorXMLImpl(t),typeConstraint,options);
         t << "</typeconstraint>\n";
       }
       if (a.hasTemplateDocumentation())
@@ -438,7 +450,7 @@ static void writeMemberTemplateLists(const MemberDef *md,TextStream &t)
 
 static void writeTemplateList(const ClassDef *cd,TextStream &t)
 {
-  writeTemplateArgumentList(t,cd->templateArguments(),cd,cd->getFileDef(),4);
+  writeTemplateArgumentList(t,cd->templateArguments(),cd,cd->getFileDef(),4,cd->typeConstraints());
 }
 
 static void writeTemplateList(const ConceptDef *cd,TextStream &t)
@@ -699,11 +711,19 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
   const ClassDef *annoClassDef=md->getClassDefOfAnonymousType();
   if (annoClassDef && md->isAnonymous() && !md->isEnumerate())
   {
-    for (const auto &imd : *annoClassDef->getMemberList(MemberListType::PubAttribs()))
+    for (auto lt : { MemberListType::PubAttribs(), MemberListType::ProAttribs(),
+                     MemberListType::PacAttribs(), MemberListType::PriAttribs() })
     {
-      if (memberVisible(def,imd))
+      const MemberList *ml = annoClassDef->getMemberList(lt);
+      if (ml)
       {
-        generateXMLForMember(imd,ti,t,def);
+        for (const auto &imd : *ml)
+        {
+          if (memberVisible(def,imd))
+          {
+            generateXMLForMember(imd,ti,t,def);
+          }
+        }
       }
     }
     return;
@@ -986,6 +1006,11 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     t << " protectedsettable=\"";
     if (md->isProtectedSettable()) t << "yes"; else t << "no";
     t << "\"";
+
+    if (md->isInitonly())
+    {
+      t << " initonly=\"yes\"";
+    }
 
     if (md->isAssign() || md->isCopy() || md->isRetain() || md->isStrong() || md->isWeak())
     {

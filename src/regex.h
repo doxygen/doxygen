@@ -48,6 +48,7 @@ class Ex
      *  Two modes of matching are supported: RegEx and Wildcard
      *
      *  The following special characters are supported in Mode::RegEx mode.
+     *  \noop [regex_special_chars]
      *  - `c` matches character `c`
      *  - `.` matches any character
      *  - `^` matches the start of the input
@@ -58,8 +59,6 @@ class Ex
      *  - `x*` matches a sequence of zero or more `x`'s
      *  - `x+` matches a sequence of one or more `x`'s
      *  - `x?` matches an optional `x`
-     *  - `(`  matches the start of a capture range
-     *  - `)`  matches the ends a capture range
      *  - `\c` to escape a special character, such as `+`, `[`, `*`, `(`, etc.
      *  - `\t` matches a tab character
      *  - `\n` matches a newline character
@@ -69,6 +68,10 @@ class Ex
      *  - `\a` matches any alphabetical characters, same as `[a-z_A-Z\x80-\xFF]`
      *  - `\w` matches any alpha numerical character, same as `[a-z_A-Z0-9\x80-\xFF]`
      *  - `\xHH` matches a hexadecimal character, e.g. `\xA0` matches character code 160.
+     *  \noop [regex_special_chars]
+     *  - `(`  matches the start of a capture range
+     *  - `)`  matches the end of a capture range
+     *  \noop [regex_special_chars1]
      *
      *  A character range can be used to match a character that falls inside a range
      *  (or set of ranges).
@@ -83,13 +86,16 @@ class Ex
      *  @note that special characters `.`, `*`, `?`, `$`, `+`, `[` do not have a special
      *  meaning in a character range. `^` only has a special meaning as the first character.
      *
+     *  \noop [regex_special_chars1]
      *  @note capture ranges can be nested. Optional capture ranges `(...)?` are supported but
      *  repeated ranges `(...)*` or `(...)+` are not.
+     *  \noop [regex_special_chars2]
      *
      *  In Wildcard mode `*` is used to match any sequence of zero or more characters.
      *  The character `?` can be used to match an optional character. Character ranges are
      *  also supported, but other characters like `$` and `+` are just treated as
      *  literal characters.
+     *  \noop [regex_special_chars2]
      *
      */
     Ex(std::string_view pattern, Mode mode=Mode::RegEx);

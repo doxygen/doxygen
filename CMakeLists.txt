@@ -37,7 +37,7 @@ option(enable_coverage "Enable coverage reporting for gcc/clang [development]" O
 option(enable_tracing  "Enable tracing option in release builds [development]" OFF)
 option(enable_lex_debug "Enable debugging info for lexical scanners in release builds [development]" OFF)
 
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
+if(CMAKE_BUILD_TYPE STREQUAL "Release" AND NOT DEFINED CMAKE_INTERPROCEDURAL_OPTIMIZATION)
   if (CYGWIN OR MINGW OR NOT "${CMAKE_TOOLCHAIN_FILE}" STREQUAL "")
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
   else()

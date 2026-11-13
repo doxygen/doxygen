@@ -328,7 +328,7 @@ static FILE *findFile(const QString &fileName)
   // relative path, try with include paths in the list
   QStringList sl = g_includePathList.toStringList();
   substEnvVarsInStrList(sl);
-  foreach (QString s, sl)
+  for (const QString &s : std::as_const(sl))
   {
     FILE *f = tryPath(s,fileName);
     if (f) return f;
@@ -635,7 +635,7 @@ static void substEnvVarsInStrList(QStringList &sl)
 {
   QStringList out;
 
-  foreach (QString result, sl)
+  for (QString result : std::as_const(sl))
   {
     // an argument with quotes will have an extra space at the end, so wasQuoted will be true.
     bool wasQuoted = (result.indexOf(QChar::fromLatin1(' '))!=-1) ||

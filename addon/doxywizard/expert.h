@@ -60,17 +60,17 @@ class Expert : public QWidget, public DocIntf
     void setHeader(const char *name);
     void add(const char *name,const char *doc);
 
-  public slots:
+  public Q_SLOTS:
     void createMessagesList(QDomElement &elem);
     void refresh();
 
-  private slots:
+  private Q_SLOTS:
     void filterChanged(const QString &text);
     void groupSelected(QTreeWidgetItem *current, QTreeWidgetItem *previous);
     void prevGroup();
     void nextGroup();
 
-  signals:
+  Q_SIGNALS:
     void changed();
     void done();
 

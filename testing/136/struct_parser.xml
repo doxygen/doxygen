@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="131_cs_ref_struct.cs" line="8" column="16" bodyfile="131_cs_ref_struct.cs" bodystart="8" bodyend="-1"/>
+        <location file="136_cs_ref_struct.cs" line="8" column="16" bodyfile="136_cs_ref_struct.cs" bodystart="8" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -24,7 +24,7 @@
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="131_cs_ref_struct.cs" line="5" column="7" bodyfile="131_cs_ref_struct.cs" bodystart="6" bodyend="9"/>
+    <location file="136_cs_ref_struct.cs" line="5" column="7" bodyfile="136_cs_ref_struct.cs" bodystart="6" bodyend="9"/>
     <listofallmembers>
       <member refid="struct_parser_1a068958f288a088fd45e2765eab072999" prot="public" virt="non-virtual">
         <scope>Parser</scope>

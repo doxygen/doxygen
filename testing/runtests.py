@@ -63,6 +63,15 @@ def clean_header(errmsg):
 
 
 class Tester:
+    def latex_failure_msg(self,latex_output,nr):
+        log = ''
+        try:
+            log = xopen(latex_output + "/refman.log",'r',encoding='ISO-8859-1').read()
+        except Exception:
+            pass
+        return ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test (%d)\n"
+                "  Contents of refman.log:\n%s" % (nr,log))
+
     def __init__(self,args,test):
         test_id = test.split('_')[0]
         if args.updateref:
@@ -323,6 +332,7 @@ class Tester:
         failed_rtf=False
         failed_xmlxsd=False
         failed_man=False
+        failed_preprocessor=False
         msg = ()
         # look for files to check against the reference
         if self.args.xml or self.args.xmlxsd:
@@ -552,26 +562,38 @@ class Tester:
             latex_out = xpopen(exe_string,exe_string1,get_stderr=outType)
             os.chdir(cur_directory)
             if (outType and latex_out.find("Error")!=-1):
-                msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
+                msg += (self.latex_failure_msg(latex_output,1),)
                 failed_latex=True
             elif (not outType and xopen(latex_output + "/temp",'r').read().find("Error")!= -1):
-                msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
+                msg += (self.latex_failure_msg(latex_output,2),)
                 failed_latex=True
             elif xopen(latex_output + "/refman.log",'r',encoding='ISO-8859-1').read().find("Error")!= -1:
-                msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
+                msg += (self.latex_failure_msg(latex_output,3),)
                 failed_latex=True
             elif xopen(latex_output + "/refman.log",'r',encoding='ISO-8859-1').read().find("Emergency stop")!= -1:
-                msg += ("PDF generation failed\n  For a description of the problem see 'refman.log' in the latex directory of this test",)
+                msg += (self.latex_failure_msg(latex_output,4),)
                 failed_latex=True
             elif not self.args.keep:
                 shutil.rmtree(latex_output,ignore_errors=True)
+
+        if self.config.get('check-preprocessor'):
+            proc = subprocess.run([self.args.doxygen, '-d', 'preprocessor', self.test_out + '/Doxyfile'],
+                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8-sig')
+            if proc.returncode:
+                failed_preprocessor = True
+                msg += ('Preprocessor debug run failed:\n' + proc.stderr,)
+            else:
+                for pattern in self.config['check-preprocessor']:
+                    if not re.search(pattern, proc.stdout, re.MULTILINE):
+                        failed_preprocessor = True
+                        msg += ('Preprocessor output did not match: ' + pattern,)
 
         warnings = xopen(self.test_out + "/warnings.log",'r',encoding='ISO-8859-1').read()
         failed_warn =  len(warnings)!=0
         if failed_warn:
             msg += (warnings,)
 
-        if failed_warn or failed_xml or failed_html or failed_qhp or failed_latex or failed_docbook or failed_rtf or failed_xmlxsd:
+        if failed_warn or failed_xml or failed_html or failed_qhp or failed_latex or failed_docbook or failed_rtf or failed_xmlxsd or failed_preprocessor:
             testmgr.ok(False,self.test_name,msg)
             return False
 

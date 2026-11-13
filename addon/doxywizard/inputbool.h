@@ -45,16 +45,16 @@ class InputBool : public QObject, public Input
     void setToolTip(const QString &txt) { m_lab->setToolTip(txt); }
     static bool convertToBool(const QVariant &v,bool &isValid);
 
-  public slots:
+  public Q_SLOTS:
     void reset();
     void setValue(bool);
 
-  signals:
+  Q_SIGNALS:
     void changed();
     void toggle(QString,bool);
     void showHelp(Input *);
 
-  private slots:
+  private Q_SLOTS:
     void help();
 
   private:

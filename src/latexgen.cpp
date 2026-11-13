@@ -84,8 +84,7 @@ void LatexCodeGenerator::codify(const DString &str)
     char c = 0;
     //char cs[5];
     int tabSize = Config_getInt(TAB_SIZE);
-    static THREAD_LOCAL char *result = nullptr;
-    static THREAD_LOCAL int lresult = 0;
+    static THREAD_LOCAL std::vector<char> result;
     if (m_hide) // only update column count
     {
       m_col = updateColumnCount(p,m_col);
@@ -138,10 +137,9 @@ void LatexCodeGenerator::codify(const DString &str)
 // helper macro to copy a single utf8 character, dealing with multibyte chars.
 #define COPYCHAR() do {                                             \
                        int bytes = getUTF8CharNumBytes(c);          \
-                       if (lresult < (i + bytes + 1))               \
+                       if (result.size() < static_cast<size_t>(i + bytes + 1)) \
                        {                                            \
-                         lresult += 512;                            \
-                         result = static_cast<char *>(realloc(result, lresult)); \
+                         result.resize(result.size() + 512);       \
                        }                                            \
                        for (int j=0; j<bytes && *p; j++)            \
                        {                                            \
@@ -159,7 +157,7 @@ void LatexCodeGenerator::codify(const DString &str)
                          COPYCHAR();
                        }
                        result[i]=0; // add terminator
-                       filterLatexString(*m_t,result,
+                       filterLatexString(*m_t, result.data(),
                                          m_insideTabbing, // insideTabbing
                                          true,  // insidePre
                                          false, // insideItem
@@ -1480,7 +1478,7 @@ void LatexGenerator::startTitleHead(const DString &fileName)
   if (hierarchyLevel < 0)
     m_t << "\\chapter{";
   else
-    m_t << "\\doxy" << DString("sub").repeat(hierarchyLevel) << "section{";
+    m_t << "\\" << LatexSections::name(hierarchyLevel) << "{";
 }
 
 void LatexGenerator::endTitleHead(const DString &fileName,const DString &name)
@@ -1523,7 +1521,7 @@ void LatexGenerator::startGroupHeader(const DString &,int extraIndentLevel)
   else
   {
     extraIndentLevel += m_hierarchyLevel + 1;
-    m_t << "\\doxy" << DString("sub").repeat(extraIndentLevel) << "section{";
+    m_t << "\\" << LatexSections::name(extraIndentLevel) << "{";
   }
   m_disableLinks=true;
 }
@@ -1542,7 +1540,7 @@ void LatexGenerator::startMemberHeader(const DString &,int)
     ++l;
   }
 
-  m_t << "\\doxysub" << DString("sub").repeat(l) << "section*{";
+  m_t << "\\" << LatexSections::name(l+1) << "*{";
   m_disableLinks=true;
 }
 
@@ -1577,7 +1575,7 @@ void LatexGenerator::startMemberDoc(const DString &clname,
   }
   else
   {
-    m_t << "\\doxy" << DString("sub").repeat(m_hierarchyLevel + 2) << "section";
+    m_t << "\\" << LatexSections::name(m_hierarchyLevel + 2);
   }
 
   m_t << "{";
@@ -2164,7 +2162,7 @@ void LatexGenerator::startInlineHeader()
   }
   else
   {
-    m_t << "\\doxy" << DString("sub").repeat(m_hierarchyLevel + 1) << "section*{";
+    m_t << "\\" << LatexSections::name(m_hierarchyLevel + 1) << "*{";
   }
 }
 
@@ -2273,7 +2271,7 @@ void LatexGenerator::writeInheritedSectionTitle(
   }
   else
   {
-    m_t << "\\doxy" << DString("sub").repeat(m_hierarchyLevel + 1) << "section*{";
+    m_t << "\\" << LatexSections::name(m_hierarchyLevel + 1) << "*{";
   }
   m_t << theTranslator->trInheritedFrom(convertToLaTeX(title,m_codeGen->insideTabbing()),
                                         objectLinkToString(ref, file, anchor, name, m_codeGen->insideTabbing(), m_disableLinks));

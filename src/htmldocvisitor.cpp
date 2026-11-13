@@ -329,7 +329,7 @@ void HtmlDocVisitor::writeObfuscatedMailAddress(const DString &url)
   }
   else
   {
-    m_t << "<a href=\"mailto:";
+    m_t << "<a href=\"mailto:'";
     if (!url.empty())
     {
       const char *p = url.data();
@@ -1812,7 +1812,7 @@ void HtmlDocVisitor::operator()(const DocDiaFile &df)
   forceEndParagraph(df);
   bool exists = false;
   std::string inBuf;
-  if (readInputFile(df.file(),inBuf))
+  if (readInputFile(df.file(),inBuf,ReadInputFileOptions().setFilter(false).setBinary(true)))
   {
     auto fileName = writeInlineGraph(Config_getString(HTML_OUTPUT)+"/"+stripPath(df.file())+"_", // baseName
                                      ".dia",                                                     // extension

@@ -414,7 +414,7 @@ void ColorPicker::setHue(int h)
   m_hue = qMax(0,qMin(h,359));
   delete m_pix; m_pix=nullptr;
   repaint();
-  emit newHsv(m_hue,m_sat,m_gam);
+  Q_EMIT newHsv(m_hue,m_sat,m_gam);
 }
 
 void ColorPicker::setSat(int s)
@@ -423,7 +423,7 @@ void ColorPicker::setSat(int s)
   m_sat = qMax(0,qMin(s,255));
   delete m_pix; m_pix=nullptr;
   repaint();
-  emit newHsv(m_hue,m_sat,m_gam);
+  Q_EMIT newHsv(m_hue,m_sat,m_gam);
 }
 
 void ColorPicker::setGam(int g)
@@ -432,7 +432,7 @@ void ColorPicker::setGam(int g)
   m_gam = qMax(40,qMin(g,240));
   delete m_pix; m_pix=nullptr;
   repaint();
-  emit newHsv(m_hue,m_sat,m_gam);
+  Q_EMIT newHsv(m_hue,m_sat,m_gam);
 }
 
 void ColorPicker::setCol(int h, int s, int g)

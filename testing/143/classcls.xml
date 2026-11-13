@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="classcls" kind="class" language="C++" prot="public">
+    <compoundname>cls</compoundname>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classcls_1a97bb5dca42af0ec0c4a0dc62d2e5c163" prot="private" static="no" mutable="no">
+        <type>unsigned long long</type>
+        <definition>unsigned long long cls::desc_</definition>
+        <argsstring/>
+        <name>desc_</name>
+        <qualifiedname>cls::desc_</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="143_anonymous_private.cpp" line="10" column="24" bodyfile="143_anonymous_private.cpp" bodystart="10" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcls_1af5745aea0f80c8d3d497f517cf57a0ee" prot="private" static="no" mutable="no">
+        <type>const int</type>
+        <definition>const int cls::@123370370343210011141314227067063214220072346344::values_</definition>
+        <argsstring/>
+        <name>values_</name>
+        <qualifiedname>[union].__unnamed0__::values_</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="143_anonymous_private.cpp" line="13" column="17"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcls_1a9b81936e01e67e0cfec512cb05e38a03" prot="private" static="no" mutable="no">
+        <type>const int</type>
+        <definition>const int cls::@123370370343210011141314227067063214220072346344::args_</definition>
+        <argsstring/>
+        <name>args_</name>
+        <qualifiedname>[union].__unnamed0__::args_</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="143_anonymous_private.cpp" line="14" column="17"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>A class. </para>
+    </detaileddescription>
+    <location file="143_anonymous_private.cpp" line="7" column="1" bodyfile="143_anonymous_private.cpp" bodystart="8" bodyend="16"/>
+    <listofallmembers>
+      <member refid="classcls_1a9b81936e01e67e0cfec512cb05e38a03" prot="private" virt="non-virtual">
+        <scope>cls</scope>
+        <name>args_</name>
+      </member>
+      <member refid="classcls_1a97bb5dca42af0ec0c4a0dc62d2e5c163" prot="private" virt="non-virtual">
+        <scope>cls</scope>
+        <name>desc_</name>
+      </member>
+      <member refid="classcls_1af5745aea0f80c8d3d497f517cf57a0ee" prot="private" virt="non-virtual">
+        <scope>cls</scope>
+        <name>values_</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

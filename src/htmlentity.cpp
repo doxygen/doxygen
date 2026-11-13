@@ -456,7 +456,7 @@ const HtmlEntityMapper::PerlSymb *HtmlEntityMapper::perl(HtmlEntityMapper::SymTy
 
 /*!
  * @brief Give code of the requested HTML entity name
- * @param symName HTML entity name without \c & and \c ;
+ * @param symName HTML entity name without <code>&</code> and <code>;</code>
  * @return the code for the requested HTML entity name,
  *         in case the requested HTML item does not exist `HtmlEntityMapper::Sym_unknown` is returned.
  */

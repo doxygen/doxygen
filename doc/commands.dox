@@ -2921,37 +2921,18 @@ Commands for displaying examples
   \note Doxygen's special commands do not work inside blocks of code.
   It is allowed to nest C-style comments inside a code block though.
 
-  The `option` can either be `lineno`, or `doc`, and additionally `local` can be specified.
-  - The `option` `lineno` can be used to enable line numbers for the included code if desired.
-  - The `option` `doc` can be used to treat the file as documentation rather than code.
-  - The `option` `local` can be used make Doxygen interpret the code as if it was in the
-               class or namespace in which the include command appears, rather than the global namespace.
-  - The `option` `strip` can be used to always hide any special comments
-    from the included code, overruling the
-    \ref cfg_strip_code_comments "STRIP_CODE_COMMENTS" setting, and option
-    `nostrip` can be used to always show the special comments.
-  These options have no effect in combination with the `option` `doc`.
+  \snippet{doc,replace=|. `trimleft`||g,replace=|XXX||,replace=|\<snippet\>|include|g,prefix=incl_} this snippet_txt
+  \snippet{doc,replace=|. `trimleft`||g,replace=|XXX||,replace=|\<snippet\>|include|g,prefix=incl_} this snippet_txt1
 
-  When using option `doc`, there is also the option `raise` that can be specified to raise
-  all sections found in the referenced file by a certain amount. For example
-  \verbatim
-  \include{doc,raise=1} file.dox
-  \endverbatim will treat any level 1 \c \\section found in `file.dox` as a level 2 \c \\subsection, and any level 2 \c \\subsection
-  into a level 3 \c \\subsubsection, etc.
-  Similarly, for Markdown a \c \# section will be treated as a \c \#\# section.
-
-  Furthermore, there is the option `prefix` that can be used to add a prefix
-  to each label of the included sections, so that they remain unique. For example:
-  \verbatim
-  \include{doc,prefix=fn_} file.dox
-  \endverbatim will treat e.g. `\section s1` found in `file.dox` as if it was specified as `\section fn_s1`.
-
-  \note The included documentation should not have comment signs in it as they will appear
-       in the documentation as well.
 
   \sa sections \ref cmdexample "\\example", \ref cmddontinclude "\\dontinclude",
       \ref cmdverbatim "\\verbatim", \ref cmdincludedoc "\\includedoc", and
       \ref cmdsnippet "\\snippet".
+
+  \snippet{doc,replace=|. `trimleft`||g,replace=|XXX||,replace=|\<snippet\>|include|g,prefix=incl_} this snippet_txt2
+  \snippet{doc,replace=|^\s*\* ?||} regex.h regex_special_chars
+  \snippet{doc,replace=|^\s*\* ?||} regex.h regex_special_chars1
+  \snippet{doc,replace=|^\s*\* ?||} regex.h regex_special_chars2
 
 <hr>
 \section cmdincludelineno \\includelineno <file-name>
@@ -3072,39 +3053,68 @@ Commands for displaying examples
  Note also that the [block_id] markers should appear exactly twice in the
  source file.
 
- The `option` can either be `lineno`, `trimleft` or `doc`, and additionally `local` can be specified.
+ \noop [snippet_txt]
+ The `option` can be:
  - The `option` `lineno` can be used to enable line numbers for the included code if desired.
- - The `option` `trimleft` can be used to remove the common spacing in front of all lines
-   (also taking in account the setting of the \ref cfg_tab_size "TAB_SIZE" tag).
  - The `option` `doc` can be used to treat the file as documentation rather than code.
+ - The `option` `replace` can be used to replace parts of each line with another text.
+ - The `option` `raise` can be specified to raise all sections found in the referenced file by a certain amount.
+ - The `option` `prefix` can be used to add a prefix to each label of the included sections,
+     so that they remain unique.
  - The `option` `local` can be used make Doxygen interpret the code as if it was in the
-               class or namespace in which the include command appears, rather than the global namespace.
+     class or namespace in which the include command appears, rather than the global namespace.
  - The `option` `strip` can be used to always hide any special comments
    from the included code, overruling the
    \ref cfg_strip_code_comments "STRIP_CODE_COMMENTS" setting, and option
    `nostrip` can be used to always show the special comments.
-  These options have no effect in combination with the `option` `doc`.
+ \noop [snippet_txt]
+ - The `option` `trimleft` can be used to remove the common spacing in front of all lines
+   (also taking in account the setting of the \ref cfg_tab_size "TAB_SIZE" tag).
+ \noop [snippet_txt1]
+
+ The options `lineno`, `trimleft`, `local`, `strip` and `nostrip` have no effect in combination with the `option` `doc`.
+
+ When using option `doc`, there is also the option `replace` that can be used to replace parts of each line with another text.
+ this `option` has the form `replace=<sep><regexp><sep><replacement><sep>[g]`. 
+ The first occurrence of the regular expression `<regexp>` is for each line replaced by `<replacement>` unless the end modifier `g`
+ is given as in that case all occurrences are replaced. See \ref regexp_spec for the special characters supported in the `<regexp>`.
+ the `<regexp>` and the `<replacement>` cannot contain a `,` as this is an option separator.
+ The separator `<sep>` is one character and can in principle be any character with the exception of `,` (option separator) and
+ `g` (as it has a special meaning at the end of the `replace` option) 
+ and should be the same for all `<sep>` for the current `replace` option.
 
  When using option `doc`, there is also the option `raise` that can be specified to raise
  all sections found in the referenced file by a certain amount. For example
- \verbatim
+ ```
  \snippet{doc,raise=1} file.dox XXX
- \endverbatim will
- treat any level 1 \c \\section found the snippet as a level 2 \c \\subsection, and any level 2 \c \\subsection
+ ```
+ will treat any level 1 \c \\section found the snippet as a level 2 \c \\subsection, and any level 2 \c \\subsection
  into a level 3 \c \\subsubsection, etc.
  Similarly, for Markdown a \c \# section will be treated as a \c \#\# section.
 
- Furthermore, there is the option `prefix` that can be used to add a prefix
+ Furthermore with the option `doc` is used, there is the option `prefix` that can be used to add a prefix
  to each label of the included sections, so that they remain unique. For example:
- \verbatim
- \include{doc,prefix=fn_} file.dox
- \endverbatim will treat e.g. `\section s1` found in `file.dox` as if it was specified as `\section fn_s1`.
+ ```
+ \snippet{doc,prefix=fn_} file.dox XXX
+ ```
+ will treat e.g. `\section s1` found in `file.dox` as if it was specified as `\section fn_s1`.
 
  \note The included documentation should not have comment signs in it as they will appear
-       in the documentation as well.
+       in the documentation as well, unless this is removed by means of the `replace` `option`.
+
+ \noop [snippet_txt1]
 
  see section \ref cmddontinclude "\\dontinclude" for an alternative way
  to include fragments of a source file that does not require markers.
+
+ \noop [snippet_txt2]
+ \subsection regexp_spec Special characters in regular expression
+
+ The following special characters are supported in the regular expression of the `replace` option:
+ \noop [snippet_txt2]
+ \snippet{doc,replace=|^\s*\* ?||} regex.h regex_special_chars
+ \snippet{doc,replace=|^\s*\* ?||} regex.h regex_special_chars1
+ \snippet{doc,replace=|^\s*\* ?||} regex.h regex_special_chars2
 
 <hr>
 \section cmdsnippetlineno \\snippetlineno <file-name> ( block_id )
