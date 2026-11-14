@@ -69,6 +69,7 @@
 
 from __future__ import print_function
 
+import argparse
 import os
 import re
 import sys
@@ -1279,16 +1280,10 @@ class Transl:
 class TrManager:
     """Collects basic info and builds subordinate Transl objects."""
 
-    def __init__(self):
+    def __init__(self, args):
         """Determines paths, creates and initializes structures.
 
-        The arguments of the script may explicitly say what languages should
-        be processed. Write the two letter identifications that are used
-        for composing the source filenames, so...
-
-            python translator.py cz
-
-        this will process only translator_cz.h source.
+        The args parameter is the namespace returned by parseArguments().
         """
 
         # Determine the path to the script and its name.
@@ -1302,11 +1297,7 @@ class TrManager:
         doxy_default = os.path.join(self.script_path, '..')
         self.doxy_path = os.path.abspath(os.getenv('DOXYGEN', doxy_default))
 
-        self.internal = False
-        if sys.argv[1] == '--doc':
-            self.internal = False
-        elif sys.argv[1] == '--doc_internal':
-            self.internal = True
+        self.internal = args.internal
 
         # Build the path names based on the Doxygen's root knowledge.
         if self.internal:
@@ -1317,9 +1308,9 @@ class TrManager:
         #  Normally the original sources aren't in the current directory
         # (as we are in the build directory) so we have to specify the
         # original source /documentation / ... directory.
-        self.org_src_path = os.path.join(sys.argv[2], 'src')
-        self.org_doc_path = os.path.join(sys.argv[2], 'doc')
-        self.org_doxy_path = sys.argv[2]
+        self.org_src_path = os.path.join(args.doxy_path, 'src')
+        self.org_doc_path = os.path.join(args.doxy_path, 'doc')
+        self.org_doxy_path = args.doxy_path
 
         # Create the empty dictionary for Transl object identified by the
         # class identifier of the translator.
@@ -2087,6 +2078,20 @@ class TrManager:
         f.write(doctpl % tplDic)
         f.close()
 
+def parseArguments(argv=None):
+    """Parses the command line arguments."""
+    parser = argparse.ArgumentParser(
+        description='Generate reports on translator classes from Doxygen sources.')
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument('--doc', dest='internal', action='store_false',
+                      help='generate the documentation for doc (default)')
+    mode.add_argument('--doc_internal', dest='internal', action='store_true',
+                      help='generate the documentation for doc_internal')
+    parser.set_defaults(internal=False)
+    parser.add_argument('doxy_path', metavar='DOXYGEN_ROOT',
+                        help="root directory of the original Doxygen sources")
+    return parser.parse_args(argv)
+
 if __name__ == '__main__':
 
     # The Python 2.7+ or 3.3+ is required.
@@ -2098,7 +2103,7 @@ if __name__ == '__main__':
 
     # The translator manager builds the Transl objects, parses the related
     # sources, and keeps them in memory.
-    trMan = TrManager()
+    trMan = TrManager(parseArguments())
 
     # Process the Transl objects and generate the output files.
     trMan.generateLanguageDoc()
