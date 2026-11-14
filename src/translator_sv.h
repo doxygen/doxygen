@@ -714,6 +714,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
       {
         case ClassDef::Class:  result+=" klass"; break;
         case ClassDef::Struct: result+=" strukt"; break;
+        case ClassDef::Record: return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:  result+=" union"; break;
         case ClassDef::Interface:  result+=" gränssnitt"; break;
         case ClassDef::Protocol:   result+=" protokoll"; break;
@@ -884,6 +885,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
       {
         case ClassDef::Class:      result+=vhdlOpt? "denna designenhets":"denna klass"; break;
         case ClassDef::Struct:     result+="denna strukt"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="denna union"; break;
         case ClassDef::Interface:  result+="detta gränssnitt"; break;
         case ClassDef::Protocol:   result+="detta protokoll"; break;
@@ -2431,6 +2433,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_6
           else result=trClass(true,true);
           break;
         case ClassDef::Struct:     result="Strukt"; break;
+        case ClassDef::Record:     return english.trCompoundType(compType,lang);
         case ClassDef::Union:      result="Union"; break;
         case ClassDef::Interface:  result="Gränssnitt"; break;
         case ClassDef::Protocol:   result="Protokoll"; break;

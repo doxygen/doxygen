@@ -87,6 +87,7 @@ const iconMap = {
     "exception": "E002",          // warning
     "class": "E574",              // category
     "struct": "F200",             // foundation
+    "record": "F200",             //
     "service": "E8B9",            // settings_applications
     "singleton": "E400",          // looks_one
 }

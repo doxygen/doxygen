@@ -47,10 +47,11 @@ struct LayoutDocEntry
               ESPEC(ConceptDefinition) \
               /* Namespace specific items */ \
               ESPEC(NamespaceNestedNamespaces) ESPEC(NamespaceNestedConstantGroups) \
-              ESPEC(NamespaceClasses) ESPEC(NamespaceConcepts) ESPEC(NamespaceInterfaces) ESPEC(NamespaceStructs) ESPEC(NamespaceExceptions) \
-              ESPEC(NamespaceInlineClasses) \
+              ESPEC(NamespaceClasses) ESPEC(NamespaceConcepts) ESPEC(NamespaceInterfaces) ESPEC(NamespaceStructs) \
+              ESPEC(NamespaceRecords) ESPEC(NamespaceExceptions) ESPEC(NamespaceInlineClasses) \
               /* File specific items */ \
-              ESPEC(FileClasses) ESPEC(FileConcepts) ESPEC(FileInterfaces) ESPEC(FileStructs) ESPEC(FileExceptions) ESPEC(FileConstantGroups) ESPEC(FileNamespaces) \
+              ESPEC(FileClasses) ESPEC(FileConcepts) ESPEC(FileInterfaces) ESPEC(FileStructs) ESPEC(FileRecords) \
+              ESPEC(FileExceptions) ESPEC(FileConstantGroups) ESPEC(FileNamespaces) \
               ESPEC(FileIncludeGraph) \
               ESPEC(FileIncludedByGraph) ESPEC(FileSourceLink) \
               ESPEC(FileInlineClasses) \
@@ -177,6 +178,9 @@ struct LayoutNavEntry
       NSPEC(Structs,) \
       NSPEC(StructList,) \
       NSPEC(StructIndex,) \
+      NSPEC(Records,) \
+      NSPEC(RecordList,) \
+      NSPEC(RecordIndex,) \
       NSPEC(Exceptions,) \
       NSPEC(ExceptionList,) \
       NSPEC(ExceptionIndex,) \

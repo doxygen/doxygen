@@ -607,6 +607,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
       {
         case ClassDef::Class:      result+=" Klasse-"; break;
         case ClassDef::Struct:     result+=" Datastruktur-"; break;
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result+=" Union-"; break;
         case ClassDef::Interface:  result+=" Grænseflade-"; break;
         case ClassDef::Protocol:   result+=" Protokol-"; break;
@@ -765,6 +766,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
       {
         case ClassDef::Class:      result+="klasse"; break;
         case ClassDef::Struct:     result+="datastruktur"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="union"; break;
         case ClassDef::Interface:  result+="grænseflade"; break;
         case ClassDef::Protocol:   result+="protokol"; break; // "protocol"

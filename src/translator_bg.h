@@ -607,6 +607,7 @@ class TranslatorBulgarian : public TranslatorAdapter_1_9_4
       {
         case ClassDef::Class:      result+=" Клас"; break;
         case ClassDef::Struct:     result+=" Структура"; break;
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result+=" Обединение"; break;
         case ClassDef::Interface:  result+=" Интерфейс"; break;
         case ClassDef::Protocol:   result+=" Протокол"; break;
@@ -768,6 +769,7 @@ class TranslatorBulgarian : public TranslatorAdapter_1_9_4
       {
         case ClassDef::Class:      result+=vhdlOpt?"проектна единица":"клас"; break;
         case ClassDef::Struct:     result+="структура"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="обединение"; break;
         case ClassDef::Interface:  result+="интерфейс"; break;
         case ClassDef::Protocol:   result+="протокол"; break;

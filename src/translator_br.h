@@ -171,7 +171,7 @@ namespace PortugueseTranslatorUtils
     }
 }
 
-class TranslatorBrazilian : public Translator
+class TranslatorBrazilian : public TranslatorAdapter_1_19_0
 {
   public:
 
@@ -746,6 +746,7 @@ class TranslatorBrazilian : public Translator
       {
         case ClassDef::Class:      result+="Classe "; break;
         case ClassDef::Struct:     result+="Estrutura "; break;
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result+="União "; break;
         case ClassDef::Interface:  result+="Interface "; break;
         case ClassDef::Protocol:   result+="Protocolo "; break;
@@ -931,6 +932,7 @@ class TranslatorBrazilian : public Translator
       {
         case ClassDef::Class:      result+=vhdlOpt?"Unidade de Design ":"classe "; break;
         case ClassDef::Struct:     result+="estrutura "; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="união "; break;
         case ClassDef::Interface:  result+="interface "; break;
         case ClassDef::Protocol:   result+="protocolo "; break;
@@ -2551,6 +2553,7 @@ class TranslatorBrazilian : public Translator
           else result=trClass(true,true);
           break;
         case ClassDef::Struct:     result="Estrutura"; break;
+        case ClassDef::Record:     return english.trCompoundType(compType,lang);
         case ClassDef::Union:      result="União"; break;
         case ClassDef::Interface:  result="Interface"; break;
         case ClassDef::Protocol:   result="Protocolo"; break;

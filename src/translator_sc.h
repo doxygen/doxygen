@@ -601,6 +601,7 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
         {
           case ClassDef::Class:      result+="ска класа"; break;
           case ClassDef::Struct:     result+="ска структура"; break;
+          case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
           case ClassDef::Union:      result+="ска унија"; break;
           case ClassDef::Interface:  result+="ски интерфејс"; break;
           case ClassDef::Protocol:   result+="ски протокол"; break;
@@ -774,6 +775,7 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
       {
         case ClassDef::Class:      result+="ову класу"; break;
         case ClassDef::Struct:     result+="ову структуру"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="ову унију"; break;
         case ClassDef::Interface:  result+="овај интерфејс"; break;
         case ClassDef::Protocol:   result+="овај протокол"; break;

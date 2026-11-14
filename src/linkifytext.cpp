@@ -50,7 +50,7 @@ static std::string templateParameterName(const Argument &a,SrcLangExt lang)
              prefix.substr(prefix.length()-kw.length())==kw &&
              (prefix.length()==kw.length() || !isId(prefix[prefix.length()-kw.length()-1]));
     };
-    bool hasKeyword = endsWithKeyword("class") || endsWithKeyword("typename") || endsWithKeyword("struct");
+    bool hasKeyword = endsWithKeyword("class") || endsWithKeyword("typename") || endsWithKeyword("struct") || endsWithKeyword("record");
     // in C# and Java the type parameter is just an identifier
     if (!hasKeyword && !(prefix.empty() && lang!=SrcLangExt::Cpp)) return std::string();
   }

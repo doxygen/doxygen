@@ -115,7 +115,7 @@ struct TagCompoundInfo
 /** Container for class specific info that can be read from a tagfile */
 struct TagClassInfo final : public TagCompoundInfo
 {
-  enum class Kind { None=-1, Class, Struct, Union, Interface, Exception, Protocol, Category, Enum, Service, Singleton };
+  enum class Kind { None=-1, Class, Struct, Record, Union, Interface, Exception, Protocol, Category, Enum, Service, Singleton };
   TagClassInfo(Kind k) : kind(k) {}
   DString clangId;
   DString anchor;
@@ -1141,6 +1141,8 @@ static const std::map< std::string, CompoundFactory > g_compoundFactory =
   // kind tag        state                         creation function
   { "class",       { TagFileParser::InClass,       []() { return TagCompoundVariant::make<TagClassInfo>(TagClassInfo::Kind::Class);     } } },
   { "struct",      { TagFileParser::InClass,       []() { return TagCompoundVariant::make<TagClassInfo>(TagClassInfo::Kind::Struct);    } } },
+  { "record",      { TagFileParser::InClass,       []() { return TagCompoundVariant::make<TagClassInfo>(TagClassInfo::Kind::Record);    } } },
+  { "union",       { TagFileParser::InClass,       []() { return TagCompoundVariant::make<TagClassInfo>(TagClassInfo::Kind::Union);     } } },
   { "union",       { TagFileParser::InClass,       []() { return TagCompoundVariant::make<TagClassInfo>(TagClassInfo::Kind::Union);     } } },
   { "interface",   { TagFileParser::InClass,       []() { return TagCompoundVariant::make<TagClassInfo>(TagClassInfo::Kind::Interface); } } },
   { "enum",        { TagFileParser::InClass,       []() { return TagCompoundVariant::make<TagClassInfo>(TagClassInfo::Kind::Enum);      } } },
@@ -1560,6 +1562,7 @@ void TagFileParser::buildClassEntry(const std::shared_ptr<Entry> &root, const Ta
   {
     case TagClassInfo::Kind::Class:     break;
     case TagClassInfo::Kind::Struct:    ce->spec = TypeSpecifier().setStruct(true);    break;
+    case TagClassInfo::Kind::Record:    ce->spec = TypeSpecifier().setRecord(true);    break;
     case TagClassInfo::Kind::Union:     ce->spec = TypeSpecifier().setUnion(true);     break;
     case TagClassInfo::Kind::Interface: ce->spec = TypeSpecifier().setInterface(true); break;
     case TagClassInfo::Kind::Enum:      ce->spec = TypeSpecifier().setEnum(true);      break;

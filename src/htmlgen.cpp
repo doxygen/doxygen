@@ -2944,6 +2944,9 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
     case LayoutNavEntry::Structs:            return index.numAnnotatedStructs()>0;
     case LayoutNavEntry::StructList:         return index.numAnnotatedStructs()>0;
     case LayoutNavEntry::StructIndex:        return index.numAnnotatedStructs()>0;
+    case LayoutNavEntry::Records:            return index.numAnnotatedRecords()>0;
+    case LayoutNavEntry::RecordList:         return index.numAnnotatedRecords()>0;
+    case LayoutNavEntry::RecordIndex:        return index.numAnnotatedRecords()>0;
     case LayoutNavEntry::Exceptions:         return index.numAnnotatedExceptions()>0;
     case LayoutNavEntry::ExceptionList:      return index.numAnnotatedExceptions()>0;
     case LayoutNavEntry::ExceptionIndex:     return index.numAnnotatedExceptions()>0;
@@ -3094,10 +3097,12 @@ static void writeDefaultQuickLinks(TextStream &t,
     case HighlightedItem::Concepts:            kind = LayoutNavEntry::Concepts;         break;
     case HighlightedItem::Interfaces:          kind = LayoutNavEntry::InterfaceIndex;   altKind = LayoutNavEntry::Interfaces;  break;
     case HighlightedItem::Structs:             kind = LayoutNavEntry::StructIndex;      altKind = LayoutNavEntry::Structs;     break;
+    case HighlightedItem::Records:             kind = LayoutNavEntry::RecordIndex;      altKind = LayoutNavEntry::Records;     break;
     case HighlightedItem::Exceptions:          kind = LayoutNavEntry::ExceptionIndex;   altKind = LayoutNavEntry::Exceptions;  break;
     case HighlightedItem::AnnotatedClasses:    kind = LayoutNavEntry::ClassList;        altKind = LayoutNavEntry::Classes;     break;
     case HighlightedItem::AnnotatedInterfaces: kind = LayoutNavEntry::InterfaceList;    altKind = LayoutNavEntry::Interfaces;  break;
     case HighlightedItem::AnnotatedStructs:    kind = LayoutNavEntry::StructList;       altKind = LayoutNavEntry::Structs;     break;
+    case HighlightedItem::AnnotatedRecords:    kind = LayoutNavEntry::RecordList;       altKind = LayoutNavEntry::Records;     break;
     case HighlightedItem::AnnotatedExceptions: kind = LayoutNavEntry::ExceptionList;    altKind = LayoutNavEntry::Exceptions;  break;
     case HighlightedItem::Files:               kind = LayoutNavEntry::FileList;         altKind = LayoutNavEntry::Files;       break;
     case HighlightedItem::NamespaceMembers:    kind = LayoutNavEntry::NamespaceMembers; break;
@@ -3116,6 +3121,8 @@ static void writeDefaultQuickLinks(TextStream &t,
     case HighlightedItem::InterfaceVisible:    kind = LayoutNavEntry::InterfaceList;    altKind = LayoutNavEntry::Interfaces;
                                                highlightParent = true; break;
     case HighlightedItem::StructVisible:       kind = LayoutNavEntry::StructList;       altKind = LayoutNavEntry::Structs;
+                                               highlightParent = true; break;
+    case HighlightedItem::RecordVisible:       kind = LayoutNavEntry::RecordList;       altKind = LayoutNavEntry::Records;
                                                highlightParent = true; break;
     case HighlightedItem::ExceptionVisible:    kind = LayoutNavEntry::ExceptionList;    altKind = LayoutNavEntry::Exceptions;
                                                highlightParent = true; break;

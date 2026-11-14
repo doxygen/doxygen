@@ -51,7 +51,7 @@
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
 */
-class TranslatorKorean : public Translator
+class TranslatorKorean : public TranslatorAdapter_1_19_0
 {
   public:
 
@@ -618,6 +618,7 @@ class TranslatorKorean : public Translator
       {
         case ClassDef::Class:      result+=" 클래스"; break;
         case ClassDef::Struct:     result+=" 구조체"; break;
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result+=" 공용체"; break;
         case ClassDef::Interface:  result+=" 인터페이스"; break;
         case ClassDef::Protocol:   result+=" 프로토콜"; break;
@@ -777,6 +778,7 @@ class TranslatorKorean : public Translator
       {
         case ClassDef::Class:      result+="클래스"; break;
         case ClassDef::Struct:     result+="구조체"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="공용체"; break;
         case ClassDef::Interface:  result+="인터페이스"; break;
         case ClassDef::Protocol:   result+="프로토콜"; break;
@@ -2185,6 +2187,7 @@ class TranslatorKorean : public Translator
           else result=trClass(true,true);
           break;
         case ClassDef::Struct:     result="구조체"; break;
+        case ClassDef::Record:     return english.trCompoundType(compType,lang);
         case ClassDef::Union:      result="공용체"; break;
         case ClassDef::Interface:  result="인터페이스"; break;
         case ClassDef::Protocol:   result="프로토콜"; break;

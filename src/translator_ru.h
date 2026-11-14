@@ -27,7 +27,7 @@
 #ifndef TRANSLATOR_RU_H
 #define TRANSLATOR_RU_H
 
-class TranslatorRussian : public Translator
+class TranslatorRussian : public TranslatorAdapter_1_19_0
 {
   public:
     /*! Used for identification of the language. */
@@ -554,6 +554,7 @@ class TranslatorRussian : public Translator
         {
           case ClassDef::Class:  result+="класса"; break;
           case ClassDef::Struct: result+="структуры"; break;
+          case ClassDef::Record: return english.trCompoundReference(clName,compType,isTemplate);
           case ClassDef::Union:  result+="объединения"; break;
           case ClassDef::Interface:  result+="интерфейса"; break;
           case ClassDef::Protocol:   result+="протокола"; break;
@@ -729,6 +730,7 @@ class TranslatorRussian : public Translator
         case ClassDef::Struct:     result+="структур";
           if (single) result+="ы";
           break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="объединени";
           if (single) result+="я"; else result+="й";
           break;
@@ -2320,6 +2322,8 @@ class TranslatorRussian : public Translator
     case ClassDef::Struct:
       result = "Структура";
       break;
+    case ClassDef::Record:
+      return english.trCompoundType(compType,lang);
     case ClassDef::Union:
       result = "Объединение";
       break;

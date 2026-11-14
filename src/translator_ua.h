@@ -547,6 +547,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
         {
           case ClassDef::Class:  result+="класу"; break;
           case ClassDef::Struct: result+="структури"; break;
+          case ClassDef::Record: return english.trCompoundReference(clName,compType,isTemplate);
           case ClassDef::Union:  result+="об'єднання"; break;
           case ClassDef::Interface:  result+="інтерфейсу"; break;
           case ClassDef::Protocol:   result+="протоколу"; break;
@@ -721,6 +722,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
         case ClassDef::Struct:
           if (single) result+="цієї структури"; else result+="цих структур";
           break;
+        case ClassDef::Record: return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:
           if (single) result+="цього об'єднання"; else result+="цих об'єднань";
           break;

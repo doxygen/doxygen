@@ -777,6 +777,14 @@ class Translator
     virtual DString trUnverifiedRequirements() = 0;
     virtual DString trUnverifiedRequirementsText(bool singular,const DString &list) = 0;
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.19.0
+//////////////////////////////////////////////////////////////////////////
+    virtual DString trRecords() = 0;
+    virtual DString trRecordIndex() = 0;
+    virtual DString trRecordList() = 0;
+    virtual DString trRecordListDescription() = 0;
+    virtual DString trRecordDocumentation() = 0;
 
 
 //////////////////////////////////////////////////////////////////////////

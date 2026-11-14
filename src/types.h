@@ -509,7 +509,8 @@ enum class CodeSymbolType
   Property,
   Event,
   Sequence,
-  Dictionary
+  Dictionary,
+  Record
 };
 
 constexpr const char *codeSymbolType2Str(CodeSymbolType type) noexcept
@@ -542,6 +543,7 @@ constexpr const char *codeSymbolType2Str(CodeSymbolType type) noexcept
     case CodeSymbolType::Event:       return "event";
     case CodeSymbolType::Sequence:    return "sequence";
     case CodeSymbolType::Dictionary:  return "dictionary";
+    case CodeSymbolType::Record:      return "record";
     default:
       return nullptr;
   }
@@ -684,7 +686,7 @@ class LocalToc
 /* 50 */ TSPEC(Default)           TSPEC(Delete)          TSPEC(NoExcept)          TSPEC(Attribute)    TSPEC(Property)           \
 /* 55 */ TSPEC(Readonly)          TSPEC(Bound)           TSPEC(Constrained)       TSPEC(Transient)    TSPEC(MaybeVoid)          \
 /* 60 */ TSPEC(MaybeDefault)      TSPEC(MaybeAmbiguous)  TSPEC(Published)         TSPEC(ConstEval)    TSPEC(ConstInit)          \
-/* 65 */ TSPEC(NoDiscard)         TSPEC(ThreadLocal)     TSPEC(DeprDoc)           TSPEC(DeprAttr)
+/* 65 */ TSPEC(NoDiscard)         TSPEC(ThreadLocal)     TSPEC(DeprDoc)           TSPEC(DeprAttr)     TSPEC(Record)
 // clang-format on
 
 /** Wrapper class for a number of boolean properties.
@@ -848,6 +850,7 @@ enum class VhdlSpecifier
  ETYPE(ExportedInterface,  None)            \
  ETYPE(IncludedService,    None)            \
  ETYPE(ExampleLineno,      Doc)             \
+ ETYPE(RecordDoc,          CompoundDoc|Doc) \
 
 /** Wrapper class for the Entry type. Can be set only during construction.
  *  Packs the type together with category flags.

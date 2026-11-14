@@ -246,7 +246,7 @@ const char * table_schema[][2] = {
       "\tname                 TEXT NOT NULL,\n"
       "\ttitle                TEXT,\n"
       // probably won't be empty '' or unknown, but the source *could* return them...
-      "\tkind                 TEXT NOT NULL, -- 'category' 'class' 'constants' 'dir' 'enum' 'example' 'exception' 'file' 'group' 'interface' 'library' 'module' 'namespace' 'package' 'page' 'protocol' 'service' 'singleton' 'struct' 'type' 'union' 'unknown' ''\n"
+      "\tkind                 TEXT NOT NULL, -- 'category' 'class' 'constants' 'dir' 'enum' 'example' 'exception' 'file' 'group' 'interface' 'library' 'module' 'namespace' 'package' 'page' 'protocol' 'record' 'service' 'singleton' 'struct' 'type' 'union' 'unknown' ''\n"
       "\tprot                 INTEGER,\n"
       "\tfile_id              INTEGER NOT NULL REFERENCES path,\n"
       "\tline                 INTEGER NOT NULL,\n"
@@ -474,11 +474,11 @@ const char * table_schema[][2] = {
       "\tEXISTS (SELECT * FROM inner_outer WHERE rowid=def.rowid AND [kind:1]='file'),\n"
       "\tEXISTS (SELECT * FROM inner_outer WHERE [rowid:1]=def.rowid AND kind in (\n"
         "'category','class','enum','exception','interface','module','protocol',\n"
-        "'service','singleton','struct','type','union'\n"
+        "'record','service','singleton','struct','type','union'\n"
       ")),\n"
       "\tEXISTS (SELECT * FROM inner_outer WHERE rowid=def.rowid AND [kind:1] in (\n"
         "'category','class','enum','exception','interface','module','protocol',\n"
-        "'service','singleton','struct','type','union'\n"
+        "'record','service','singleton','struct','type','union'\n"
       ")),\n"
       "\tEXISTS (SELECT * FROM inner_outer WHERE [rowid:1]=def.rowid AND kind='namespace'),\n"
       "\tEXISTS (SELECT * FROM inner_outer WHERE rowid=def.rowid AND [kind:1]='namespace'),\n"
@@ -1483,9 +1483,9 @@ The XML schema claims:
     dcop define enum event friend function interface property prototype
     service signal slot typedef variable
 
-  DoxCompoundKind: (17)
+  DoxCompoundKind: (18)
     category class dir example exception file group interface module
-    namespace page protocol service singleton struct type union
+    namespace page protocol record service singleton struct type union
 
 Member kind comes from MemberDef::memberTypeName()
   types.h defines 14 MemberType::*s
@@ -1506,12 +1506,12 @@ Member kind comes from MemberDef::memberTypeName()
 Compound kind is more complex. *Def::compoundTypeString()
   ClassDef kind comes from ::compoundTypeString()
     classdef.h defines 9 compound types
-      Category Class Exception Interface Protocol Service Singleton Struct Union
+      Category Class Exception Interface Protocol Service Singleton Struct Record Union
     But ClassDef::compoundTypeString() "could" return 13 strings
       - default "unknown" shouldn't actually return
-      - other 12 can vary by source language; see method for specifics
-        category class enum exception interface module protocol service
-        singleton struct type union
+      - other 13 can vary by source language; see method for specifics
+        category class enum exception interface module protocol record service
+        singleton struct type record union
 
   DirDef, FileDef, GroupDef have no method to return a string
     tagfile/outputs hard-code kind to 'dir' 'file' or 'group'
@@ -1526,18 +1526,18 @@ Compound kind is more complex. *Def::compoundTypeString()
     - some locations hard-code the kind to 'page'
     - others conditionally output 'page' or 'example'
 
-  All together, that's 23 potential strings (21 excl "" and unknown)
+  All together, that's 24 potential strings (22 excl "" and unknown)
     "" category class constants dir enum example exception file group
-    interface library module namespace package page protocol service singleton
+    interface library module namespace package page protocol record service singleton
     struct type union unknown
 
     Above describes potential values for compounddef.kind
 
-For reference, there are 35 potential values of def.kind (33 excl "" and unknown):
+For reference, there are 36 potential values of def.kind (34 excl "" and unknown):
   "" "category" "class" "constants" "dcop" "dir" "enum" "enumeration"
   "enumvalue" "event" "example" "exception" "file" "friend" "function" "group"
   "interface" "library" "macro definition" "module" "namespace" "package"
-  "page" "property" "protocol" "service" "signal" "singleton" "slot" "struct"
+  "page" "property" "protocol" |"record" "service" "signal" "singleton" "slot" "struct"
   "type" "typedef" "union" "unknown" "variable"
 
 This is relevant because the 'def' view generalizes memberdef and compounddef,
@@ -1899,7 +1899,7 @@ static void associateAllClassMembers(const ClassDef *cd, struct Refid scope_refi
 }
 
 // many kinds: category class enum exception interface
-// module protocol service singleton struct type union
+// module protocol record service singleton struct type union
 // enum is Java only (and is distinct from enum memberdefs)
 static void generateSqlite3ForClass(const ClassDef *cd)
 {

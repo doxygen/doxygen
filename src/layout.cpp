@@ -479,6 +479,27 @@ class LayoutParser
           theTranslator->trStructListDescription(),
           "annotatedstructs"
         },
+        { "recordindex",
+          LayoutNavEntry::RecordIndex,
+          theTranslator->trRecordIndex(),
+          DString(),
+          DString(),
+          "records"
+        },
+        { "records",
+          LayoutNavEntry::Records,
+          theTranslator->trRecords(),
+          theTranslator->trRecordList(),
+          theTranslator->trRecordListDescription(),
+          "annotatedrecords"
+        },
+        { "recordlist",
+          LayoutNavEntry::RecordList,
+          theTranslator->trRecordList(),
+          DString(),
+          theTranslator->trRecordListDescription(),
+          "annotatedrecords"
+        },
         { "exceptionindex",
           LayoutNavEntry::ExceptionIndex,
           theTranslator->trExceptionIndex(),
@@ -1016,6 +1037,9 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
   { "namespace/memberdecl/structs",               { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::NamespaceStructs,
                                                             []() { return compileOptions(theTranslator->trStructs()); })
                                                   } },
+  { "namespace/memberdecl/records",               { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::NamespaceRecords,
+                                                            []() { return compileOptions(theTranslator->trRecords()); })
+                                                  } },
   { "namespace/memberdecl/exceptions",            { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::NamespaceExceptions,
                                                             []() { return compileOptions(theTranslator->trExceptions()); })
                                                   } },
@@ -1103,6 +1127,9 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                   } },
   { "file/memberdecl/structs",                    { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::FileStructs,
                                                             []() { return compileOptions(theTranslator->trStructs()); })
+                                                  } },
+  { "file/memberdecl/records",                    { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::FileRecords,
+                                                            []() { return compileOptions(theTranslator->trRecords()); })
                                                   } },
   { "file/memberdecl/exceptions",                 { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::FileExceptions,
                                                             []() { return compileOptions(theTranslator->trExceptions()); })

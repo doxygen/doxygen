@@ -577,6 +577,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
       {
         case ClassDef::Class:      result+=" klas"; break;
         case ClassDef::Struct:     result+=" Struct"; break;
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result+=" Union"; break;
         case ClassDef::Interface:  result+=" Intervlak"; break;
         case ClassDef::Protocol:   result+=" Protocol"; break;
@@ -736,6 +737,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
       {
         case ClassDef::Class:      result+="klas"; break;
         case ClassDef::Struct:     result+="struct"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="union"; break;
         case ClassDef::Interface:  result+="intervlak"; break;
         case ClassDef::Protocol:   result+="protokol"; break;

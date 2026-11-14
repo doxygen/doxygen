@@ -111,7 +111,7 @@
 // Translator class (by the local maintainer) when the localized
 // translator is made up-to-date again.
 
-class TranslatorFrench : public Translator
+class TranslatorFrench : public TranslatorAdapter_1_19_0
 {
   public:
 
@@ -672,6 +672,7 @@ class TranslatorFrench : public Translator
       {
         case ClassDef::Class:      result+="la classe "; break;
         case ClassDef::Struct:     result+="la structure "; break;
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result+="l'union "; break;
         case ClassDef::Interface:  result+="l'interface "; break;
         case ClassDef::Protocol:   result+="le protocol "; break;
@@ -831,6 +832,7 @@ class TranslatorFrench : public Translator
       {
         case ClassDef::Class:      result+=vhdlOpt? "cette unités de conception":"cette classe"; break;
         case ClassDef::Struct:     result+="cette structure"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="cette union"; break;
         case ClassDef::Interface:  result+="cette interface"; break;
         case ClassDef::Protocol:   result+="ce protocol"; feminine = false; break;
@@ -2420,6 +2422,7 @@ class TranslatorFrench : public Translator
           else result=trClass(true,true);
           break;
         case ClassDef::Struct:     result="Structure"; break;
+        case ClassDef::Record:     return english.trCompoundType(compType,lang);
         case ClassDef::Union:      result="Union"; break;
         case ClassDef::Interface:  result="Interface"; break;
         case ClassDef::Protocol:   result="Protocole"; break;

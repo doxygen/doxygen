@@ -606,6 +606,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
       {
         case ClassDef::Class:      result+="clasa "; break;
         case ClassDef::Struct:     result+="structura "; break;
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result+="uniunea "; break;
         case ClassDef::Interface:  result+="interfaţa "; break;
         case ClassDef::Protocol:   result+="protocolul "; break;
@@ -768,6 +769,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
       {
         case ClassDef::Class:      result+="clasă"; break;
         case ClassDef::Struct:     result+="structură"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="uniune"; break;
         case ClassDef::Interface:  result+="interfaţă"; break;
         case ClassDef::Protocol:   result+="protocol"; break;

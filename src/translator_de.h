@@ -144,7 +144,7 @@
 #ifndef TRANSLATOR_DE_H
 #define TRANSLATOR_DE_H
 
-class TranslatorGerman : public Translator
+class TranslatorGerman : public TranslatorAdapter_1_19_0
 {
   public:
 
@@ -694,6 +694,7 @@ class TranslatorGerman : public Translator
       {
         case ClassDef::Class:  result+="Klassen"; break;
         case ClassDef::Struct: result+="Struktur"; break;
+        case ClassDef::Record: return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:  result+="Varianten"; break;
         case ClassDef::Interface:  result+="Schnittstellen"; break;
         case ClassDef::Protocol:  result+="Protokoll"; break;
@@ -862,6 +863,7 @@ class TranslatorGerman : public Translator
       {
         case ClassDef::Class:      result+=vhdlOpt?" Entwurfseinheiten":" Klasse"; break;
         case ClassDef::Struct:     result+=" Struktur"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+=" Variante"; break;
         case ClassDef::Interface:  result+=" Schnittstelle"; break;
         case ClassDef::Protocol:   result+="s Protokoll"; break;
@@ -2450,6 +2452,7 @@ class TranslatorGerman : public Translator
           else result=trClass(true,true);
           break;
         case ClassDef::Struct:     result="Struktur"; break;
+        case ClassDef::Record:     return english.trCompoundType(compType,lang);
         case ClassDef::Union:      result="Varianten"; break;
         case ClassDef::Interface:  result="Schnittstellen"; break;
         case ClassDef::Protocol:   result="Protocoll"; break;

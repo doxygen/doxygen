@@ -657,6 +657,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
       {
         case ClassDef::Class:      result += " वर्ग"; break;
         case ClassDef::Struct:     result += " संरचना"; break;
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result += " मिलन"; break;
         case ClassDef::Interface:  result += " अंतराफलक"; break;
         case ClassDef::Protocol:   result += " प्रोटोकॉल"; break;
@@ -821,6 +822,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
       {
         case ClassDef::Class:     result += vhdlOpt ? "डिज़ाइन इकाई" : "वर्ग"; break;
         case ClassDef::Struct:    result += "संस्करण"; break;
+        case ClassDef::Record:    return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:     result += "मिलन"; break;
         case ClassDef::Interface: result += "अंतराफलक"; break;
         case ClassDef::Protocol:  result += "प्रोटोकॉल"; break;

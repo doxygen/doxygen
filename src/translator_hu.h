@@ -623,6 +623,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
       {
         case ClassDef::Class:      result+=" osztály"; break;
         case ClassDef::Struct:     result+=" struktúra"; break;
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result+=" unió"; break;
         case ClassDef::Interface:  result+=" interfész"; break;
         case ClassDef::Protocol:   result+=" protokoll"; break;
@@ -781,6 +782,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
       {
         case ClassDef::Class:      result+="az osztályról"; break;
         case ClassDef::Struct:     result+="a struktúráról"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="az unióról"; break;
         case ClassDef::Interface:  result+="az interfészről"; break;
         case ClassDef::Protocol:   result+="a protokollról"; break;
@@ -1696,6 +1698,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
       {
         case ClassDef::Class:      result+="a modulról"; break;
         case ClassDef::Struct:     result+="a típusról"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="az unióról"; break;
         case ClassDef::Interface:  result+="az interfészról"; break;
         case ClassDef::Protocol:   result+="a protokollról"; break;

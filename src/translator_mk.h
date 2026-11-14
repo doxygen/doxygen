@@ -580,6 +580,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
       {
         case ClassDef::Class:      result+=" Класа"; break;
         case ClassDef::Struct:     result+=" Структура"; break;
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result+=" Унија"; break;
         case ClassDef::Interface:  result+=" Интерфејс"; break;
         case ClassDef::Protocol:   result+=" Протокол"; break;
@@ -739,6 +740,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
       {
         case ClassDef::Class:      result+="оваа класа"; break;
         case ClassDef::Struct:     result+="оваа структура"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="оваа унија"; break;
         case ClassDef::Interface:  result+="овој интерфејс"; break;
         case ClassDef::Protocol:   result+="овој протокол"; break;

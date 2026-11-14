@@ -564,6 +564,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
       {
         case ClassDef::Class:      result+="triedy "; break;
         case ClassDef::Struct:     result+="štruktúry "; break;
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result+="unionu "; break;
         case ClassDef::Interface:  result+="rozhrania "; break;
         case ClassDef::Protocol:   result+="protokol "; break;
@@ -736,6 +737,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
       {
         case ClassDef::Class:      result+="túto triedu"; break;
         case ClassDef::Struct:     result+="túto štruktúru (struct)"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="tento union"; break;
         case ClassDef::Interface:  result+="toto rozhranie"; break;
         case ClassDef::Protocol:   result+="protokol"; break;

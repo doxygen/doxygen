@@ -1384,6 +1384,7 @@ void MemberDefImpl::init(Definition *d,
   m_type=t;
   if (mt==MemberType::Typedef) m_type.stripPrefix("typedef ");
   //  type.stripPrefix("struct ");
+  //  type.stripPrefix("record ");
   //  type.stripPrefix("class " );
   //  type.stripPrefix("union " );
   m_type=removeRedundantWhiteSpace(m_type);

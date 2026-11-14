@@ -43,7 +43,7 @@
 // Translator class (by the local maintainer) when the localized
 // translator is made up-to-date again.
 
-class TranslatorChinesetraditional : public Translator
+class TranslatorChinesetraditional : public TranslatorAdapter_1_19_0
 {
   public:
 
@@ -612,6 +612,7 @@ class TranslatorChinesetraditional : public Translator
       {
         case ClassDef::Class:      result+=" 類別"; break;
         case ClassDef::Struct:     result+=" 結構"; break;
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result+=" 聯合"; break;
         case ClassDef::Interface:  result+=" 介面"; break;
         case ClassDef::Protocol:   result+=" 協定"; break;
@@ -762,7 +763,7 @@ class TranslatorChinesetraditional : public Translator
     /*! This is put at the bottom of a class documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
-    DString trGeneratedFromFiles(ClassDef::CompoundType compType,bool) override
+    DString trGeneratedFromFiles(ClassDef::CompoundType compType,bool single) override
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
       DString result="此";
@@ -770,6 +771,7 @@ class TranslatorChinesetraditional : public Translator
       {
         case ClassDef::Class:      result+="類別(class)"; break;
         case ClassDef::Struct:     result+="結構(structure)"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="聯合(union)"; break;
         case ClassDef::Interface:  result+="介面(interface)"; break;
         case ClassDef::Protocol:   result+="協定(protocol)"; break;
@@ -2314,6 +2316,7 @@ class TranslatorChinesetraditional : public Translator
           else result=trClass(true,true);
           break;
         case ClassDef::Struct:     result="結構"; break;
+        case ClassDef::Record:     return english.trCompoundType(compType,lang);
         case ClassDef::Union:      result="聯合"; break;
         case ClassDef::Interface:  result="介面"; break;
         case ClassDef::Protocol:   result="協定"; break;

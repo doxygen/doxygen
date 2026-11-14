@@ -234,7 +234,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 
     DString trCompoundReference(const DString &clName,
                                     ClassDef::CompoundType compType,
-                                    bool /*isTemplate*/) override
+                                    bool isTemplate) override
       // used as the title of the HTML page of a class/struct/union
     {
       DString result="";
@@ -242,6 +242,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
       {
         case ClassDef::Class:  result+=" Razred "; break;
         case ClassDef::Struct: result+=" Struktura "; break;
+        case ClassDef::Record: return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:  result+=" Množica "; break;
         case ClassDef::Interface:  result+=" IDL vmesnik "; break;
         case ClassDef::Protocol:   result+=" protocol "; break; // translate me!
@@ -390,6 +391,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
       {
         case ClassDef::Class:      result+="razreda"; break;
         case ClassDef::Struct:     result+="strukture"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="unije"; break;
         case ClassDef::Interface:  result+="vmesnika (interface)"; break;
         case ClassDef::Protocol:   result+="protocol"; break; // translate me!

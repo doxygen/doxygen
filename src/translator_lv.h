@@ -600,6 +600,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_16_0
       {
         case ClassDef::Class:      result+=" klases"; break;
         case ClassDef::Struct:     result+=" struktūras"; break;
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result+=" apvienojuma"; break;
         case ClassDef::Interface:  result+=" interfeisa"; break;
         case ClassDef::Protocol:   result+=" protokola"; break;
@@ -758,6 +759,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_16_0
       {
         case ClassDef::Class:      result+="s klases"; break;
         case ClassDef::Struct:     result+="s struktūras"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+=" apvienojuma"; break;
         case ClassDef::Interface:  result+=" interfeisa"; break;
         case ClassDef::Protocol:   result+=" protokola"; break;
@@ -2382,6 +2384,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_16_0
         else result=trClass(true,true);
         break;
       case ClassDef::Struct:     result="Struktūra"; break;
+      case ClassDef::Record:     return english.trCompoundType(compType,lang);
       case ClassDef::Union:      result="Savienojums"; break;
       case ClassDef::Interface:  result="Saskarne"; break;
       case ClassDef::Protocol:   result="Protokols"; break;

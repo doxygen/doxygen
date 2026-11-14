@@ -649,6 +649,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
       {
         case ClassDef::Class:      result+=" luokka"; break; // " Class"
         case ClassDef::Struct:     result+=" tietue"; break; // " Struct"
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result+=" yhdiste"; break; // " Union"
         case ClassDef::Interface:  result+=" rajapinta"; break; // " Interface"
         case ClassDef::Protocol:   result+=" protokolla"; break; // " Protocol"
@@ -808,6 +809,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
       {
         case ClassDef::Class:      result+="luokalle"; break; // "class"
         case ClassDef::Struct:     result+="tietueelle"; break; // "struct"
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="yhdisteelle"; break; // "union"
         case ClassDef::Interface:  result+="rajapinnalle"; break; // "interface"
         case ClassDef::Protocol:   result+="protokollalle"; break; // "protocol"

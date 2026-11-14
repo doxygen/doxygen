@@ -70,7 +70,7 @@ Doxygen の開発の方でもそれはそれでいーんじゃん？みたいな
 #ifndef TRANSLATOR_JP_H
 #define TRANSLATOR_JP_H
 
-class TranslatorJapanese : public Translator
+class TranslatorJapanese : public TranslatorAdapter_1_19_0
 {
   public:
     DString idLanguage() override
@@ -633,6 +633,7 @@ class TranslatorJapanese : public Translator
       {
         case ClassDef::Class:      result+="クラス"; break;
         case ClassDef::Struct:     result+="構造体"; break;
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result+="共用体"; break;
         case ClassDef::Interface:  result+="インタフェース"; break;
         case ClassDef::Protocol:   result+="プロトコル"; break;
@@ -789,7 +790,7 @@ class TranslatorJapanese : public Translator
      *  followed by a list of files that were used to generate the page.
      */
     DString trGeneratedFromFiles(ClassDef::CompoundType compType,
-        bool /*single*/) override
+        bool single) override
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
       DString result="この";
@@ -797,6 +798,7 @@ class TranslatorJapanese : public Translator
       {
         case ClassDef::Class:      result+="クラス"; break;
         case ClassDef::Struct:     result+="構造体"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="共用体"; break;
         case ClassDef::Interface:  result+="インタフェース"; break;
         case ClassDef::Protocol:   result+="プロトコル"; break;
@@ -2305,6 +2307,7 @@ class TranslatorJapanese : public Translator
           else result=trClass(true,true);
           break;
         case ClassDef::Struct:     result="構造体"; break;
+        case ClassDef::Record:     return english.trCompoundType(compType,lang);
         case ClassDef::Union:      result="共用体"; break;
         case ClassDef::Interface:  result="インタフェース"; break;
         case ClassDef::Protocol:   result="プロトコル"; break;

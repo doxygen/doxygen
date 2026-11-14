@@ -228,7 +228,7 @@ declaration and the detailed description before the member definition.
 
 \subsubsection memberdoc Putting documentation after members
 
-If you want to document the members of a file, struct, union, class, or enum,
+If you want to document the members of a file, struct, record, union, class, or enum,
 it is sometimes desired to place the documentation block after the member
 instead of before. For this purpose you have to put an additional \< marker
 in the comment block. Note that this also works for the parameters
@@ -296,7 +296,7 @@ Here is an example of the use of these comment blocks:
  \endlatexonly
 
 \warning These blocks can only be used to document \e members and \e parameters.
-         They cannot be used to document files, classes, unions, structs,
+         They cannot be used to document files, classes, unions, structs, record,
          groups, namespaces, macros, and enums themselves. Furthermore, the structural
          commands mentioned in the next section
          (like <code>\\class</code>) are not allowed
@@ -395,6 +395,7 @@ comment block contains documentation for the class \c Test.
 Other structural commands are:
 <ul>
 <li>\c \\struct to document a C-struct.
+<li>\c \\record to document a Java record.
 <li>\c \\union to document a union.
 <li>\c \\enum to document an enumeration type.
 <li>\c \\fn to document a function.

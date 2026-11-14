@@ -48,7 +48,7 @@
 #ifndef TRANSLATOR_GR_H
 #define TRANSLATOR_GR_H
 
-class TranslatorGreek : public Translator
+class TranslatorGreek : public TranslatorAdapter_1_19_0
 {
   public:
 
@@ -592,6 +592,7 @@ class TranslatorGreek : public Translator
       {
         case ClassDef::Class:      result+=" Κλάσης "; break;
         case ClassDef::Struct:     result+=" Δομής "; break;
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result+=" Ένωσης "; break;
         case ClassDef::Interface:  result+=" Διεπαφής "; break;
         case ClassDef::Protocol:   result+=" Πρωτοκόλλου "; break;
@@ -750,6 +751,7 @@ class TranslatorGreek : public Translator
       {
         case ClassDef::Class:      result+="αυτή την κλάση"; break;
         case ClassDef::Struct:     result+="αυτή τη δομή"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="αυτή την ένωση"; break;
         case ClassDef::Interface:  result+="αυτή τη διεπαφή"; break;
         case ClassDef::Protocol:   result+="αυτό το πρωτόκολλο"; break;
@@ -2288,6 +2290,7 @@ class TranslatorGreek : public Translator
           else result=trClass(true,true);
           break;
         case ClassDef::Struct:     result="Δομής"; break;
+        case ClassDef::Record:     return english.trCompoundType(compType,lang);
         case ClassDef::Union:      result="Ένωσης"; break;
         case ClassDef::Interface:  result="Διεπαφής"; break;
         case ClassDef::Protocol:   result="Πρωτοκόλλου"; break;

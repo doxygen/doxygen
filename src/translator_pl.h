@@ -22,7 +22,7 @@
 #ifndef TRANSLATOR_PL_H
 #define TRANSLATOR_PL_H
 
-class TranslatorPolish : public Translator
+class TranslatorPolish : public TranslatorAdapter_1_19_0
 {
   public:
 
@@ -584,6 +584,7 @@ class TranslatorPolish : public Translator
       {
         case ClassDef::Class:      result+=" klasy "; break;
         case ClassDef::Struct:     result+=" struktury "; break;
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result+=" unii "; break;
         case ClassDef::Interface:  result+=" interfejsu "; break;
         case ClassDef::Protocol:   result+=" protokołu "; break;
@@ -743,6 +744,7 @@ class TranslatorPolish : public Translator
       {
         case ClassDef::Class:      result+="j klasy"; break;
         case ClassDef::Struct:     result+="j struktury"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="j unii"; break;
         case ClassDef::Interface:  result+="go interfejsu"; break;
         case ClassDef::Protocol:   result+="go protokołu"; break;
@@ -2299,6 +2301,7 @@ class TranslatorPolish : public Translator
           else result=trClass(true,true);
           break;
         case ClassDef::Struct:     result="Struktura"; break;
+        case ClassDef::Record:     return english.trCompoundType(compType,lang);
         case ClassDef::Union:      result="Unia"; break;
         case ClassDef::Interface:  result="Interfejs"; break;
         case ClassDef::Protocol:   result="Protokół"; break;

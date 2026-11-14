@@ -603,6 +603,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
       {
         case ClassDef::Class:      result+=" Klasse"; break;
         case ClassDef::Struct:     result+=" Struct"; break;
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result+=" Union"; break;
         case ClassDef::Interface:  result+=" Grensesnitt"; break;
         case ClassDef::Exception:  result+=" Unntak"; break;
@@ -762,6 +763,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
       {
         case ClassDef::Class:      result+="denne klasse"; break;
         case ClassDef::Struct:     result+="denne struct"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="denne union"; break;
         case ClassDef::Interface:  result+="dette interface"; break;
         case ClassDef::Exception:  result+="dette unntak"; break;

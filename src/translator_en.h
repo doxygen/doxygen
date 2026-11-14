@@ -611,6 +611,7 @@ class TranslatorEnglish : public Translator
       {
         case ClassDef::Class:      result+=" Class"; break;
         case ClassDef::Struct:     result+=" Struct"; break;
+        case ClassDef::Record:     result+=" Record"; break;
         case ClassDef::Union:      result+=" Union"; break;
         case ClassDef::Interface:  result+=" Interface"; break;
         case ClassDef::Protocol:   result+=" Protocol"; break;
@@ -770,6 +771,7 @@ class TranslatorEnglish : public Translator
       {
         case ClassDef::Class:      result+=vhdlOpt?"design unit":"class"; break;
         case ClassDef::Struct:     result+="struct"; break;
+        case ClassDef::Record:     result+="record"; break;
         case ClassDef::Union:      result+="union"; break;
         case ClassDef::Interface:  result+="interface"; break;
         case ClassDef::Protocol:   result+="protocol"; break;
@@ -2351,6 +2353,7 @@ class TranslatorEnglish : public Translator
           else result=trClass(true,true);
           break;
         case ClassDef::Struct:     result="Struct"; break;
+        case ClassDef::Record:     result="Record"; break;
         case ClassDef::Union:      result="Union"; break;
         case ClassDef::Interface:  result="Interface"; break;
         case ClassDef::Protocol:   result="Protocol"; break;
@@ -2664,6 +2667,27 @@ class TranslatorEnglish : public Translator
       return singular ?
         "The requirement "+list+" does not have a 'verifies' relation." :
         "The requirements "+list+" do not have a 'verifies' relation.";
+    }
+
+    DString trRecords() override
+    {
+        return "Records";
+    }
+    DString trRecordIndex() override
+    {
+        return "Record Index";
+    }
+    DString trRecordList() override
+    {
+        return "Record List";
+    }
+    DString trRecordListDescription() override
+    {
+        return "Here are the records with brief descriptions:";
+    }
+    DString trRecordDocumentation() override
+    {
+        return "Record Documentation";
     }
 
 };

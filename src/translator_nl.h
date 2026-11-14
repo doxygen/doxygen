@@ -382,6 +382,7 @@ class TranslatorDutch : public Translator
       {
         case ClassDef::Class:  result+=" Class"; break;
         case ClassDef::Struct: result+=" Struct"; break;
+        case ClassDef::Record: result+=" Record"; break;
         case ClassDef::Union:  result+=" Union"; break;
         case ClassDef::Interface:  result+=" Interface"; break;
         case ClassDef::Protocol:  result+=" Protocol"; break;
@@ -531,6 +532,7 @@ class TranslatorDutch : public Translator
       {
         case ClassDef::Class:      result+=vhdlOpt?"deze ontwerp eenheid":"deze klasse"; break;
         case ClassDef::Struct:     result+="deze struct"; break;
+        case ClassDef::Record:     result+="dit record"; break;
         case ClassDef::Union:      result+="deze union"; break;
         case ClassDef::Interface:  result+="dit interface"; break;
         case ClassDef::Protocol:   result+="dit protocol"; break;
@@ -2010,6 +2012,7 @@ class TranslatorDutch : public Translator
           else result=trClass(true,true);
           break;
         case ClassDef::Struct:     result="Struct"; break;
+        case ClassDef::Record:     result="Record"; break;
         case ClassDef::Union:      result="Union"; break;
         case ClassDef::Interface:  result="Interface"; break;
         case ClassDef::Protocol:   result="Protocol"; break;
@@ -2348,6 +2351,16 @@ class TranslatorDutch : public Translator
         "De vereisten "+list+" missen de 'verifieer' relatie.";
     }
 
+    DString trRecords() override
+    { return "Records"; }
+    DString trRecordIndex() override
+    { return "Index van record"; }
+    DString trRecordList() override
+    { return "Lijst van record"; }
+    DString trRecordListDescription() override
+    { return "Hieronder volgt de lijst met alle records, elk met een korte beschrijving:"; }
+    DString trRecordDocumentation() override
+    { return "Documentatie van records"; }
 };
 
 #endif

@@ -84,7 +84,7 @@
 
 #include "translator_br.h"
 
-class TranslatorPortuguese : public Translator
+class TranslatorPortuguese : public TranslatorAdapter_1_19_0
 {
   public:
 
@@ -647,6 +647,7 @@ class TranslatorPortuguese : public Translator
       {
         case ClassDef::Class:      result+="à classe "; break;
         case ClassDef::Struct:     result+="à estrutura "; break;
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result+="à união "; break;
         case ClassDef::Interface:  result+="ao interface "; break;
         case ClassDef::Protocol:   result+="ao protocolo "; break;
@@ -810,6 +811,7 @@ class TranslatorPortuguese : public Translator
       {
         case ClassDef::Class:      result+=vhdlOpt?"esta Unidade de Design":"esta classe"; break;
         case ClassDef::Struct:     result+="esta estrutura"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="esta união"; break;
         case ClassDef::Interface:  result+="este interface"; break;
         case ClassDef::Protocol:   result+="este protocolo"; break;
@@ -2418,6 +2420,7 @@ class TranslatorPortuguese : public Translator
           else result=trClass(true,true);
           break;
         case ClassDef::Struct:     result="Estrutura"; break;
+        case ClassDef::Record:     return english.trCompoundType(compType,lang);
         case ClassDef::Union:      result="União"; break;
         case ClassDef::Interface:  result="Interface"; break;
         case ClassDef::Protocol:   result="Protocolo"; break;

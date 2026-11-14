@@ -1193,6 +1193,8 @@ static DString stripDeclKeywords(const DString &s)
   if (i!=DString::npos) return s.left(i)+s.mid(i+6);
   i=s.find(" struct ");
   if (i!=DString::npos) return s.left(i)+s.mid(i+7);
+  i=s.find(" record ");
+  if (i!=DString::npos) return s.left(i)+s.mid(i+7);
   return s;
 }
 
@@ -1385,6 +1387,7 @@ static DString extractCanonicalType(const Definition *d,const FileDef *fs,DStrin
   // strip leading keywords
   type.stripPrefix("class ");
   type.stripPrefix("struct ");
+  type.stripPrefix("record ");
   type.stripPrefix("union ");
   type.stripPrefix("enum ");
   type.stripPrefix("typename ");
