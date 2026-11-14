@@ -1505,25 +1505,25 @@ int SymbolResolver::Private::isAccessibleFrom(VisitedKeys &visitedKeys,
     AUTO_TRACE_ADD("adjusting scope to {}",itemScope?itemScope->name():DString());
   }
 
+  const ClassDef *classScope = scope->definitionType()==Definition::TypeClass ? toClassDef(scope) : nullptr;
+
   bool memberAccessibleFromScope =
       (itemIsMember &&                                                     // a member
        itemScope && itemScope->definitionType()==Definition::TypeClass  && // of a class
-       scope->definitionType()==Definition::TypeClass &&                   // accessible
-       (toClassDef(scope))->isAccessibleMember(toMemberDef(item)) // from scope
+       classScope && classScope->isAccessibleMember(toMemberDef(item))     // accessible from scope
       );
   bool nestedClassInsideBaseClass =
       (itemIsClass &&                                                      // a nested class
        itemScope && itemScope->definitionType()==Definition::TypeClass &&  // inside a base
-       scope->definitionType()==Definition::TypeClass &&                   // class of scope
-       (toClassDef(scope))->isBaseClass(toClassDef(itemScope),true)
+       classScope && classScope->isBaseClass(toClassDef(itemScope),true)   // class of scope
       );
   int distanceToBaseClass=0;
   bool baseClassOfScope =
       (itemIsClass && item!=scope &&                                       // a base class of scope
        item->getLanguage()==SrcLangExt::Cpp &&                             // can be named in C++
-       scope->definitionType()==Definition::TypeClass &&                   // without its own scope,
-       bareName(item)!=bareName(scope) &&                                  // unless scope has the same name
-       (distanceToBaseClass=toClassDef(scope)->isBaseClass(toClassDef(item),true))>0
+       classScope &&                                                       // without its own scope,
+       bareName(item)!=bareName(classScope) &&                             // unless scope has the same name
+       (distanceToBaseClass=classScope->isBaseClass(toClassDef(item),true))>0
       );
   bool enumValueOfStrongEnum =
       (itemIsMember &&
