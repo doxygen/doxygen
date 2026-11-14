@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_b_1_1_base" kind="class" language="C++" prot="public">
+    <compoundname>B::Base</compoundname>
+    <basecompoundref refid="class_a_1_1_base" prot="public" virt="non-virtual">A::Base</basecompoundref>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_b_1_1_base_1a4142e562398f0050e5cce92d91a9d220" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void B::Base::attach</definition>
+        <argsstring>(Base *other)</argsstring>
+        <name>attach</name>
+        <qualifiedname>B::Base::attach</qualifiedname>
+        <param>
+          <type><ref refid="class_b_1_1_base" kindref="compound">Base</ref> *</type>
+          <declname>other</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="153_override_unqualified_base.cpp" line="25" column="10"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>Class with the name of its base class: inside it, <ref refid="class_b_1_1_base" kindref="compound">Base</ref> names this class. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>A::Base</label>
+        <link refid="class_a_1_1_base"/>
+      </node>
+      <node id="1">
+        <label>B::Base</label>
+        <link refid="class_b_1_1_base"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="2">
+        <label>A::Base</label>
+        <link refid="class_a_1_1_base"/>
+      </node>
+      <node id="1">
+        <label>B::Base</label>
+        <link refid="class_b_1_1_base"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="153_override_unqualified_base.cpp" line="22" column="1" bodyfile="153_override_unqualified_base.cpp" bodystart="23" bodyend="26"/>
+    <listofallmembers>
+      <member refid="class_b_1_1_base_1a4142e562398f0050e5cce92d91a9d220" prot="public" virt="non-virtual">
+        <scope>B::Base</scope>
+        <name>attach</name>
+      </member>
+      <member refid="class_a_1_1_base_1a55da2a2fa2ab0bacfb68eea45f12f16a" prot="public" virt="pure-virtual" ambiguityscope="A::Base::">
+        <scope>B::Base</scope>
+        <name>attach</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

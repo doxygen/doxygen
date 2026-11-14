@@ -113,6 +113,16 @@ static bool isCodeSymbol(Definition::DefType defType)
          defType==Definition::TypePackage || defType==Definition::TypeConcept;
 }
 
+/** Returns the name of a class as it is used inside the class itself,
+ *  so Widget for Widget<int>.
+ */
+static DString bareName(const Definition *d)
+{
+  DString name = d->localName();
+  if (size_t i=name.find('<'); i!=DString::npos) name = name.left(i);
+  return name;
+}
+
 /** Returns true for a static function or variable that is not a class member,
  *  so it is only visible within the file that defines it.
  */
@@ -1495,17 +1505,25 @@ int SymbolResolver::Private::isAccessibleFrom(VisitedKeys &visitedKeys,
     AUTO_TRACE_ADD("adjusting scope to {}",itemScope?itemScope->name():DString());
   }
 
+  const ClassDef *classScope = scope->definitionType()==Definition::TypeClass ? toClassDef(scope) : nullptr;
+
   bool memberAccessibleFromScope =
       (itemIsMember &&                                                     // a member
        itemScope && itemScope->definitionType()==Definition::TypeClass  && // of a class
-       scope->definitionType()==Definition::TypeClass &&                   // accessible
-       (toClassDef(scope))->isAccessibleMember(toMemberDef(item)) // from scope
+       classScope && classScope->isAccessibleMember(toMemberDef(item))     // accessible from scope
       );
   bool nestedClassInsideBaseClass =
       (itemIsClass &&                                                      // a nested class
        itemScope && itemScope->definitionType()==Definition::TypeClass &&  // inside a base
-       scope->definitionType()==Definition::TypeClass &&                   // class of scope
-       (toClassDef(scope))->isBaseClass(toClassDef(itemScope),true)
+       classScope && classScope->isBaseClass(toClassDef(itemScope),true)   // class of scope
+      );
+  int distanceToBaseClass=0;
+  bool baseClassOfScope =
+      (itemIsClass && item!=scope &&                                       // a base class of scope
+       item->getLanguage()==SrcLangExt::Cpp &&                             // can be named in C++
+       classScope &&                                                       // without its own scope,
+       bareName(item)!=bareName(classScope) &&                             // unless scope has the same name
+       (distanceToBaseClass=classScope->isBaseClass(toClassDef(item),true))>0
       );
   bool enumValueOfStrongEnum =
       (itemIsMember &&
@@ -1515,10 +1533,10 @@ int SymbolResolver::Private::isAccessibleFrom(VisitedKeys &visitedKeys,
        scope==toMemberDef(item)->getEnumScope()
       );
 
-  if (itemScope==scope || memberAccessibleFromScope || nestedClassInsideBaseClass || enumValueOfStrongEnum)
+  if (itemScope==scope || memberAccessibleFromScope || nestedClassInsideBaseClass || baseClassOfScope || enumValueOfStrongEnum)
   {
-    AUTO_TRACE_ADD("memberAccessibleFromScope={} nestedClassInsideBaseClass={} enumValueOfStrongEnum={}",
-        memberAccessibleFromScope, nestedClassInsideBaseClass, enumValueOfStrongEnum);
+    AUTO_TRACE_ADD("memberAccessibleFromScope={} nestedClassInsideBaseClass={} baseClassOfScope={} enumValueOfStrongEnum={}",
+        memberAccessibleFromScope, nestedClassInsideBaseClass, baseClassOfScope, enumValueOfStrongEnum);
     int distanceToBase=0;
     if (nestedClassInsideBaseClass)
     {
@@ -1534,6 +1552,10 @@ int SymbolResolver::Private::isAccessibleFrom(VisitedKeys &visitedKeys,
             )
     {
       result+=distanceToBase; // penalty if member is accessible via a base class
+    }
+    else if (baseClassOfScope)
+    {
+      result+=distanceToBaseClass; // penalty if class is accessible as a base class of scope
     }
   }
   else if (scope==Doxygen::globalScope)
