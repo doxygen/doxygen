@@ -63,6 +63,8 @@
 #define GHC_OS_QNX
 #elif defined(__HAIKU__)
 #define GHC_OS_HAIKU
+#elif defined(_AIX)
+#define GHC_OS_AIX
 #else
 #error "Operating system currently not supported!"
 #endif
