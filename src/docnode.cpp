@@ -3427,7 +3427,9 @@ Token DocParamList::parse(const DString &cmdName)
       parser()->checkRetvalName();
     }
     context.inSeeBlock=true;
-    parser()->handleLinkedWord(thisVariant(),m_params,m_type==DocParamSect::Param,true);
+    parser()->handleLinkedWord(thisVariant(),m_params,
+                              m_type==DocParamSect::Param || m_type==DocParamSect::TemplateParam,
+                              true);
     context.inSeeBlock=false;
     tok=tokenizer.lex();
   }
@@ -3479,7 +3481,8 @@ Token DocParamList::parseXml(const DString &paramName)
     parser()->checkRetvalName();
   }
 
-  parser()->handleLinkedWord(thisVariant(),m_params);
+  parser()->handleLinkedWord(thisVariant(),m_params,
+                            m_type==DocParamSect::Param || m_type==DocParamSect::TemplateParam);
 
   do
   {

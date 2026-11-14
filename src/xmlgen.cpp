@@ -382,7 +382,7 @@ static void writeTemplateArgumentList(TextStream &t,
   DString indentStr;
   indentStr.fill(' ',indent);
   LinkifyTextOptions options;
-  options.setScope(scope).setFileScope(fileScope);
+  options.setScope(scope).setFileScope(fileScope).addTemplateArgumentList(&al);
   if (al.hasParameters())
   {
     t << indentStr << "<templateparamlist>\n";

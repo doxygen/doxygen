@@ -17,6 +17,7 @@
 #define LINKIFYTEXT_H
 
 #include <string_view>
+#include <vector>
 
 #include "construct.h"
 
@@ -48,6 +49,7 @@ struct LinkifyTextOptions
     const FileDef *fileScope()         const { return m_fileScope; }
     const Definition *self()           const { return m_self; }
     const ArgumentList *argumentList() const { return m_al; }
+    const std::vector<const ArgumentList *> &templateArgumentLists() const { return m_tals; }
     bool  autoBreak()                  const { return m_autoBreak; }
     bool  external()                   const { return m_external; }
     bool  keepSpaces()                 const { return m_keepSpaces; }
@@ -66,6 +68,10 @@ struct LinkifyTextOptions
 
     LinkifyTextOptions & setArgumentList(const ArgumentList *al)
     { m_al = al; return *this; }
+
+    // template parameters declared in the given list are never linked
+    LinkifyTextOptions & addTemplateArgumentList(const ArgumentList *tal)
+    { m_tals.push_back(tal); return *this; }
 
     LinkifyTextOptions & setAutoBreak(bool autoBreak)
     { m_autoBreak = autoBreak; return *this; }
@@ -88,6 +94,7 @@ struct LinkifyTextOptions
     const FileDef *     m_fileScope      = nullptr;
     const Definition *  m_self           = nullptr;
     const ArgumentList *m_al             = nullptr;
+    std::vector<const ArgumentList *> m_tals;
     bool                m_autoBreak      = false;
     bool                m_external       = true;
     bool                m_keepSpaces     = false;

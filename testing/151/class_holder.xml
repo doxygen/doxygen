@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_holder" kind="class" language="C++" prot="public">
+    <compoundname>Holder</compoundname>
+    <templateparamlist>
+      <param>
+        <type>typename cls1</type>
+      </param>
+    </templateparamlist>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="class_holder_1a1d2030089035fcd9dfb29d1bf6889251" prot="public" static="no" mutable="no">
+        <type>cls1</type>
+        <definition>cls1 Holder&lt; cls1 &gt;::var</definition>
+        <argsstring/>
+        <name>var</name>
+        <qualifiedname>Holder::var</qualifiedname>
+        <briefdescription>
+          <para>A variable of the template parameter type. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="151_template_parameter_links.cpp" line="44" column="10" bodyfile="151_template_parameter_links.cpp" bodystart="44" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_holder_1aa1b626db5404310f14bc5819bb60ed13" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Holder&lt; cls1 &gt;::mem</definition>
+        <argsstring>(cls1 a, int nsp)</argsstring>
+        <name>mem</name>
+        <qualifiedname>Holder::mem</qualifiedname>
+        <param>
+          <type>cls1</type>
+          <declname>a</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>nsp</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A member using the class template parameter. <parameterlist kind="param"><parameteritem><parameternamelist><parametername>a</parametername></parameternamelist><parameterdescription><para>the first parameter </para></parameterdescription></parameteritem><parameteritem><parameternamelist><parametername>nsp</parametername></parameternamelist><parameterdescription><para>the second parameter </para></parameterdescription></parameteritem></parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="151_template_parameter_links.cpp" line="37" column="10"/>
+      </memberdef>
+      <memberdef kind="function" id="class_holder_1a0828da5f44b7b6726e458c1a8d7f93f5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class cls2</type>
+          </param>
+        </templateparamlist>
+        <type>cls1</type>
+        <definition>cls1 Holder&lt; cls1 &gt;::mem2</definition>
+        <argsstring>(cls1 a, cls2 b)</argsstring>
+        <name>mem2</name>
+        <qualifiedname>Holder::mem2</qualifiedname>
+        <param>
+          <type>cls1</type>
+          <declname>a</declname>
+        </param>
+        <param>
+          <type>cls2</type>
+          <declname>b</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A member template. <parameterlist kind="templateparam"><parameteritem><parameternamelist><parametername>cls2</parametername></parameternamelist><parameterdescription><para>the member template parameter </para></parameterdescription></parameteritem></parameterlist>
+<parameterlist kind="param"><parameteritem><parameternamelist><parametername>a</parametername></parameternamelist><parameterdescription><para>the first parameter </para></parameterdescription></parameteritem><parameteritem><parameternamelist><parametername>b</parametername></parameternamelist><parameterdescription><para>the second parameter </para></parameterdescription></parameteritem></parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="151_template_parameter_links.cpp" line="42" column="22"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>A class template. <parameterlist kind="templateparam"><parameteritem><parameternamelist><parametername>cls1</parametername></parameternamelist><parameterdescription><para>the template parameter </para></parameterdescription></parameteritem></parameterlist>
+</para>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="1">
+        <label>Holder&lt; cls1 &gt;</label>
+        <link refid="class_holder"/>
+        <childnode refid="2" relation="usage">
+          <edgelabel>var</edgelabel>
+        </childnode>
+      </node>
+      <node id="2">
+        <label>cls1</label>
+        <link refid="classcls1"/>
+      </node>
+    </collaborationgraph>
+    <location file="151_template_parameter_links.cpp" line="31" column="1" bodyfile="151_template_parameter_links.cpp" bodystart="32" bodyend="45"/>
+    <listofallmembers>
+      <member refid="class_holder_1aa1b626db5404310f14bc5819bb60ed13" prot="public" virt="non-virtual">
+        <scope>Holder</scope>
+        <name>mem</name>
+      </member>
+      <member refid="class_holder_1a0828da5f44b7b6726e458c1a8d7f93f5" prot="public" virt="non-virtual">
+        <scope>Holder</scope>
+        <name>mem2</name>
+      </member>
+      <member refid="class_holder_1a1d2030089035fcd9dfb29d1bf6889251" prot="public" virt="non-virtual">
+        <scope>Holder</scope>
+        <name>var</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

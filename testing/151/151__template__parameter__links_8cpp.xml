@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="151__template__parameter__links_8cpp" kind="file" language="C++">
+    <compoundname>151_template_parameter_links.cpp</compoundname>
+    <innerclass refid="classcls1" prot="public">cls1</innerclass>
+    <innerclass refid="classcls2" prot="public">cls2</innerclass>
+    <innerclass refid="class_error" prot="public">Error</innerclass>
+    <innerclass refid="class_holder" prot="public">Holder</innerclass>
+    <innernamespace refid="namespacensp">nsp</innernamespace>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="151__template__parameter__links_8cpp_1a56b825d988988126177a27be5d98b8fb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename cls1</type>
+          </param>
+        </templateparamlist>
+        <type>int</type>
+        <definition>int fie1</definition>
+        <argsstring>(const cls1 cl1, int cls2, int nsp)</argsstring>
+        <name>fie1</name>
+        <param>
+          <type>const cls1</type>
+          <declname>cl1</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>cls2</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>nsp</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A function. <parameterlist kind="templateparam"><parameteritem><parameternamelist><parametername>cls1</parametername></parameternamelist><parameterdescription><para>the template parameter; see <ref refid="class_error" kindref="compound">Error</ref> </para></parameterdescription></parameteritem></parameterlist>
+<parameterlist kind="param"><parameteritem><parameternamelist><parametername>cl1</parametername></parameternamelist><parameterdescription><para>the first parameter </para></parameterdescription></parameteritem><parameteritem><parameternamelist><parametername>cls2</parametername></parameternamelist><parameterdescription><para>the second parameter </para></parameterdescription></parameteritem><parameteritem><parameternamelist><parametername>nsp</parametername></parameternamelist><parameterdescription><para>the third parameter </para></parameterdescription></parameteritem></parameterlist>
+<parameterlist kind="exception"><parameteritem><parameternamelist><parametername><ref refid="class_error" kindref="compound">Error</ref></parametername></parameternamelist><parameterdescription><para>an exception </para></parameterdescription></parameteritem></parameterlist>
+<parameterlist kind="retval"><parameteritem><parameternamelist><parametername><ref refid="class_error" kindref="compound">Error</ref></parametername></parameternamelist><parameterdescription><para>a named result </para></parameterdescription></parameteritem></parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="151_template_parameter_links.cpp" line="26" column="5" declfile="151_template_parameter_links.cpp" declline="26" declcolumn="5"/>
+      </memberdef>
+      <memberdef kind="function" id="151__template__parameter__links_8cpp_1a44ca1839a0f475e78053380e4bf76afb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename nsp</type>
+          </param>
+          <param>
+            <type>int</type>
+            <declname>cls2</declname>
+            <defname>cls2</defname>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void fie3</definition>
+        <argsstring>(nsp x)</argsstring>
+        <name>fie3</name>
+        <param>
+          <type>nsp</type>
+          <declname>x</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A function with a non-type, a template template and a namespace named template parameter. <parameterlist kind="templateparam"><parameteritem><parameternamelist><parametername>nsp</parametername></parameternamelist><parameterdescription><para>the template parameter </para></parameterdescription></parameteritem><parameteritem><parameternamelist><parametername>cls2</parametername></parameternamelist><parameterdescription><para>the non-type parameter </para></parameterdescription></parameteritem></parameterlist>
+<parameterlist kind="param"><parameteritem><parameternamelist><parametername>x</parametername></parameternamelist><parameterdescription><para>the parameter </para></parameterdescription></parameteritem></parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="151_template_parameter_links.cpp" line="52" column="6" declfile="151_template_parameter_links.cpp" declline="52" declcolumn="6"/>
+      </memberdef>
+      <memberdef kind="function" id="151__template__parameter__links_8cpp_1ab42df43c95c0b6f0f0138fc2b14be3ba" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename cls1</type>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void fie2</definition>
+        <argsstring>(int cls2)</argsstring>
+        <name>fie2</name>
+        <param>
+          <type>int</type>
+          <declname>cls2</declname>
+        </param>
+        <briefdescription>
+          <para>Another function. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <parameterlist kind="templateparam">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername>cls1</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The template parameter.</para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername>cls2</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>The parameter.</para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+            <parameterlist kind="exception">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername>
+                    <ref refid="class_error" kindref="compound">Error</ref>
+                  </parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>An exception.</para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="151_template_parameter_links.cpp" line="59" column="6" declfile="151_template_parameter_links.cpp" declline="59" declcolumn="6"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="151_template_parameter_links.cpp"/>
+  </compounddef>
+</doxygen>

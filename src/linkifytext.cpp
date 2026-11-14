@@ -16,7 +16,11 @@
 // own header
 #include "linkifytext.h"
 
+#include <algorithm>
+#include <string>
+
 // other includes
+#include "classdef.h"
 #include "conceptdef.h"
 #include "filedef.h"
 #include "memberdef.h"
@@ -24,6 +28,89 @@
 #include "symbolresolver.h"
 #include "trace.h"
 #include "util.h"
+
+// Returns the name of the template parameter declared by \a a, or an empty string if it cannot be determined.
+static std::string templateParameterName(const Argument &a,SrcLangExt lang)
+{
+  bool fromType = a.name.empty(); // type parameters like "typename T" have their name in the type
+  std::string_view s = fromType ? a.type.view() : a.name.view();
+  auto isSpaceOrDot = [](char c) { return c==' ' || c=='\t' || c=='\n' || c=='.'; };
+  while (!s.empty() && isSpaceOrDot(s.back())) s.remove_suffix(1); // also strips parameter pack ellipsis
+  size_t end = s.length();
+  size_t start = end;
+  while (start>0 && isId(s[start-1])) start--;
+  if (start==end) return std::string();
+  if (fromType)
+  {
+    std::string_view prefix = s.substr(0,start);
+    while (!prefix.empty() && isSpaceOrDot(prefix.back())) prefix.remove_suffix(1);
+    auto endsWithKeyword = [&prefix](std::string_view kw)
+    {
+      return prefix.length()>=kw.length() &&
+             prefix.substr(prefix.length()-kw.length())==kw &&
+             (prefix.length()==kw.length() || !isId(prefix[prefix.length()-kw.length()-1]));
+    };
+    bool hasKeyword = endsWithKeyword("class") || endsWithKeyword("typename") || endsWithKeyword("struct");
+    // in C# and Java the type parameter is just an identifier
+    if (!hasKeyword && !(prefix.empty() && lang!=SrcLangExt::Cpp)) return std::string();
+  }
+  return std::string(s.substr(start));
+}
+
+static void addTemplateParameterNames(const ArgumentList &al,SrcLangExt lang,std::vector<std::string> &names)
+{
+  for (const Argument &a : al)
+  {
+    std::string name = templateParameterName(a,lang);
+    if (!name.empty()) names.push_back(std::move(name));
+  }
+}
+
+// Collects the names of the template parameters that are in effect for the
+// definitions in \a options. These names hide any symbol with the same name.
+static std::vector<std::string> getTemplateParameterNames(const LinkifyTextOptions &options)
+{
+  std::vector<std::string> names;
+  for (const ArgumentList *al : options.templateArgumentLists())
+  {
+    if (al) addTemplateParameterNames(*al,options.scope() ? options.scope()->getLanguage() : SrcLangExt::Cpp,names);
+  }
+  auto addScopes = [&names](const Definition *d)
+  {
+    for (; d; d=d->getOuterScope())
+    {
+      SrcLangExt lang = d->getLanguage();
+      if (d->definitionType()==Definition::TypeClass)
+      {
+        const ClassDef *cd = toClassDef(d);
+        if (cd->templateMaster()==nullptr) // template instances have their arguments substituted
+        {
+          addTemplateParameterNames(cd->templateArguments(),lang,names);
+        }
+      }
+      else if (d->definitionType()==Definition::TypeMember)
+      {
+        const MemberDef *md = toMemberDef(d);
+        addTemplateParameterNames(md->templateArguments(),lang,names);
+        for (const ArgumentList &al : md->definitionTemplateParameterLists())
+        {
+          addTemplateParameterNames(al,lang,names);
+        }
+      }
+      else if (d->definitionType()==Definition::TypeConcept)
+      {
+        addTemplateParameterNames(toConceptDef(d)->getTemplateParameterList(),lang,names);
+      }
+      else
+      {
+        break;
+      }
+    }
+  };
+  addScopes(options.self());
+  if (options.scope()!=options.self()) addScopes(options.scope());
+  return names;
+}
 
 void linkifyText(const TextGeneratorIntf &out, const DString &text,
     const LinkifyTextOptions &options)
@@ -49,6 +136,7 @@ void linkifyText(const TextGeneratorIntf &out, const DString &text,
   //    scope ? qPrint(scope->name()):"<none>",
   //    fileScope ? qPrint(fileScope->name()) : "<none>",
   //    qPrint(txtStr),strLen,options.external());
+  const std::vector<std::string> templateNames = getTemplateParameterNames(options);
   size_t index=0;
   size_t skipIndex=0;
   size_t floatingIndex=0;
@@ -126,9 +214,20 @@ void linkifyText(const TextGeneratorIntf &out, const DString &text,
         }
       }
     }
+    // check for template parameter name
+    if (!found && !templateNames.empty())
+    {
+      std::string_view plainWord = word;
+      while (!plainWord.empty() && plainWord.back()=='.') plainWord.remove_suffix(1); // parameter pack
+      if (std::find(templateNames.begin(),templateNames.end(),plainWord)!=templateNames.end())
+      {
+        out.writeString(word,options.keepSpaces());
+        found = true;
+      }
+    }
     //printf("linkifyText word=%s matchWord=%s scope=%s\n",
     //    qPrint(word),qPrint(matchWord),scope ? qPrint(scope->name()) : "<none>");
-    if (!insideString)
+    if (!insideString && !found)
     {
       const ClassDef     *cd=nullptr;
       const ConceptDef   *cnd=nullptr;
