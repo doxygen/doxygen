@@ -45,7 +45,7 @@ void writeDiaGraphFromFile(const DString &inFile,const DString &outDir,
   diaArgs+="-n ";
   if (format==DiaOutputFormat::BITMAP)
   {
-    diaArgs+="-t png-libart";
+    diaArgs+="-t png";
     extension=".png";
   }
   else if (format==DiaOutputFormat::EPS)
