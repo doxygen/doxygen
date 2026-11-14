@@ -22,6 +22,7 @@
 
 #include <cctype>
 #include <functional>
+#include <iosfwd>
 #include <variant>
 
 #include "construct.h"
