@@ -200,7 +200,7 @@ static bool             g_singleComment=false;
 
 // keywords recognized as compounds
 static const StringUnorderedSet g_compoundKeywords =
-{ "template class", "template struct", "class", "struct", "union", "interface", "exception" };
+{ "template class", "template struct", "class", "struct", "record", "union", "interface", "exception" };
 
 void clearAll()
 {
@@ -344,7 +344,7 @@ static void addIncludeFile(Def *def,FileDef *ifd,const Entry *root)
     { // explicit request
       DString text;
       text.sprintf("the name '%s' supplied as "
-                  "the argument of the \\class, \\struct, \\union, or \\headerfile command ",
+                  "the argument of the \\class, \\struct, \\record, \\union, or \\headerfile command ",
                   qPrint(includeFile)
                  );
       if (ambig) // name is ambiguous
@@ -911,6 +911,8 @@ ClassDef::CompoundType convertToCompoundType(EntryType section,TypeSpecifier spe
 
   if (specifier.isStruct())
     sec=ClassDef::Struct;
+  else if (specifier.isRecord())
+    sec=ClassDef::Record;
   else if (specifier.isUnion())
     sec=ClassDef::Union;
   else if (specifier.isCategory())
@@ -930,6 +932,8 @@ ClassDef::CompoundType convertToCompoundType(EntryType section,TypeSpecifier spe
     sec=ClassDef::Union;
   else if (section.isStructDoc())
     sec=ClassDef::Struct;
+  else if (section.isRecordDoc())
+    sec=ClassDef::Record;
   else if (section.isInterfaceDoc())
     sec=ClassDef::Interface;
   else if (section.isProtocolDoc())
@@ -1090,7 +1094,7 @@ static void addClassToContext(const Entry *root)
       cd->setHidden(root->hidden);
       cd->setArtificial(root->artificial);
       cd->setClassSpecifier(root->spec);
-      if (root->lang==SrcLangExt::CSharp && !root->args.empty())
+      if ((root->lang==SrcLangExt::CSharp || root->lang==SrcLangExt::Java) && !root->args.empty())
       {
         cd->setPrimaryConstructorParams(*stringToArgumentList(root->lang,root->args));
       }
@@ -2932,7 +2936,7 @@ static MemberDef *addVariableToFile(
   {
     DString ttype = type;
     ttype.stripPrefix("typedef ");
-    if (ttype.stripPrefix("struct ") || ttype.stripPrefix("union "))
+    if (ttype.stripPrefix("struct ") || ttype.stripPrefix("record ") || ttype.stripPrefix("union "))
     {
       static const reg::Ex re(R"(\a\w*)");
       reg::Match match;
@@ -5498,7 +5502,7 @@ static bool isClassSection(const Entry *root)
   if ( !root->name.empty() )
   {
     if (root->section.isCompound())
-         // is it a compound (class, struct, union, interface ...)
+         // is it a compound (class, struct, record, union, interface ...)
     {
       return true;
     }
@@ -7078,6 +7082,11 @@ static void findMember(const Entry *root,
     funcName = funcDecl;
   }
   else if (isFriend && funcDecl.startsWith("struct "))
+  {
+    funcDecl=funcDecl.mid(7);
+    funcName = funcDecl;
+  }
+  else if (isFriend && funcDecl.startsWith("record "))
   {
     funcDecl=funcDecl.mid(7);
     funcName = funcDecl;
@@ -10482,6 +10491,7 @@ static void generateNamespaceDocs()
     {
       generateNamespaceClassDocs(nd->getInterfaces());
       generateNamespaceClassDocs(nd->getStructs());
+      generateNamespaceClassDocs(nd->getRecords());
       generateNamespaceClassDocs(nd->getExceptions());
     }
     generateNamespaceConceptDocs(nd->getConcepts());

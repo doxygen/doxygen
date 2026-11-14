@@ -68,10 +68,12 @@ enum class HighlightedItem
   Concepts,
   Interfaces,
   Structs,
+  Records,
   Exceptions,
   AnnotatedClasses,
   AnnotatedInterfaces,
   AnnotatedStructs,
+  AnnotatedRecords,
   AnnotatedExceptions,
   Files,
   NamespaceMembers,
@@ -87,6 +89,7 @@ enum class HighlightedItem
   ConceptVisible,
   InterfaceVisible,
   StructVisible,
+  RecordVisible,
   ExceptionVisible,
   NamespaceVisible,
   FileVisible,
@@ -184,6 +187,8 @@ class Index
     int numHierarchyInterfaces() const;
     int numAnnotatedStructs() const;
     int numAnnotatedStructsPrinted() const;
+    int numAnnotatedRecords() const;
+    int numAnnotatedRecordsPrinted() const;
     int numAnnotatedExceptions() const;
     int numAnnotatedExceptionsPrinted() const;
     int numHierarchyExceptions() const;

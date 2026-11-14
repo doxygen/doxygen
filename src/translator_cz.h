@@ -716,6 +716,7 @@ class TranslatorCzech : public TranslatorAdapter_1_9_6
       {
         case ClassDef::Class:      result+="třídy "; break;
         case ClassDef::Struct:     result+="struktury "; break;
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result+="unie "; break;
         case ClassDef::Interface:  result+="rozhraní "; break;
         case ClassDef::Protocol:   result+="protokolu "; break;
@@ -886,6 +887,7 @@ class TranslatorCzech : public TranslatorAdapter_1_9_6
       {
         case ClassDef::Class:      result+=vhdlOpt?"tuto návrhovou jednotku":"tuto třídu"; break;
         case ClassDef::Struct:     result+="tuto strukturu"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="tuto unii"; break;
         case ClassDef::Interface:  result+="toto rozhraní"; break;
         case ClassDef::Protocol:   result+="tento protokol"; break;
@@ -2476,6 +2478,7 @@ class TranslatorCzech : public TranslatorAdapter_1_9_6
           else result=trClass(true,true);
           break;
         case ClassDef::Struct:     result = "Struktury"; break;
+        case ClassDef::Record:     return english.trCompoundType(compType,lang);
         case ClassDef::Union:      result = "Unie"; break;
         case ClassDef::Interface:  result = "Rozhraní"; break;
         case ClassDef::Protocol:   result = "Protokolu"; break;

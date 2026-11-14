@@ -38,7 +38,29 @@ class TranslatorAdapterBase : public Translator
     virtual DString updateNeededMessage() override = 0;
 };
 
-class TranslatorAdapter_1_16_0 : public TranslatorAdapterBase
+class TranslatorAdapter_1_19_0 : public TranslatorAdapterBase
+{
+  public:
+    DString updateNeededMessage() override
+    { return createUpdateNeededMessage(idLanguage(),"release 1.19.0"); }
+
+    DString trRecords() override
+    { return english.trRecords(); }
+
+    DString trRecordIndex() override
+    { return english.trRecordIndex(); }
+
+    DString trRecordList() override
+    { return english.trRecordList(); }
+
+    DString trRecordListDescription() override
+    { return english.trRecordListDescription(); }
+
+    DString trRecordDocumentation() override
+    { return english.trRecordDocumentation(); }
+};
+
+class TranslatorAdapter_1_16_0 : public TranslatorAdapter_1_19_0
 {
   public:
     DString updateNeededMessage() override

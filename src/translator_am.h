@@ -550,6 +550,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
         {
           case ClassDef::Class:      result+=" Դասի"; break;
           case ClassDef::Struct:     result+=" Կառուցվածքի"; break;
+          case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
           case ClassDef::Union:      result+=" Միավորման"; break;
           case ClassDef::Interface:  result+=" Ինտերֆեյսի"; break;
           case ClassDef::Protocol:   result+=" Արձանագրության"; break;
@@ -722,6 +723,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       {
         case ClassDef::Class:      result+="դասի"; break;
         case ClassDef::Struct:     result+="կառուցվածքի"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="միավորման"; break;
         case ClassDef::Interface:  result+="ինտերֆեյսի"; break;
         case ClassDef::Protocol:   result+="արձանագրության"; break;

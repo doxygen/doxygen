@@ -646,6 +646,7 @@ void ConceptDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::NamespaceClasses:
       case LayoutDocEntry::NamespaceInterfaces:
       case LayoutDocEntry::NamespaceStructs:
+      case LayoutDocEntry::NamespaceRecords:
       case LayoutDocEntry::NamespaceExceptions:
       case LayoutDocEntry::NamespaceConcepts:
       case LayoutDocEntry::NamespaceNestedNamespaces:
@@ -667,6 +668,7 @@ void ConceptDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::FileConcepts:
       case LayoutDocEntry::FileInterfaces:
       case LayoutDocEntry::FileStructs:
+      case LayoutDocEntry::FileRecords:
       case LayoutDocEntry::FileExceptions:
       case LayoutDocEntry::FileNamespaces:
       case LayoutDocEntry::FileConstantGroups:

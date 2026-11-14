@@ -997,6 +997,7 @@ class DoxCheck(str, Enum):
 class DoxCompoundKind(str, Enum):
     CLASS='class'
     STRUCT='struct'
+    RECORD='record'
     UNION='union'
     INTERFACE='interface'
     PROTOCOL='protocol'
@@ -1798,7 +1799,7 @@ class compounddefType(GeneratedsSuper):
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s is not of the correct base simple type (str)' % {"value": value, "lineno": lineno, })
                 return False
             value = value
-            enumerations = ['class', 'struct', 'union', 'interface', 'protocol', 'category', 'exception', 'service', 'singleton', 'module', 'type', 'file', 'namespace', 'group', 'page', 'example', 'dir', 'concept', 'requirement', 'requirements']
+            enumerations = ['class', 'struct', 'record', 'union', 'interface', 'protocol', 'category', 'exception', 'service', 'singleton', 'module', 'type', 'file', 'namespace', 'group', 'page', 'example', 'dir', 'concept', 'requirement', 'requirements']
             if value not in enumerations:
                 lineno = self.gds_get_node_lineno_()
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s does not match xsd enumeration restriction on DoxCompoundKind' % {"value" : encode_str_2_3(value), "lineno": lineno} )

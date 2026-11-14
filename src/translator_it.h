@@ -607,6 +607,7 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
       {
         case ClassDef::Class:  result+="la classe "; break;
         case ClassDef::Struct: result+="la struct "; break;
+        case ClassDef::Record: return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:  result+="la union "; break;
         case ClassDef::Interface:  result+="l'interfaccia "; break;
         case ClassDef::Protocol:   result+="il protocollo "; break;
@@ -768,6 +769,7 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
       {
         case ClassDef::Class:      result+="a classe"; break;
         case ClassDef::Struct:     result+="a struct"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="a union"; break;
         case ClassDef::Interface:  result+="a interfaccia"; break;
         case ClassDef::Protocol:   result+="o protocollo"; break;

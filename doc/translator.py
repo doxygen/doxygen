@@ -151,6 +151,7 @@ class Transl:
         self.missingMethods = None   # list of prototypes to be implemented
         self.implementedMethods = None  # list of implemented required methods
         self.adaptMinClass = None    # The newest adapter class that can be used
+        self.nearlySet = set()
 
     def __tokenGenerator(self):
         """Generator that reads the file and yields tokens as 4-tuples.
@@ -199,6 +200,7 @@ class Transl:
 
         # Regular expression for recognizing identifiers.
         rexId = re.compile(r'^[a-zA-Z]\w*$')
+        rexId1 = re.compile(r'english\.(tr[^ \(]*)')
 
         # Open the file for reading and extracting tokens until the eof.
         # Initialize the finite automaton.
@@ -398,6 +400,14 @@ class Transl:
             tokenId = None
             tokenStr = ''
             tokenLineNo = 0
+
+        f.seek(0)
+        line = f.readline()
+        while line:
+            m = re.search(rexId1,line)
+            if m:
+                self.nearlySet.add(m.group(1))
+            line = f.readline()
 
         # The file content is processed. Close the file. Then always yield
         # the eof token.
@@ -1103,6 +1113,7 @@ class Transl:
         reqDic = self.manager.requiredMethodsDic
         adaptDic = self.manager.adaptMethodsDic
         myDic = self.prototypeDic
+        nearlySet = self.nearlySet
 
         # Build the list of obsolete methods.
         self.obsoleteMethods = []
@@ -1126,7 +1137,7 @@ class Transl:
         # Check whether adapter must be used or suggest the newest one.
         # Change the status and set the note accordingly.
         if self.baseClassId != 'Translator':
-            justUpdateNeesedMessage = True
+            justUpdateNeededMessage = True
             if not self.missingMethods:
                 self.note = 'Change the base class to Translator.'
                 self.status = ''
@@ -1141,11 +1152,11 @@ class Transl:
                     if uniProto in adaptDic:
                         version, cls = adaptDic[uniProto]
                         if version < adaptMinVersion:
-                            justUpdateNeesedMessage = False
+                            justUpdateNeededMessage = False
                             adaptMinVersion = version
                             adaptMinClass = cls
 
-                if justUpdateNeesedMessage:
+                if justUpdateNeededMessage:
                     self.note = 'Change the base class to Translator.'
                     self.status = ''
 
@@ -1157,7 +1168,7 @@ class Transl:
                 # If the version of the used adapter is smaller than
                 # the required, set the note and update the status as if
                 # the newer adapter was used.
-                if not justUpdateNeesedMessage and adaptMinVersion > status:
+                if not justUpdateNeededMessage and adaptMinVersion > status:
                     self.note = 'Change the base class to %s.' % adaptMinClass
                     self.status = adaptMinVersion
                     self.adaptMinClass = adaptMinClass
@@ -1186,6 +1197,8 @@ class Transl:
         if self.note and self.status == '':
             self.readableStatus = 'almost up-to-date'
 
+        if self.readableStatus == 'up-to-date' and self.nearlySet:
+            self.readableStatus = 'nearly up-to-date'
 
     def report(self, fout):
         """Returns the report part for the source as a multiline string.
@@ -1208,12 +1221,30 @@ class Transl:
             fout.write(' method')
             if num > 1:
                 fout.write('s')
-            fout.write(' to implement (%d %%)' % (100 * num / allNum))
+            fout.write(' to implement (%d %%)' % (100 * num / allNum)) ## SUM
+            pluralS = ''
+            numimpl = len(self.nearlySet)
+            if numimpl:
+                if numimpl > 1:
+                    pluralS = 's'
+                percent = 100 * numimpl / allNum
+                fout.write(' and %2d method%s called as English translation (%d %%)' % (
+                    numimpl, pluralS, round(percent)))
         fout.write('\n' + '-' * len(self.classId))
 
         # Write the info about the implemented required methods.
         fout.write('\n\n  Implements %d' % len(self.implementedMethods))
         fout.write(' of the required methods (%d %%).' % percentImplemented)
+
+        numimpl = len(self.nearlySet)
+        if numimpl:
+            pluralS = ''
+            if numimpl > 1:
+                pluralS = 's'
+            fout.write('\n\n  Method%s called as English translation:\n' %(pluralS))
+            nearlySet = self.nearlySet
+            for p in self.nearlySet:
+                fout.write('\n    ' + p)
 
         # Report the missing method, but only when it is not English-based
         # translator.
@@ -1385,7 +1416,7 @@ class TrManager:
         statLst = []
         for obj in list(self.__translDic.values()):
             assert(obj.classId != 'Translator')
-            s = obj.status + '|' + obj.langReadable + '|' + obj.classId
+            s = obj.status + '|' + obj.langReadable + '|' + obj.classId + '|' + str(len(obj.nearlySet))
             statLst.append(s)
 
         # Sort the list and extract the object identifiers (classId's) for
@@ -1397,7 +1428,9 @@ class TrManager:
         statLst = []
         for obj in statLst1:
           statLst.append(re.sub(r'^(\d)\.0(\d)\.',r'\1.\2.', obj))
-        self.upToDateIdLst = [x.split('|')[2] for x in statLst if x[0] == '|']
+
+        self.upToDateIdLst = [x.split('|')[2] for x in statLst if x[0] == '|' and x[len(x)-2:] == '|0']
+        self.nearlyUpToDateIdLst = [x.split('|')[2] for x in statLst if x[len(x)-2:] != '|0' and x[0] == '|']
         self.EnBasedIdLst = [x.split('|')[2] for x in statLst if x[:2] == 'En']
 
         # Reverse the list and extract the TranslatorAdapter based translators.
@@ -1557,7 +1590,9 @@ class TrManager:
 
 
     def getBgcolorByReadableStatus(self, readableStatus):
-        if readableStatus == 'up-to-date':
+        if readableStatus == 'nearly up-to-date':
+            color = '#ffffff'    # white
+        elif readableStatus == 'up-to-date':
             color = '#ccffcc'    # green
         elif readableStatus.startswith('almost'):
             color = '#ffffff'    # white
@@ -1601,6 +1636,8 @@ class TrManager:
         # Write the summary about the status of language translators (how
         # many translators) are up-to-date, etc.
         s = 'Of them, %d translators are up-to-date, ' % len(self.upToDateIdLst)
+        if len(self.nearlyUpToDateIdLst) > 0:
+          s += '%d translators are nearly up-to-date, ' % len(self.nearlyUpToDateIdLst)
         s += '%d translators are based on some adapter class, ' % len(self.adaptIdLst)
         s += 'and %d are English based.' % len(self.EnBasedIdLst)
         f.write(fill(s) + '\n\n')
@@ -1655,6 +1692,39 @@ class TrManager:
                 fmail.write('\n\nalmost up-to-date\n')
                 fmail.write('; '.join(mailtoLst))
 
+        # Write the list of "nearly up-to-date" translator classes.
+        if self.nearlyUpToDateIdLst:
+            numRequired = len(self.requiredMethodsDic)
+            s = '''The following translator classes are nearly up-to-date (sorted
+                alphabetically). This means that they derive from the
+                Translator class, they implement all %d of the required
+                methods, and even minor problems were not spotted by the script:'''
+            s = s % numRequired
+            f.write('\n' + '-' * 70 + '\n')
+            f.write(fill(s) + '\n\n')
+
+            mailtoLst = []
+            for x in self.nearlyUpToDateIdLst:
+                obj = self.__translDic[x]
+                if obj.note is None:
+                    f.write('  %-30s' % obj.classId)
+                    mailtoLst.extend(self.__emails(obj.classId))
+                numimpl = len(obj.nearlySet)
+                pluralS = ''
+                if numimpl > 1:
+                    pluralS = 's'
+                percent = 100 * numimpl / numRequired
+                f.write('\t%2d method%s called as English translation (%d %%)' % (
+                        numimpl, pluralS, round(percent)))
+                if obj.note:
+                    f.write('\n\tNote: ' + obj.note + '\n')
+                f.write('\n')
+                mailtoLst.extend(self.__emails(obj.classId)) # to maintainer
+
+            fmail.write('\n\nnearly up-to-date\n')
+            fmail.write('; '.join(mailtoLst))
+
+
         # Write the list of the adapter based classes. The very incomplete
         # translators that derive from TranslatorEnglish are included.
         if self.adaptIdLst:
@@ -1682,6 +1752,13 @@ class TrManager:
                 percent = 100 * numimpl / numRequired
                 f.write('\t%2d method%s to implement (%d %%)' % (
                         numimpl, pluralS, percent))
+                pluralS = ''
+                numimpl = len(obj.nearlySet)
+                if numimpl > 1:
+                    pluralS = 's'
+                percent = 100 * numimpl / numRequired
+                f.write(' and %2d method%s called as English translation (%d %%)' % (
+                        numimpl, pluralS, round(percent)))
                 if obj.note:
                     f.write('\n\tNote: ' + obj.note + '\n')
                 f.write('\n')
@@ -1752,6 +1829,29 @@ class TrManager:
             for key in keys:
                 f.write('  ' + dic[key] + '\n')
             f.write('\n')
+
+        if self.nearlyUpToDateIdLst:
+            s = '''The following translator classes are nearly up-to-date (sorted
+                alphabetically). This means that they derive from the
+                Translator class, they implement all %d of the required
+                methods, and even minor problems were not spotted by the script
+                but some methods are called as English translation:'''
+            s = s % numRequired
+            f.write('\n' + '=' * 70 + '\n')
+            f.write(fill(s) + '\n\n')
+            for p in self.nearlyUpToDateIdLst:
+                obj = self.__translDic[p]
+                f.write(p)
+                f.write('\n' + '-' * len(p))
+                numimpl = len(obj.nearlySet)
+                if numimpl:
+                    pluralS = ''
+                    if numimpl > 1:
+                        pluralS = 's'
+                    f.write('\n\n  Method%s called as English translation:\n' %(pluralS))
+                    for p in obj.nearlySet:
+                        f.write('\n    ' + p)
+                    f.write('\n\n')
 
         # Write the details for the translators.
         f.write('\n' + '=' * 70)

@@ -114,6 +114,7 @@ class NamespaceDefImpl final : public DefinitionMixin<NamespaceDefMutable>
     ClassLinkedRefMap getClasses() const override { return m_classes; }
     ClassLinkedRefMap getInterfaces() const override { return m_interfaces; }
     ClassLinkedRefMap getStructs() const override { return m_structs; }
+    ClassLinkedRefMap getRecords() const override { return m_records; }
     ClassLinkedRefMap getExceptions() const override { return m_exceptions; }
     NamespaceLinkedRefMap getNamespaces() const override { return m_namespaces; }
     ConceptLinkedRefMap getConcepts() const override { return m_concepts; }
@@ -167,6 +168,7 @@ class NamespaceDefImpl final : public DefinitionMixin<NamespaceDefMutable>
     ClassLinkedRefMap     m_classes;
     ClassLinkedRefMap     m_interfaces;
     ClassLinkedRefMap     m_structs;
+    ClassLinkedRefMap     m_records;
     ClassLinkedRefMap     m_exceptions;
     ConceptLinkedRefMap   m_concepts;
     NamespaceLinkedRefMap m_namespaces;
@@ -251,6 +253,8 @@ class NamespaceDefAliasImpl final : public DefinitionAliasMixin<NamespaceDef>
     { return getNSAlias()->getInterfaces(); }
     ClassLinkedRefMap getStructs() const override
     { return getNSAlias()->getStructs(); }
+    ClassLinkedRefMap getRecords() const override
+    { return getNSAlias()->getRecords(); }
     ClassLinkedRefMap getExceptions() const override
     { return getNSAlias()->getExceptions(); }
     NamespaceLinkedRefMap getNamespaces() const override
@@ -422,6 +426,10 @@ void NamespaceDefImpl::insertClass(ClassDef *cd)
     else if (cd->compoundType()==ClassDef::Struct)
     {
       d = &m_structs;
+    }
+    else if (cd->compoundType()==ClassDef::Record)
+    {
+      d = &m_records;
     }
     else if (cd->compoundType()==ClassDef::Exception)
     {
@@ -699,6 +707,11 @@ void NamespaceDefImpl::writeTagFile(TextStream &tagFile)
           writeClassesToTagFile(tagFile, m_structs);
         }
         break;
+      case LayoutDocEntry::NamespaceRecords:
+        {
+          writeClassesToTagFile(tagFile, m_records);
+        }
+        break;
       case LayoutDocEntry::NamespaceExceptions:
         {
           writeClassesToTagFile(tagFile, m_exceptions);
@@ -951,6 +964,12 @@ void NamespaceDefImpl::writeSummaryLinks(OutputList &ol) const
       ol.writeSummaryLink(DString(),label,ls->title(lang),first);
       first=false;
     }
+    else if (lde->kind()==LayoutDocEntry::NamespaceRecords && m_records.declVisible() && ls)
+    {
+      DString label = "records";
+      ol.writeSummaryLink(DString(),label,ls->title(lang),first);
+      first=false;
+    }
     else if (lde->kind()==LayoutDocEntry::NamespaceExceptions && m_exceptions.declVisible() && ls)
     {
       DString label = "exceptions";
@@ -1101,6 +1120,11 @@ void NamespaceDefImpl::writeDocumentation(OutputList &ol)
           if (ls) writeClassDeclarations(ol,ls->title(lang),m_structs);
         }
         break;
+      case LayoutDocEntry::NamespaceRecords:
+        {
+          if (ls) writeClassDeclarations(ol,ls->title(lang),m_records);
+        }
+        break;
       case LayoutDocEntry::NamespaceExceptions:
         {
           if (ls) writeClassDeclarations(ol,ls->title(lang),m_exceptions);
@@ -1170,6 +1194,7 @@ void NamespaceDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::FileConcepts:
       case LayoutDocEntry::FileInterfaces:
       case LayoutDocEntry::FileStructs:
+      case LayoutDocEntry::FileRecords:
       case LayoutDocEntry::FileExceptions:
       case LayoutDocEntry::FileNamespaces:
       case LayoutDocEntry::FileConstantGroups:
@@ -1573,6 +1598,7 @@ void NamespaceDefImpl::sortMemberLists()
   if (needsSorting(m_classes))    std::stable_sort(m_classes.begin(),   m_classes.end(),   classComp);
   if (needsSorting(m_interfaces)) std::stable_sort(m_interfaces.begin(),m_interfaces.end(),classComp);
   if (needsSorting(m_structs))    std::stable_sort(m_structs.begin(),   m_structs.end(),   classComp);
+  if (needsSorting(m_records))    std::stable_sort(m_records.begin(),   m_records.end(),   classComp);
   if (needsSorting(m_exceptions)) std::stable_sort(m_exceptions.begin(),m_exceptions.end(),classComp);
 
   auto conceptComp = [](const ConceptLinkedRefMap::Ptr &c1,const ConceptLinkedRefMap::Ptr &c2)
@@ -1973,6 +1999,9 @@ bool namespaceHasNestedClass(const NamespaceDef *nd,bool filterClasses,ClassDef:
         break;
       case ClassDef::Struct:
         list = nd->getStructs();
+        break;
+      case ClassDef::Record:
+        list = nd->getRecords();
         break;
       case ClassDef::Exception:
         list = nd->getExceptions();

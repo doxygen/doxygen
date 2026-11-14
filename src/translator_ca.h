@@ -595,6 +595,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       {
         case ClassDef::Class:      result+=" la Classe "; break;
         case ClassDef::Struct:     result+=" l'Estructura "; break;
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result+=" la Unió "; break;
         case ClassDef::Interface:  result+=" la Interfície "; break;
         case ClassDef::Protocol:   result+="l Protocol "; break;
@@ -754,6 +755,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       {
         case ClassDef::Class:      result+="a classe"; break;
         case ClassDef::Struct:     result+="a estructura"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="a unió"; break;
         case ClassDef::Interface:  result+="a interfície"; break;
         case ClassDef::Protocol:   result+=" protocol"; break;

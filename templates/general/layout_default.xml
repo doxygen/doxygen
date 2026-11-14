@@ -31,6 +31,10 @@
       <tab type="structlist" visible="yes" title="" intro=""/>
       <tab type="structindex" visible="$ALPHABETICAL_INDEX" title=""/>
     </tab>
+    <tab type="records" visible="yes" title="">
+      <tab type="recordlist" visible="yes" title="" intro=""/>
+      <tab type="recordindex" visible="$ALPHABETICAL_INDEX" title=""/>
+    </tab>
     <tab type="exceptions" visible="yes" title="">
       <tab type="exceptionlist" visible="yes" title="" intro=""/>
       <tab type="exceptionindex" visible="$ALPHABETICAL_INDEX" title=""/>
@@ -113,6 +117,7 @@
       <classes visible="yes" title=""/>
       <concepts visible="yes" title=""/>
       <structs visible="yes" title=""/>
+      <records visible="yes" title=""/>
       <exceptions visible="yes" title=""/>
       <typedefs visible="yes" title=""/>
       <sequences visible="yes" title=""/>
@@ -157,6 +162,7 @@
       <interfaces visible="yes" title=""/>
       <classes visible="yes" title=""/>
       <structs visible="yes" title=""/>
+      <records visible="yes" title=""/>
       <exceptions visible="yes" title=""/>
       <namespaces visible="yes" title=""/>
       <concepts visible="yes" title=""/>

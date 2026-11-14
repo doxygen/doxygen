@@ -578,6 +578,7 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
       {
         case ClassDef::Class:      result+="klase "; break;
         case ClassDef::Struct:     result+="strukture "; break;
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result+="unije "; break;
         case ClassDef::Interface:  result+="interfejsa "; break;
         case ClassDef::Protocol:   result+="protokola "; break;
@@ -737,6 +738,7 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
       {
         case ClassDef::Class:      result+="ove klase"; break;
         case ClassDef::Struct:     result+="ove strukture"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="ove unije"; break;
         case ClassDef::Interface:  result+="ovog interfejsa"; break;
         case ClassDef::Protocol:   result+="ovog protokola"; break;

@@ -181,6 +181,7 @@ static DString getCompoundTypeString(SrcLangExt lang,ClassDef::CompoundType comp
     {
       case ClassDef::Class:     return isJavaEnum ? "enum" : "class";
       case ClassDef::Struct:    return "struct";
+      case ClassDef::Record:    return "record";
       case ClassDef::Union:     return "union";
       case ClassDef::Interface: return lang==SrcLangExt::ObjC ? "class" : "interface";
       case ClassDef::Protocol:  return "protocol";
@@ -2116,6 +2117,10 @@ void ClassDefImpl::writeIncludeFilesForSlice(OutputList &ol) const
   {
     ol.docify("struct ");
   }
+  else if (m_spec.isRecord())
+  {
+    ol.docify("record ");
+  }
   else if (m_spec.isException())
   {
     ol.docify("exception ");
@@ -2672,6 +2677,10 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const DString
         {
           ol.startMemberHeader("structs");
         }
+        else if (compoundType()==Record)
+        {
+          ol.startMemberHeader("records");
+        }
         else if (compoundType()==Exception)
         {
           ol.startMemberHeader("exceptions");
@@ -2911,6 +2920,7 @@ void ClassDefImpl::writeDocumentationContents(OutputList &ol,const DString & /*p
       case LayoutDocEntry::NamespaceConcepts:
       case LayoutDocEntry::NamespaceInterfaces:
       case LayoutDocEntry::NamespaceStructs:
+      case LayoutDocEntry::NamespaceRecords:
       case LayoutDocEntry::NamespaceExceptions:
       case LayoutDocEntry::NamespaceInlineClasses:
       case LayoutDocEntry::ConceptDefinition:
@@ -2918,6 +2928,7 @@ void ClassDefImpl::writeDocumentationContents(OutputList &ol,const DString & /*p
       case LayoutDocEntry::FileConcepts:
       case LayoutDocEntry::FileInterfaces:
       case LayoutDocEntry::FileStructs:
+      case LayoutDocEntry::FileRecords:
       case LayoutDocEntry::FileExceptions:
       case LayoutDocEntry::FileNamespaces:
       case LayoutDocEntry::FileConstantGroups:
@@ -2978,7 +2989,7 @@ DString ClassDefImpl::title() const
       return theTranslator->trCustomReference(VhdlDocGen::getClassTitle(this));
     });
   }
-  else if (lang==SrcLangExt::CSharp && !m_primaryConstructorParams.empty())
+  else if ((lang==SrcLangExt::CSharp || lang==SrcLangExt::Java) && !m_primaryConstructorParams.empty())
   {
     pageTitle = getReferenceTitle([this](){
       return theTranslator->trCompoundReference(displayName()+argListToString(m_primaryConstructorParams),
@@ -3034,6 +3045,10 @@ void ClassDefImpl::writeDocumentation(OutputList &ol) const
     else if (compoundType()==Struct)
     {
       hli = HighlightedItem::StructVisible;
+    }
+    else if (compoundType()==Record)
+    {
+      hli = HighlightedItem::RecordVisible;
     }
     else if (compoundType()==Exception)
     {
@@ -3196,6 +3211,10 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
     else if (compoundType()==Struct)
     {
       hli = HighlightedItem::StructVisible;
+    }
+    else if (compoundType()==Record)
+    {
+      hli = HighlightedItem::RecordVisible;
     }
     else if (compoundType()==Exception)
     {
@@ -5513,6 +5532,7 @@ CodeSymbolType ClassDefImpl::codeSymbolType() const
   {
     case Class:     return CodeSymbolType::Class;     break;
     case Struct:    return CodeSymbolType::Struct;    break;
+    case Record:    return CodeSymbolType::Record;    break;
     case Union:     return CodeSymbolType::Union;     break;
     case Interface: return CodeSymbolType::Interface; break;
     case Protocol:  return CodeSymbolType::Protocol;  break;

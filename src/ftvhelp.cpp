@@ -370,6 +370,10 @@ static char compoundIcon(const ClassDef *cd)
     {
       icon='S';
     }
+    else if (cd->compoundType()==ClassDef::Record)
+    {
+      icon='R';
+    }
     else if (cd->compoundType()==ClassDef::Exception)
     {
       icon='E';

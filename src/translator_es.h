@@ -135,7 +135,7 @@ namespace SpanishTranslatorUtils
     }
 }
 
-class TranslatorSpanish : public Translator
+class TranslatorSpanish : public TranslatorAdapter_1_19_0
 {
   public:
 
@@ -707,6 +707,7 @@ class TranslatorSpanish : public Translator
       {
         case ClassDef::Class:      result+=" la clase "; break;
         case ClassDef::Struct:     result+=" la estructura "; break;
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result+=" la unión "; break;
         case ClassDef::Interface:  result+=" la interface "; break;
         case ClassDef::Protocol:   result+="l protocolo "; break;
@@ -874,6 +875,7 @@ class TranslatorSpanish : public Translator
       {
         case ClassDef::Class:      result+=vhdlOpt? "a unidad de diseño":"a clase"; break;
         case ClassDef::Struct:     result+="a estructura"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="a unión"; break;
         case ClassDef::Interface:  result+="a interface"; break;
         case ClassDef::Protocol:   result+="e protocolo"; break;
@@ -2514,6 +2516,7 @@ class TranslatorSpanish : public Translator
           else result=trClass(true,true);
           break;
         case ClassDef::Struct:     result="Estructura"; break;
+        case ClassDef::Record:     return english.trCompoundType(compType,lang);
         case ClassDef::Union:      result="Unión"; break;
         case ClassDef::Interface:  result="Interface"; break;
         case ClassDef::Protocol:   result="Protocolo"; break;

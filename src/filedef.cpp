@@ -259,6 +259,7 @@ class FileDefImpl final : public DefinitionMixin<FileDef>
     ClassLinkedRefMap     m_classes;
     ClassLinkedRefMap     m_interfaces;
     ClassLinkedRefMap     m_structs;
+    ClassLinkedRefMap     m_records;
     ClassLinkedRefMap     m_exceptions;
     ConceptLinkedRefMap   m_concepts;
     bool                  m_subGrouping;
@@ -412,6 +413,11 @@ void FileDefImpl::writeTagFile(TextStream &tagFile)
       case LayoutDocEntry::FileStructs:
         {
           writeClassesToTagFile(tagFile, m_structs);
+        }
+        break;
+      case LayoutDocEntry::FileRecords:
+        {
+          writeClassesToTagFile(tagFile, m_records);
         }
         break;
       case LayoutDocEntry::FileExceptions:
@@ -856,6 +862,12 @@ void FileDefImpl::writeSummaryLinks(OutputList &ol) const
       ol.writeSummaryLink(DString(),label,ls->title(lang),first);
       first=false;
     }
+    else if (lde->kind()==LayoutDocEntry::FileRecords && m_records.declVisible() && ls)
+    {
+      DString label = "records";
+      ol.writeSummaryLink(DString(),label,ls->title(lang),first);
+      first=false;
+    }
     else if (lde->kind()==LayoutDocEntry::FileExceptions && m_exceptions.declVisible() && ls)
     {
       DString label = "exceptions";
@@ -1028,6 +1040,9 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::FileStructs:
         if (ls) writeClassDeclarations(ol,ls->title(lang),m_structs);
         break;
+      case LayoutDocEntry::FileRecords:
+        if (ls) writeClassDeclarations(ol,ls->title(lang),m_records);
+        break;
       case LayoutDocEntry::FileExceptions:
         if (ls) writeClassDeclarations(ol,ls->title(lang),m_exceptions);
         break;
@@ -1085,6 +1100,7 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::NamespaceConcepts:
       case LayoutDocEntry::NamespaceInterfaces:
       case LayoutDocEntry::NamespaceStructs:
+      case LayoutDocEntry::NamespaceRecords:
       case LayoutDocEntry::NamespaceExceptions:
       case LayoutDocEntry::NamespaceInlineClasses:
       case LayoutDocEntry::ConceptDefinition:
@@ -1492,6 +1508,10 @@ void FileDefImpl::insertClass(ClassDef *cd)
     {
       list = &m_structs;
     }
+    else if (cd->compoundType()==ClassDef::Record)
+    {
+      list = &m_records;
+    }
     else if (cd->compoundType()==ClassDef::Exception)
     {
       list = &m_exceptions;
@@ -1858,6 +1878,7 @@ void FileDefImpl::sortMemberLists()
     std::stable_sort(m_classes.begin(),   m_classes.end(),   classComp);
     std::stable_sort(m_interfaces.begin(),m_interfaces.end(),classComp);
     std::stable_sort(m_structs.begin(),   m_structs.end(),   classComp);
+    std::stable_sort(m_records.begin(),   m_records.end(),   classComp);
     std::stable_sort(m_exceptions.begin(),m_exceptions.end(),classComp);
 
     auto conceptComp = [](const ConceptLinkedRefMap::Ptr &c1,const ConceptLinkedRefMap::Ptr &c2)

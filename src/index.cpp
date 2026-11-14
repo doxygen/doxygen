@@ -80,6 +80,8 @@ struct Index::Private
   int hierarchyInterfaces         = 0;
   int annotatedStructs            = 0;
   int annotatedStructsPrinted     = 0;
+  int annotatedRecords            = 0;
+  int annotatedRecordsPrinted     = 0;
   int annotatedExceptions         = 0;
   int annotatedExceptionsPrinted  = 0;
   int hierarchyExceptions         = 0;
@@ -120,7 +122,9 @@ int Index::numAnnotatedInterfaces()        const { return p->annotatedInterfaces
 int Index::numAnnotatedInterfacesPrinted() const { return p->annotatedInterfacesPrinted; }
 int Index::numHierarchyInterfaces()        const { return p->hierarchyInterfaces; }
 int Index::numAnnotatedStructs()           const { return p->annotatedStructs; }
+int Index::numAnnotatedRecords()           const { return p->annotatedRecords; }
 int Index::numAnnotatedStructsPrinted()    const { return p->annotatedStructsPrinted; }
+int Index::numAnnotatedRecordsPrinted()    const { return p->annotatedRecordsPrinted; }
 int Index::numAnnotatedExceptions()        const { return p->annotatedExceptions; }
 int Index::numAnnotatedExceptionsPrinted() const { return p->annotatedExceptionsPrinted; }
 int Index::numHierarchyExceptions()        const { return p->hierarchyExceptions; }
@@ -291,6 +295,8 @@ void Index::countDataStructures()
   p->hierarchyInterfaces        = sliceOpt ? countClassHierarchy(ClassDef::Interface) : 0;
   // "structs" + "annotated"
   p->annotatedStructs           = sliceOpt ? countAnnotatedClasses(&p->annotatedStructsPrinted, ClassDef::Struct) : 0;
+  // "records" + "annotated"
+  p->annotatedRecords           = sliceOpt ? countAnnotatedClasses(&p->annotatedRecordsPrinted, ClassDef::Record) : 0;
   // "exceptions" + "annotated"
   p->annotatedExceptions        = sliceOpt ? countAnnotatedClasses(&p->annotatedExceptionsPrinted, ClassDef::Exception) : 0;
   // "exceptionhierarchy"
@@ -2014,6 +2020,10 @@ static void writeClassTreeInsideNamespaceElement(const NamespaceDef *nd,FTVHelp 
         {
           d = nd->getStructs();
         }
+        else if (ct == ClassDef::Record)
+        {
+          d = nd->getRecords();
+        }
         else if (ct == ClassDef::Exception)
         {
           d = nd->getExceptions();
@@ -2522,6 +2532,35 @@ static void writeAlphabeticalStructIndex(OutputList &ol)
 
 //----------------------------------------------------------------------------
 
+static void writeAlphabeticalRecordIndex(OutputList &ol)
+{
+  if (Index::instance().numAnnotatedRecords()==0) return;
+  ol.pushGeneratorState();
+  ol.disableAllBut(OutputType::Html);
+  LayoutNavEntry *lne = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::RecordIndex);
+  DString title = lne ? lne->title() : theTranslator->trRecordIndex();
+  bool addToIndex = lne==nullptr || lne->visible();
+
+  startFile(ol,"records",false,DString(),title,HighlightedItem::Records);
+
+  startTitle(ol,DString());
+  ol.parseText(title);
+  endTitle(ol,DString(),DString());
+
+  if (addToIndex)
+  {
+    Doxygen::indexList->addContentsItem(false,title,DString(),"records",DString(),false,true);
+  }
+
+  ol.startContents();
+  writeAlphabeticalClassList(ol, ClassDef::Record, Index::instance().numAnnotatedRecords());
+  endFile(ol); // contains ol.endContents()
+
+  ol.popGeneratorState();
+}
+
+//----------------------------------------------------------------------------
+
 static void writeAlphabeticalExceptionIndex(OutputList &ol)
 {
   if (Index::instance().numAnnotatedExceptions()==0) return;
@@ -2688,6 +2727,20 @@ static void writeAnnotatedStructIndex(OutputList &ol)
                             ClassDef::Struct,
                             "annotatedstructs",
                             HighlightedItem::AnnotatedStructs));
+}
+
+//----------------------------------------------------------------------------
+
+static void writeAnnotatedRecordIndex(OutputList &ol)
+{
+  const auto &index = Index::instance();
+  writeAnnotatedIndexGeneric(ol,
+      AnnotatedIndexContext(index.numAnnotatedRecords(),index.numAnnotatedRecordsPrinted(),
+                            LayoutNavEntry::RecordList,LayoutNavEntry::Records,
+                            theTranslator->trRecordList(),theTranslator->trRecordListDescription(),
+                            ClassDef::Record,
+                            "annotatedrecords",
+                            HighlightedItem::AnnotatedRecords));
 }
 
 //----------------------------------------------------------------------------
@@ -5222,6 +5275,12 @@ static void writeIndex(OutputList &ol)
       ol.parseText(/*projPrefix+*/theTranslator->trStructIndex());
       ol.endIndexSection(IndexSection::isCompoundIndex);
     }
+    if (index.numAnnotatedRecordsPrinted()>0)
+    {
+      ol.startIndexSection(IndexSection::isCompoundIndex);
+      ol.parseText(/*projPrefix+*/theTranslator->trRecordIndex());
+      ol.endIndexSection(IndexSection::isCompoundIndex);
+    }
     if (index.numAnnotatedExceptionsPrinted()>0)
     {
       ol.startIndexSection(IndexSection::isCompoundIndex);
@@ -5283,6 +5342,12 @@ static void writeIndex(OutputList &ol)
   {
     ol.startIndexSection(IndexSection::isClassDocumentation);
     ol.parseText(/*projPrefix+*/theTranslator->trStructDocumentation());
+    ol.endIndexSection(IndexSection::isClassDocumentation);
+  }
+  if (index.numAnnotatedRecordsPrinted()>0)
+  {
+    ol.startIndexSection(IndexSection::isClassDocumentation);
+    ol.parseText(/*projPrefix+*/theTranslator->trRecordDocumentation());
     ol.endIndexSection(IndexSection::isClassDocumentation);
   }
   if (index.numAnnotatedExceptionsPrinted()>0)
@@ -5497,6 +5562,28 @@ static void writeIndexHierarchyEntries(OutputList &ol,const LayoutNavEntryList &
             writeAlphabeticalStructIndex(ol);
           }
           break;
+        case LayoutNavEntry::Records:
+          if (sliceOpt && index.numAnnotatedRecords()>0 && addToIndex)
+          {
+            Doxygen::indexList->addContentsItem(true,lne->title(),DString(),lne->baseFile(),DString());
+            Doxygen::indexList->incContentsDepth();
+            needsClosing=true;
+          }
+          break;
+        case LayoutNavEntry::RecordList:
+          if (sliceOpt)
+          {
+            msg("Generating annotated record index...\n");
+            writeAnnotatedRecordIndex(ol);
+          }
+          break;
+        case LayoutNavEntry::RecordIndex:
+          if (sliceOpt)
+          {
+            msg("Generating alphabetical record index...\n");
+            writeAlphabeticalRecordIndex(ol);
+          }
+          break;
         case LayoutNavEntry::Exceptions:
           if (sliceOpt && index.numAnnotatedExceptions()>0 && addToIndex)
           {
@@ -5667,6 +5754,9 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
     case LayoutNavEntry::Structs:            return index.numAnnotatedStructs()>0;
     case LayoutNavEntry::StructList:         return index.numAnnotatedStructs()>0;
     case LayoutNavEntry::StructIndex:        return index.numAnnotatedStructs()>0;
+    case LayoutNavEntry::Records:            return index.numAnnotatedRecords()>0;
+    case LayoutNavEntry::RecordList:         return index.numAnnotatedRecords()>0;
+    case LayoutNavEntry::RecordIndex:        return index.numAnnotatedRecords()>0;
     case LayoutNavEntry::Exceptions:         return index.numAnnotatedExceptions()>0;
     case LayoutNavEntry::ExceptionList:      return index.numAnnotatedExceptions()>0;
     case LayoutNavEntry::ExceptionIndex:     return index.numAnnotatedExceptions()>0;

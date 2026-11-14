@@ -598,6 +598,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
       {
         case ClassDef::Class:      result+="klaso "; break;
         case ClassDef::Struct:     result+="strukturo "; break;
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result+="kunigo "; break;
         case ClassDef::Interface:  result+="interfaco "; break;
         case ClassDef::Protocol:   result+="protokolo "; break;
@@ -755,6 +756,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
       {
         case ClassDef::Class:      result+="klaso"; break;
         case ClassDef::Struct:     result+="strukturo"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="kunigo"; break;
         case ClassDef::Interface:  result+="interfaco"; break;
         case ClassDef::Protocol:   result+="protokolo"; break;

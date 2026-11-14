@@ -589,6 +589,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
       {
         case ClassDef::Class:      result+=" Class"; break;
         case ClassDef::Struct:     result+=" Struct"; break;
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result+=" Union"; break;
         case ClassDef::Interface:  result+=" Interface"; break;
         case ClassDef::Protocol:   result+=" Protocol"; break;
@@ -748,6 +749,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
       {
         case ClassDef::Class:      result+="هذه الفئة"; break;
         case ClassDef::Struct:     result+="هذا البناء"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="هذا الإتحاد"; break;
         case ClassDef::Interface:  result+="هذه الواجهة"; break;
         case ClassDef::Protocol:   result+="هذا البروتوكول"; break;

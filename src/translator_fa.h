@@ -597,6 +597,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       {
         case ClassDef::Class:      result=" کلاس"; break;
         case ClassDef::Struct:     result=" ساختار داده"; break;
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result=" Union"; break;
         case ClassDef::Interface:  result=" Interface"; break;
         case ClassDef::Protocol:   result=" Protocol"; break;
@@ -753,6 +754,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       {
         case ClassDef::Class:      result+="کلاس"; break;
         case ClassDef::Struct:     result+="ساختار داده"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="union"; break;
         case ClassDef::Interface:  result+="interface"; break;
         case ClassDef::Protocol:   result+="protocol"; break;

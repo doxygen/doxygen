@@ -84,6 +84,9 @@ class NamespaceDef : public Definition
     /*! Returns the Slice structs contained in this namespace */
     virtual ClassLinkedRefMap getStructs() const = 0;
 
+    /*! Returns the recods contained in this namespace */
+    virtual ClassLinkedRefMap getRecords() const = 0;
+
     /*! Returns the Slice exceptions contained in this namespace */
     virtual ClassLinkedRefMap getExceptions() const = 0;
 

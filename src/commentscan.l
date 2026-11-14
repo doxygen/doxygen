@@ -85,6 +85,7 @@ static bool handleProtocol(yyscan_t yyscanner,const DString &, const StringVecto
 static bool handleCategory(yyscan_t yyscanner,const DString &, const StringVector &);
 static bool handleUnion(yyscan_t yyscanner,const DString &, const StringVector &);
 static bool handleStruct(yyscan_t yyscanner,const DString &, const StringVector &);
+static bool handleRecord(yyscan_t yyscanner,const DString &, const StringVector &);
 static bool handleInterface(yyscan_t yyscanner,const DString &, const StringVector &);
 static bool handleIdlException(yyscan_t yyscanner,const DString &, const StringVector &);
 static bool handlePage(yyscan_t yyscanner,const DString &, const StringVector &);
@@ -354,6 +355,7 @@ static const std::unordered_map< std::string, DocCmdMap > docCmdMap =
   { "pure",                   { &handlePure,                     CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "qualifier",              { &handleQualifier,                CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "raisewarning",           { &handleRaiseWarning,             CommandSpacing::Invisible, SectionHandling::Replace }},
+  { "record",                 { &handleRecord,                   CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "refitem",                { &handleRefItem,                  CommandSpacing::Inline,    SectionHandling::Escape  }},
   { "related",                { &handleRelated,                  CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "relatedalso",            { &handleRelatedAlso,              CommandSpacing::Invisible, SectionHandling::Escape  }},
@@ -3193,6 +3195,14 @@ static bool handleStruct(yyscan_t yyscanner,const DString &cmd, const StringVect
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->currentCmd = cmd;
   yyextra->currentMakeEntryType = EntryType::makeStructDoc;
+  BEGIN( ClassDocArg1 );
+  return checkStructuralIndicator(yyscanner);
+}
+static bool handleRecord(yyscan_t yyscanner,const DString &cmd, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->currentCmd = cmd;
+  yyextra->currentMakeEntryType = EntryType::makeRecordDoc;
   BEGIN( ClassDocArg1 );
   return checkStructuralIndicator(yyscanner);
 }

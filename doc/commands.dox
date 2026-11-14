@@ -229,6 +229,7 @@ documentation:
 \refitem cmdstatic \\static
 \refitem cmdstartuml \\startuml
 \refitem cmdstruct \\struct
+\refitem cmdrecord \\record
 \refitem cmdsubpage \\subpage
 \refitem cmdsubparagraph \\subparagraph
 \refitem cmdsubsection \\subsection
@@ -960,7 +961,7 @@ Structural indicators
 \section cmdheaderfile \\headerfile <header-file> [<header-name>]
 
   \addindex \\headerfile
-  Intended to be used for class, struct, union, file, namespace, group or member documentation, where
+  Intended to be used for class, struct, record, union, file, namespace, group or member documentation, where
   the documentation is in front of the definition. The arguments of
   this command are the same as the second and third argument of
   \ref cmdclass "\\class".
@@ -1493,6 +1494,16 @@ Structural indicators
   \addindex \\struct
   Indicates that a comment block contains documentation for a
   struct with name \<name\>. The arguments are equal to the arguments of the
+  \ref cmdclass "\\class" command.
+
+  \sa section \ref cmdclass "\\class".
+
+<hr>
+\section cmdrecord \\record \<name\> [\<header-file\>] [\<header-name\>]
+
+  \addindex \\record
+  Indicates that a comment block contains documentation for a
+  Java record with name \<name\>. The arguments are equal to the arguments of the
   \ref cmdclass "\\class" command.
 
   \sa section \ref cmdclass "\\class".

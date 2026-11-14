@@ -680,6 +680,7 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     { "property",       endOfLine  },
     { "protocol",       endOfLine  },
     { "qualifier",      endOfLine  },
+    { "record",         endOfLine  },
     { "ref",            endOfLabel },
     { "refitem",        endOfLine  },
     { "related",        endOfLabel },
@@ -3641,7 +3642,7 @@ static bool isOtherPage(std::string_view data)
   OPC(fn);        OPC(property);  OPC(typedef);    OPC(var);       OPC(def);
   OPC(enum);      OPC(namespace); OPC(class);      OPC(concept);   OPC(module);
   OPC(protocol);  OPC(category);  OPC(union);      OPC(struct);    OPC(interface);
-  OPC(idlexcept); OPC(file);
+  OPC(idlexcept); OPC(file);      OPC(record);
 #undef OPC
 
   return false;

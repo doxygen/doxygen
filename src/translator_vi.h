@@ -608,6 +608,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       {
         case ClassDef::Class:      result+=" Class"; break;
         case ClassDef::Struct:     result+=" Struct"; break;
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result+=" Union"; break;
         case ClassDef::Interface:  result+=" Interface"; break;
         case ClassDef::Protocol:   result+=" Protocol"; break;
@@ -758,7 +759,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     /*! This is put at the bottom of a class documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
-    DString trGeneratedFromFiles(ClassDef::CompoundType compType,bool) override
+    DString trGeneratedFromFiles(ClassDef::CompoundType compType,bool single) override
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
       DString result="Thông tin cho ";
@@ -766,6 +767,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       {
         case ClassDef::Class:      result+="class"; break;
         case ClassDef::Struct:     result+="struct"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="union"; break;
         case ClassDef::Interface:  result+="interface"; break;
         case ClassDef::Protocol:   result+="protocol"; break;

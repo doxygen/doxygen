@@ -631,6 +631,7 @@ void DirDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::NamespaceConcepts:
       case LayoutDocEntry::NamespaceInterfaces:
       case LayoutDocEntry::NamespaceStructs:
+      case LayoutDocEntry::NamespaceRecords:
       case LayoutDocEntry::NamespaceExceptions:
       case LayoutDocEntry::NamespaceInlineClasses:
       case LayoutDocEntry::ConceptDefinition:
@@ -638,6 +639,7 @@ void DirDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::FileConcepts:
       case LayoutDocEntry::FileInterfaces:
       case LayoutDocEntry::FileStructs:
+      case LayoutDocEntry::FileRecords:
       case LayoutDocEntry::FileExceptions:
       case LayoutDocEntry::FileNamespaces:
       case LayoutDocEntry::FileConstantGroups:

@@ -29,7 +29,7 @@
 
 #include "dstring.h"
 
-#define NUM_SEARCH_INDICES 22
+#define NUM_SEARCH_INDICES 23
 
 class SectionInfo;
 class Definition;

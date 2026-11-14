@@ -181,6 +181,7 @@ static void splitSearchTokens(DString &title,SizeVector &indices)
 #define SEARCH_INDEX_PAGES        19
 #define SEARCH_INDEX_CONCEPTS     20
 #define SEARCH_INDEX_MODULES      21
+#define SEARCH_INDEX_RECORDS      22
 
 static std::array<SearchIndexInfo,NUM_SEARCH_INDICES> g_searchIndexInfo =
 { {
@@ -189,6 +190,7 @@ static std::array<SearchIndexInfo,NUM_SEARCH_INDICES> g_searchIndexInfo =
   { /* SEARCH_INDEX_CLASSES */      "classes"     , []() { return theTranslator->trClasses();             }, {} },
   { /* SEARCH_INDEX_INTERFACES */   "interfaces"  , []() { return theTranslator->trSliceInterfaces();     }, {} },
   { /* SEARCH_INDEX_STRUCTS */      "structs"     , []() { return theTranslator->trStructs();             }, {} },
+  { /* SEARCH_INDEX_RECORDS */      "records"     , []() { return theTranslator->trRecords();             }, {} },
   { /* SEARCH_INDEX_EXCEPTIONS */   "exceptions"  , []() { return theTranslator->trExceptions();          }, {} },
   { /* SEARCH_INDEX_NAMESPACES */   "namespaces"  , []() { return Config_getBool(OPTIMIZE_OUTPUT_SLICE) ?
                                                                   theTranslator->trModules() :
@@ -348,6 +350,10 @@ void createJavaScriptSearchIndex()
         else if (cd->compoundType()==ClassDef::Struct)
         {
           g_searchIndexInfo[SEARCH_INDEX_STRUCTS].add(SearchTerm(n,cd.get()));
+        }
+        else if (cd->compoundType()==ClassDef::Record)
+        {
+          g_searchIndexInfo[SEARCH_INDEX_RECORDS].add(SearchTerm(n,cd.get()));
         }
         else if (cd->compoundType()==ClassDef::Exception)
         {

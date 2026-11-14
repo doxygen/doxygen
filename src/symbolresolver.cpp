@@ -1045,6 +1045,7 @@ const ClassDef *SymbolResolver::Private::newResolveTypedef(
   type.stripPrefix("const ");  // strip leading "const"
   type.stripPrefix("volatile ");  // strip leading "volatile"
   type.stripPrefix("struct "); // strip leading "struct"
+  type.stripPrefix("record "); // strip leading "record"
   type.stripPrefix("union ");  // strip leading "union"
   int sp=0;
   tl=static_cast<int>(type.length()); // length may have been changed

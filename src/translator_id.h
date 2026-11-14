@@ -577,6 +577,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       {
         case ClassDef::Class:      result+=" Kelas "; break;
         case ClassDef::Struct:     result+=" Struct "; break;
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result+=" Union "; break;
         case ClassDef::Interface:  result+=" Interface "; break;
         case ClassDef::Protocol:   result+=" Protokol "; break;
@@ -736,6 +737,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       {
         case ClassDef::Class:      result+="kelas"; break;
         case ClassDef::Struct:     result+="struct"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="union"; break;
         case ClassDef::Interface:  result+="interface"; break;
         case ClassDef::Protocol:   result+="protokol"; break;

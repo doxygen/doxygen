@@ -589,6 +589,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
       {
         case ClassDef::Class:      result+=" Sınıf"; break;
         case ClassDef::Struct:     result+=" Yapı(Struct)"; break;
+        case ClassDef::Record:     return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:      result+=" Birleşim(Union)"; break;
         case ClassDef::Interface:  result+=" Arayüz(Interface)"; break;
         case ClassDef::Protocol:   result+=" Protokol"; break;
@@ -748,6 +749,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
       {
         case ClassDef::Class:      result+="sınıf"; break;
         case ClassDef::Struct:     result+="yapı(struct)"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="birleşim(union)"; break;
         case ClassDef::Interface:  result+="arayüz(interface)"; break;
         case ClassDef::Protocol:   result+="protokol"; break;

@@ -33,6 +33,7 @@
     <xsd:restriction base="xsd:string">
       <xsd:enumeration value="class"/>
       <xsd:enumeration value="struct"/>
+      <xsd:enumeration value="record" />
       <xsd:enumeration value="union"/>
       <xsd:enumeration value="interface"/>
       <xsd:enumeration value="protocol"/>

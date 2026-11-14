@@ -1712,20 +1712,39 @@ NONLopt [^\n]*
                                             lineCount(yyscanner);
                                           }
                                         }
+<FindMembers>{B}*{TYPEDEFPREFIX}"record"{BN}* |
 <FindMembers>{B}*{TYPEDEFPREFIX}"struct{" |
 <FindMembers>{B}*{TYPEDEFPREFIX}"struct"/{BN}+ {
-                                          if (yyextra->insideJava) REJECT;
                                           DString decl = yytext;
                                           yyextra->isTypedef = decl.find("typedef") !=DString::npos;
+                                          if (decl.find("record")!=DString::npos && !yyextra->insideJava)
+                                          {
+                                            REJECT;
+                                          }
+                                          else if (decl.find("record")==DString::npos && yyextra->insideJava)
+                                          {
+                                            REJECT;
+                                          }
                                           bool isConst       = decl.find("const")   !=DString::npos;
                                           bool isVolatile    = decl.find("volatile")!=DString::npos;
                                           yyextra->current->section = EntryType::makeClass() ;
                                           TypeSpecifier spec = yyextra->current->spec;
-                                          yyextra->current->spec = TypeSpecifier().setStruct(true).
-                                          // preserve UNO IDL & Inline attributes, Slice local
-                                              setPublished(spec.isPublished()).
-                                              setInline(spec.isInline()).
-                                              setLocal(spec.isLocal());
+                                          if (decl.find("record")==DString::npos) 
+                                          {
+                                            yyextra->current->spec = TypeSpecifier().setStruct(true).
+                                            // preserve UNO IDL & Inline attributes, Slice local
+                                                setPublished(spec.isPublished()).
+                                                setInline(spec.isInline()).
+                                                setLocal(spec.isLocal());
+                                          }
+                                          else
+                                          {
+                                            yyextra->current->spec = TypeSpecifier().setRecord(true).
+                                            // preserve UNO IDL & Inline attributes, Slice local
+                                                setPublished(spec.isPublished()).
+                                                setInline(spec.isInline()).
+                                                setLocal(spec.isLocal());
+                                          }
                                           // bug 582676: can be a struct nested in an interface so keep yyextra->insideObjC state
                                           //yyextra->current->objc    = yyextra->insideObjC = false;
                                           addType(yyscanner);
@@ -1738,6 +1757,7 @@ NONLopt [^\n]*
                                             yyextra->current->type += " volatile";
                                           }
                                           yyextra->current->type += " struct" ;
+                                          if (decl.find("record")!=DString::npos) yyextra->current->type += " record";
                                           yyextra->current->fileName  = yyextra->fileName;
                                           yyextra->current->startLine = yyextra->yyLineNr;
                                           yyextra->current->startColumn = yyextra->yyColNr;
@@ -4908,6 +4928,10 @@ NONLopt [^\n]*
                                             {
                                               yyextra->msType.prepend("enum "+yyextra->firstTypedefEntry->name);
                                             }
+                                            else if (yyextra->firstTypedefEntry->spec.isRecord())
+                                            {
+                                              yyextra->msType.prepend("record "+yyextra->firstTypedefEntry->name);
+                                            }
                                             else
                                             {
                                               yyextra->msType.prepend(yyextra->firstTypedefEntry->name);
@@ -4959,7 +4983,7 @@ NONLopt [^\n]*
                                             // -> omit typedef and use S_t as the struct name
                                             if (typedefHidesStruct &&
                                                 yyextra->isTypedef &&
-                                                ((yyextra->current->spec.isStruct() || yyextra->current->spec.isUnion()) || yyextra->current->section.isEnum()) &&
+                                                ((yyextra->current->spec.isStruct() || yyextra->current->spec.isRecord() || yyextra->current->spec.isUnion()) || yyextra->current->section.isEnum()) &&
                                                 yyextra->msType.stripWhiteSpace().empty() &&
                                                 yyextra->memspecEntry)
                                             {
@@ -4984,7 +5008,7 @@ NONLopt [^\n]*
                                               }
                                               if (typedefHidesStruct &&
                                                   yyextra->isTypedef &&
-                                                  (yyextra->current->spec.isStruct() || yyextra->current->spec.isUnion()) &&
+                                                  (yyextra->current->spec.isStruct() || yyextra->current->spec.isRecord() || yyextra->current->spec.isUnion()) &&
                                                   yyextra->memspecEntry
                                                  ) // case 1: use S_t as type for pS_t in "typedef struct _S {} S_t, *pS_t;"
                                               {
@@ -6706,7 +6730,8 @@ NONLopt [^\n]*
                                             yyextra->current->spec.setCategory(true);
                                             BEGIN( ClassCategory );
                                           }
-                                          else if (yyextra->insideCS && *yytext=='(') // C# 12 primary constructor
+                                          else if ((yyextra->insideCS && *yytext=='(') || // C# 12 primary constructor
+                                                   (yyextra->insideJava && *yytext=='('))
                                           {
                                             yyextra->current->args=yytext;
                                             yyextra->currentArgumentContext = ClassVar;
@@ -6824,6 +6849,7 @@ NONLopt [^\n]*
                                             yyextra->current->type.clear();
                                             if (yyextra->current->spec.isInterface() ||
                                                 yyextra->current->spec.isStruct()    ||
+                                                yyextra->current->spec.isRecord()    ||
                                                 yyextra->current->spec.isRef()       ||
                                                 yyextra->current->spec.isValue()     ||
                                                 yyextra->insidePHP || yyextra->insideCS || yyextra->insideD || yyextra->insideObjC || yyextra->insideIDL
@@ -7124,6 +7150,7 @@ NONLopt [^\n]*
                                             );
                                           }
                                           if (yyextra->current->spec.isInterface() || yyextra->current->spec.isStruct() ||
+                                              yyextra->current->spec.isRecord() ||
                                               yyextra->insideJava || yyextra->insidePHP  || yyextra->insideCS  ||
                                               yyextra->insideD    || yyextra->insideObjC || yyextra->insideIDL || yyextra->insideSlice)
                                           {
@@ -8742,13 +8769,13 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
         {
           yyextra->current->protection = yyextra->protection = (ce->spec.isInterface() || ce->spec.isEnum()) ?  Protection::Public : Protection::Package;
         }
-        else if (ce->spec.isInterface() || ce->spec.isRef() || ce->spec.isValue() || ce->spec.isStruct() || ce->spec.isUnion())
+        else if (ce->spec.isInterface() || ce->spec.isRef() || ce->spec.isValue() || ce->spec.isStruct() || ce->spec.isRecord() ||ce->spec.isUnion())
         {
           if (ce->lang==SrcLangExt::ObjC)
           {
             yyextra->current->protection = yyextra->protection = Protection::Protected ;
           }
-          else if (!ce->name.empty() && ce->name.at(ni)=='@' && (ce->spec.isStruct() || ce->spec.isUnion()))
+          else if (!ce->name.empty() && ce->name.at(ni)=='@' && (ce->spec.isStruct() || ce->spec.isRecord() || ce->spec.isUnion()))
           {
             // members of an anonymous struct/union are members of the enclosing class
             // and thus share its protection

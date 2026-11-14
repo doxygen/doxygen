@@ -22,7 +22,7 @@
 */
 #define CN_SPC " "
 
-class TranslatorChinese : public Translator
+class TranslatorChinese : public TranslatorAdapter_1_19_0
 {
   public:
     /*! Used for identification of the language. The identification
@@ -589,6 +589,7 @@ class TranslatorChinese : public Translator
       {
         case ClassDef::Class:  result+="类"; break;
         case ClassDef::Struct: result+="结构体"; break;
+        case ClassDef::Record: return english.trCompoundReference(clName,compType,isTemplate);
         case ClassDef::Union:  result+="联合体"; break;
         case ClassDef::Interface:  result+="接口"; break;
         case ClassDef::Protocol:   result+="协议"; break;
@@ -751,7 +752,7 @@ class TranslatorChinese : public Translator
      *  followed by a list of files that were used to generate the page.
      */
     DString trGeneratedFromFiles(ClassDef::CompoundType compType,
-        bool) override
+        bool single) override
     { // single is true implies a single file
       bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
       DString result="该";
@@ -759,6 +760,7 @@ class TranslatorChinese : public Translator
       {
         case ClassDef::Class:      result+=vhdlOpt?"设计单元":"类"; break;
         case ClassDef::Struct:     result+="结构体"; break;
+        case ClassDef::Record:     return english.trGeneratedFromFiles(compType,single);
         case ClassDef::Union:      result+="联合体"; break;
         case ClassDef::Interface:  result+="接口"; break;
         case ClassDef::Protocol:   result+="协议"; break;
@@ -2353,6 +2355,7 @@ class TranslatorChinese : public Translator
           else result=trClass(true,true);
           break;
         case ClassDef::Struct:     result="结构体"; break;
+        case ClassDef::Record:     return english.trCompoundType(compType,lang);
         case ClassDef::Union:      result="联合体"; break;
         case ClassDef::Interface:  result="接口"; break;
         case ClassDef::Protocol:   result="协议"; break;
