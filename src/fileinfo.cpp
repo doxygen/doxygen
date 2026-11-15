@@ -19,77 +19,78 @@
 // own header
 #include "fileinfo.h"
 
-// other includes
-#include "filesystem.hpp"
+// standard includes
+#include <algorithm>
 
-namespace fs = ghc::filesystem;
+// other includes
+#include "fswrapper.h"
 
 size_t FileInfo::size() const
 {
   std::error_code ec;
-  size_t result = static_cast<size_t>(fs::file_size(fs::path(m_name),ec));
+  size_t result = static_cast<size_t>(fs::file_size(toFsPath(m_name),ec));
   return ec ? 0 : result;
 }
 
 bool FileInfo::exists() const
 {
   std::error_code ec;
-  bool result = fs::exists(fs::path(m_name),ec);
+  bool result = fs::exists(toFsPath(m_name),ec);
   return !ec && result;
 }
 
 bool FileInfo::isWritable() const
 {
   std::error_code ec;
-  fs::file_status status = fs::status(m_name,ec);
+  fs::file_status status = fs::status(toFsPath(m_name),ec);
   return !ec && (status.permissions() & fs::perms::owner_write)!=fs::perms::none;
 }
 
 bool FileInfo::isReadable() const
 {
   std::error_code ec;
-  fs::file_status status = fs::status(m_name,ec);
+  fs::file_status status = fs::status(toFsPath(m_name),ec);
   return !ec && (status.permissions() & fs::perms::owner_read)!=fs::perms::none;
 }
 
 bool FileInfo::isExecutable() const
 {
   std::error_code ec;
-  fs::file_status status = fs::status(m_name,ec);
+  fs::file_status status = fs::status(toFsPath(m_name),ec);
   return !ec && (status.permissions() & fs::perms::owner_exec)!=fs::perms::none;
 }
 
 bool FileInfo::isRelative() const
 {
-  return fs::path(m_name).is_relative();
+  return toFsPath(m_name).is_relative();
 }
 
 bool FileInfo::isFile() const
 {
   std::error_code ec;
-  fs::file_status status = fs::status(m_name,ec);
+  fs::file_status status = fs::status(toFsPath(m_name),ec);
   return !ec && fs::is_regular_file(std::move(status));
 }
 
 bool FileInfo::isDir() const
 {
   std::error_code ec;
-  fs::file_status status = fs::status(m_name,ec);
+  fs::file_status status = fs::status(toFsPath(m_name),ec);
   return !ec && fs::is_directory(std::move(status));
 }
 
 bool FileInfo::isSymLink() const
 {
   std::error_code ec;
-  fs::file_status status = fs::symlink_status(m_name,ec);
+  fs::file_status status = fs::symlink_status(toFsPath(m_name),ec);
   return !ec && fs::is_symlink(std::move(status));
 }
 
 std::string FileInfo::readLink() const
 {
   std::error_code ec;
-  fs::path targetPath =  fs::read_symlink(fs::path(m_name));
-  return !ec ? targetPath.string() : std::string();
+  fs::path targetPath =  fs::read_symlink(toFsPath(m_name));
+  return !ec ? fromFsPath(targetPath) : std::string();
 }
 
 std::string FileInfo::filePath() const
@@ -106,14 +107,14 @@ std::string FileInfo::absFilePath() const
 {
   std::string result;
   std::error_code ec;
-  fs::path path(m_name);
+  fs::path path = toFsPath(m_name);
   if (!path.is_relative())
   {
-    result = path.lexically_normal().string();
+    result = fromFsPath(path.lexically_normal());
   }
   else
   {
-    result = (fs::current_path(ec) / m_name).lexically_normal().string();
+    result = fromFsPath((fs::current_path(ec) / path).lexically_normal());
   }
   correctPath(result);
   return result;
@@ -121,7 +122,7 @@ std::string FileInfo::absFilePath() const
 
 std::string FileInfo::fileName() const
 {
-  return fs::path(m_name).filename().string();
+  return fromFsPath(toFsPath(m_name).filename());
 }
 
 std::string FileInfo::baseName() const
