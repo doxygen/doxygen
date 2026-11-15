@@ -272,9 +272,8 @@ class Tester:
                         elif pageref_reg.match(m):
                             m1 = re.sub(pageref_reg, '\\1', m)
                             pageref_res.append(m1)
-        # Has been commented out as in the test 57, inline namespace, there is still a small problem.
-        #if sorted(bkmk_res) != sorted(set(bkmk_res)):
-        #   return (False, "RTF: one (or more) bookmark(s) has(have) been defined multiple times")
+        if sorted(bkmk_res) != sorted(set(bkmk_res)):
+           return (False, "RTF: one (or more) bookmark(s) has(have) been defined multiple times")
         hyper_res = sorted(set(hyper_res))
         for h in hyper_res:
             if h not in bkmk_res:

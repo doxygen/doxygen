@@ -280,7 +280,8 @@ class MemberDef : public Definition
                const std::unique_ptr<ArgumentList> &actualArgs) const = 0;
     virtual void writeDeclaration(OutputList &ol,
                  const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *md,
-                 bool inGroup, int indentLevel=0, const ClassDef *inheritFrom=nullptr,const DString &inheritId=DString()) const = 0;
+                 bool inGroup, int indentLevel=0, const ClassDef *inheritFrom=nullptr,const DString &inheritId=DString(),
+                 const DString &declAnchor=DString()) const = 0;
     virtual void writeEnumDeclaration(OutputList &typeDecl, const ClassDef *cd,
                 const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod) const = 0;
     virtual void writeLink(OutputList &ol,

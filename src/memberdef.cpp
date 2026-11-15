@@ -333,7 +333,8 @@ class MemberDefImpl final : public DefinitionMixin<MemberDefMutable>
     void incrementFlowKeyWordCount() override;
     void writeDeclaration(OutputList &ol,
                    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
-                   bool inGroup, int indentLevel,const ClassDef *inheritFrom=nullptr,const DString &inheritId=DString()) const override;
+                   bool inGroup, int indentLevel,const ClassDef *inheritFrom=nullptr,const DString &inheritId=DString(),
+                   const DString &declAnchor=DString()) const override;
     void writeDocumentation(const MemberList *ml,int memCount,int memTotal,OutputList &ol,
                             const DString &scopeName,const Definition *container,
                             bool inGroup,bool showEnumValues=false,bool
@@ -957,9 +958,17 @@ class MemberDefAliasImpl final : public DefinitionAliasMixin<MemberDef>
 
     void writeDeclaration(OutputList &ol,
                    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
-                   bool inGroup, int indentLevel, const ClassDef *inheritFrom=nullptr,const DString &inheritId=DString()) const override
+                   bool inGroup, int indentLevel, const ClassDef *inheritFrom=nullptr,const DString &inheritId=DString(),
+                   const DString &declAnchor=DString()) const override
     {
-      getMdAlias()->writeDeclaration(ol,cd,nd,fd,gd,mod,inGroup,indentLevel,inheritFrom,inheritId);
+      // The alias is shown in another scope than the original member. Give its declaration an anchor of
+      // its own, so it does not clash with the one of the original (links still use the original anchor).
+      DString aliasAnchor = declAnchor;
+      if (aliasAnchor.empty() && getScope())
+      {
+        aliasAnchor = "a"+md5str((getScope()->getOutputFileBase()+"_"+getMdAlias()->anchor()).view());
+      }
+      getMdAlias()->writeDeclaration(ol,cd,nd,fd,gd,mod,inGroup,indentLevel,inheritFrom,inheritId,aliasAnchor);
     }
     void writeEnumDeclaration(OutputList &typeDecl,
             const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod) const override
@@ -2223,8 +2232,10 @@ bool MemberDefImpl::_isAnonymousBitField() const
 
 void MemberDefImpl::writeDeclaration(OutputList &ol,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,const ModuleDef *mod,
-               bool inGroup, int indentLevel, const ClassDef *inheritedFrom,const DString &inheritId) const
+               bool inGroup, int indentLevel, const ClassDef *inheritedFrom,const DString &inheritId,
+               const DString &declAnchor) const
 {
+  const DString memAnchor = declAnchor.empty() ? anchor() : declAnchor;
   //printf("> %s MemberDefImpl::writeDeclaration() inGroup=%d inheritId=%s\n",qPrint(qualifiedName()),inGroup,qPrint(inheritId));
 
   // hide enum value, since they appear already as part of the enum, unless they
@@ -2265,7 +2276,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   // start a new member declaration
   OutputGenerator::MemberItemType anonType = !m_tArgList.empty() ? OutputGenerator::MemberItemType::Templated      :
                                                                    OutputGenerator::MemberItemType::Normal;
-  ol.startMemberItem(annoClassDef && isAnonymous() ? DString() : anchor(), anonType, inheritId);
+  ol.startMemberItem(annoClassDef && isAnonymous() ? DString() : memAnchor, anonType, inheritId);
 
 
   // If there is no detailed description we need to write the anchor here.
@@ -2282,8 +2293,8 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     {
       doxyName.prepend(cdname+getLanguageSpecificSeparator(getLanguage()));
     }
-    ol.startDoxyAnchor(cfname,cname,anchor(),doxyName,doxyArgs);
-    ol.addLabel(cfname,anchor());
+    ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
+    ol.addLabel(cfname,memAnchor);
   }
 
   if (!detailsVisible)
@@ -2309,7 +2320,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   {
      ol.startMemberTemplateParams();
     _writeTemplatePrefix(ol,d,m_tArgList);
-     ol.endMemberTemplateParams(anchor(),inheritId);
+     ol.endMemberTemplateParams(memAnchor,inheritId);
   }
 
 
@@ -2358,7 +2369,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
         annoClassDef->writeDeclaration(ol,inGroup,indentLevel+1,inheritedFrom,inheritId);
         //printf(">>>>>>>>>>>>>> startMemberItem(2)\n");
         anonType = OutputGenerator::MemberItemType::AnonymousEnd;
-        ol.startMemberItem(anchor(),anonType,inheritId);
+        ol.startMemberItem(memAnchor,anonType,inheritId);
         for (int j=0;j< indentLevel;j++)
         {
           ol.writeNonBreakableSpace(3);
@@ -2570,7 +2581,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
 
   if (writeAnchor)
   {
-    ol.endDoxyAnchor(cfname,anchor());
+    ol.endDoxyAnchor(cfname,memAnchor);
   }
 
   //printf("endMember %s annoClassDef=%p annEnumType=%p\n",
@@ -2599,7 +2610,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
                 };
     if (!ast->empty())
     {
-      ol.startMemberDescription(anchor(),inheritId);
+      ol.startMemberDescription(memAnchor,inheritId);
       ol.writeDoc(ast.get(),getOuterScope()?getOuterScope():d,this);
       if (detailsVisible) // add More.. link only when both brief and details are visible
       {
@@ -2621,7 +2632,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     }
   }
 
-  ol.endMemberDeclaration(anchor(),inheritId);
+  ol.endMemberDeclaration(memAnchor,inheritId);
 
   warnIfUndocumented();
   //printf("< %s MemberDefImpl::writeDeclaration() inGroup=%d\n",qPrint(qualifiedName()),inGroup);
