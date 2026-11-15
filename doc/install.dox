@@ -29,7 +29,9 @@ If you downloaded the source distribution, you need at least the
 following to build the executable:
 <ul>
 <li>The <a href="ftp://prep.ai.mit.edu/pub/gnu/">GNU</a> tools
-    \c flex, \c bison, \c libiconv and <code>GNU make</code>
+    \c flex, \c bison, \c libiconv and <code>GNU make</code>.
+    Note that \c flex versions 2.6.5 up to 2.6.12 cannot be used, please use
+    \c flex 2.6.4 or 2.6.13 and later.
     \addindex flex
     \addindex bison
     \addindex libiconv
