@@ -252,6 +252,10 @@ const char * table_schema[][2] = {
       "\tline                 INTEGER NOT NULL,\n"
       "\tcolumn               INTEGER NOT NULL,\n"
       "\theader_id            INTEGER REFERENCES path,\n"
+      "\tfinal                INTEGER, -- 0:no 1:yes\n"
+      "\tsealed               INTEGER, -- 0:no 1:yes\n"
+      "\tabstract             INTEGER, -- 0:no 1:yes\n"
+      "\tref                  INTEGER, -- 0:no 1:yes\n"
       "\tdetaileddescription  TEXT,\n"
       "\tbriefdescription     TEXT,\n"
       "\tFOREIGN KEY (rowid) REFERENCES refid (rowid)\n"
@@ -278,6 +282,7 @@ const char * table_schema[][2] = {
       "\tdefname      TEXT,\n"
       "\tarray        TEXT,\n"
       "\tdefval       TEXT,\n"
+      "\ttypeconstraint TEXT,\n"
       "\tbriefdescription TEXT\n"
     ");"
     "CREATE UNIQUE INDEX idx_param ON param\n"
@@ -765,6 +770,10 @@ SqlStmt compounddef_insert={
     "line,"
     "column,"
     "header_id,"
+    "final,"
+    "sealed,"
+    "abstract,"
+    "ref,"
     "briefdescription,"
     "detaileddescription"
   ")"
@@ -779,6 +788,10 @@ SqlStmt compounddef_insert={
     ":line,"
     ":column,"
     ":header_id,"
+    ":final,"
+    ":sealed,"
+    ":abstract,"
+    ":ref,"
     ":briefdescription,"
     ":detaileddescription"
   ")"
@@ -807,14 +820,15 @@ SqlStmt param_select = {
     "(defname IS NULL OR defname=:defname) AND "
     "(array IS NULL OR array=:array) AND "
     "(defval IS NULL OR defval=:defval) AND "
+    "typeconstraint IS :typeconstraint AND "
     "(briefdescription IS NULL OR briefdescription=:briefdescription)"
   ,nullptr
 };
 SqlStmt param_insert = {
   "INSERT INTO param "
-    "( attributes, type, declname, defname, array, defval, briefdescription ) "
+    "( attributes, type, declname, defname, array, defval, typeconstraint, briefdescription ) "
   "VALUES "
-    "(:attributes,:type,:declname,:defname,:array,:defval,:briefdescription)"
+    "(:attributes,:type,:declname,:defname,:array,:defval,:typeconstraint,:briefdescription)"
   ,nullptr
 };
 //////////////////////////////////////////////////////
@@ -1369,7 +1383,8 @@ static void writeInnerNamespaces(const NamespaceLinkedRefMap &nl, struct Refid o
 
 static void writeTemplateArgumentList(const ArgumentList &al,
                                       const Definition * scope,
-                                      const FileDef * fileScope)
+                                      const FileDef * fileScope,
+                                      const ArgumentList &typeConstraints=ArgumentList())
 {
   for (const Argument &a : al)
   {
@@ -1392,6 +1407,22 @@ static void writeTemplateArgumentList(const ArgumentList &al,
       bindTextParameter(param_select,":defval",a.defval);
       bindTextParameter(param_insert,":defval",a.defval);
     }
+    DString typeConstraint = a.typeConstraint;
+    // C# where clauses, with one entry per constraint. A C# type parameter has its name in type.
+    const DString &paramName = a.name.empty() ? a.type : a.name;
+    for (const Argument &tc : typeConstraints)
+    {
+      if (tc.name==paramName && !tc.type.empty())
+      {
+        if (!typeConstraint.empty()) typeConstraint+=", ";
+        typeConstraint+=tc.type;
+      }
+    }
+    if (!typeConstraint.empty())
+    {
+      bindTextParameter(param_select,":typeconstraint",typeConstraint);
+      bindTextParameter(param_insert,":typeconstraint",typeConstraint);
+    }
     if (!step(param_select,true,true))
       step(param_insert);
   }
@@ -1399,12 +1430,12 @@ static void writeTemplateArgumentList(const ArgumentList &al,
 
 static void writeMemberTemplateLists(const MemberDef *md)
 {
-  writeTemplateArgumentList(md->templateArguments(),md->getClassDef(),md->getFileDef());
+  writeTemplateArgumentList(md->templateArguments(),md->getClassDef(),md->getFileDef(),md->typeConstraints());
 }
 
 static void writeTemplateList(const ClassDef *cd)
 {
-  writeTemplateArgumentList(cd->templateArguments(),cd,cd->getFileDef());
+  writeTemplateArgumentList(cd->templateArguments(),cd,cd->getFileDef(),cd->typeConstraints());
 }
 
 static void writeTemplateList(const ConceptDef *cd)
@@ -1708,6 +1739,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     bindIntParameter(memberdef_insert,":settable",md->isSettable());
     bindIntParameter(memberdef_insert,":privatesettable",md->isPrivateSettable());
     bindIntParameter(memberdef_insert,":protectedsettable",md->isProtectedSettable());
+    bindIntParameter(memberdef_insert,":initonly",md->isInitonly());
 
     if (md->isAssign() || md->isCopy() || md->isRetain()
      || md->isStrong() || md->isWeak())
@@ -1938,6 +1970,10 @@ static void generateSqlite3ForClass(const ClassDef *cd)
   bindTextParameter(compounddef_insert,":title",cd->title());
   bindTextParameter(compounddef_insert,":kind",cd->compoundTypeString());
   bindIntParameter(compounddef_insert,":prot",static_cast<int>(cd->protection()));
+  bindIntParameter(compounddef_insert,":final",cd->isFinal());
+  bindIntParameter(compounddef_insert,":sealed",cd->isSealed());
+  bindIntParameter(compounddef_insert,":abstract",cd->isAbstract());
+  bindIntParameter(compounddef_insert,":ref",cd->isRef());
 
   int file_id = insertPath(cd->getDefFileName());
   bindIntParameter(compounddef_insert,":file_id",file_id);
