@@ -491,12 +491,8 @@ int main(int argc,char **argv) {
   StringVector inputList;
   for (int i = 1; i < argc; i++) {
     if (strcmp(argv[i], "-") == 0) {
-      char filename[1024];
-      while (1) {
-        (void)scanf("%s[^\n]", filename);
-        if (feof(stdin)) {
-          break;
-        }
+      std::string filename;
+      while (std::cin >> filename) {
         inputList.push_back(filename);
       }
     } else {
