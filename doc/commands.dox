@@ -3108,7 +3108,7 @@ Commands for displaying examples
    - $$godbolt$$ is the placeholder where the snippet file is inserted.
    - Such a file is called the "Client State" of Godbolt. The simplest way to get such a "Client State" is to set up 
      the scene interactively and obtain a short link via "Share". This short link can then be easily transformed into JSON
-     via https://godbolt.org/api/shortlinkinfo/`last part of short link`.
+     via https://godbolt.org/api/shortlinkinfo/`last part of short link`. These files are found in the INPUT directories.
  \noop [snippet_txt1]
 
  The options `lineno`, `trimleft`, `local`, `strip` and `nostrip` have no effect in combination with the `option` `doc`.
