@@ -671,21 +671,19 @@ DString Portable::removeLongPathMarker(const DString &path)
 
 
 //----------------------------------------------------------------------------------------
-// We need to do this part last as including filesystem.hpp earlier
+// We need to do this part last as including fswrapper.h (filesystem.hpp) earlier
 // causes the code above to fail to compile on Windows.
 
-#include "filesystem.hpp"
-
-namespace fs = ghc::filesystem;
+#include "fswrapper.h"
 
 std::ofstream Portable::openOutputStream(const DString &fileName,bool append)
 {
   std::ios_base::openmode mode = std::ofstream::out | std::ofstream::binary;
   if (append) mode |= std::ofstream::app;
 #if defined(__clang__) && defined(__MINGW32__)
-  return std::ofstream(fs::path(fileName.str()).wstring(), mode);
+  return std::ofstream(toFsPath(fileName.str()).wstring(), mode);
 #else
-  return std::ofstream(fs::path(fileName.str()), mode);
+  return std::ofstream(toFsPath(fileName.str()), mode);
 #endif
 }
 
@@ -695,9 +693,9 @@ std::ifstream Portable::openInputStream(const DString &fileName,bool binary, boo
   if (binary)     mode |= std::ios::binary;
   if (openAtEnd)  mode |= std::ios::ate;
 #if defined(__clang__) && defined(__MINGW32__)
-  return std::ifstream(fs::path(fileName.str()).wstring(), mode);
+  return std::ifstream(toFsPath(fileName.str()).wstring(), mode);
 #else
-  return std::ifstream(fs::path(fileName.str()), mode);
+  return std::ifstream(toFsPath(fileName.str()), mode);
 #endif
 }
 

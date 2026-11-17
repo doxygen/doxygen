@@ -20,13 +20,12 @@
 #include "dir.h"
 
 // standard includes
+#include <algorithm>
 #include <utility>
 
 // other includes
 #include "fileinfo.h"
-#include "filesystem.hpp"
-
-namespace fs = ghc::filesystem;
+#include "fswrapper.h"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -85,7 +84,7 @@ bool DirEntry::is_symlink() const
 
 std::string DirEntry::path() const
 {
-  return p->entry.path().string();
+  return fromFsPath(p->entry.path());
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -93,7 +92,7 @@ std::string DirEntry::path() const
 struct DirIterator::Private
 {
   Private() : it() {}
-  Private(const std::string &path) : it(path,ec) {}
+  Private(const std::string &path) : it(toFsPath(path),ec) {}
   fs::directory_iterator it;
   std::error_code ec;
   DirEntry current;
@@ -234,17 +233,17 @@ Dir::~Dir()
 
 void Dir::setPath(const std::string &path)
 {
-  p->path = path;
+  p->path = toFsPath(path);
 }
 
 std::string Dir::path() const
 {
-  return p->path.string();
+  return fromFsPath(p->path);
 }
 
 DirIterator Dir::iterator() const
 {
-  return DirIterator(p->path.string());
+  return DirIterator(fromFsPath(p->path));
 }
 
 static void correctPath(std::string &s)
@@ -256,31 +255,31 @@ bool Dir::exists(const std::string &path,bool acceptsAbsPath) const
 {
   std::string result = filePath(path,acceptsAbsPath);
   std::error_code ec;
-  bool exist = fs::exists(fs::path(result),ec);
+  bool exist = fs::exists(toFsPath(result),ec);
   return !ec && exist;
 }
 
 bool Dir::exists() const
 {
-  FileInfo fi(p->path.string());
+  FileInfo fi(fromFsPath(p->path));
   return fi.exists() && fi.isDir();
 }
 
 bool Dir::empty(const std::string &subdir) const
 {
-  fs::path pth = path();
-  pth /= subdir;
+  fs::path pth = p->path;
+  pth /= toFsPath(subdir);
   return fs::is_empty(pth);
 }
 
 bool Dir::isRelative() const
 {
-  return isRelativePath(p->path.string());
+  return p->path.is_relative();
 }
 
 bool Dir::isRelativePath(const std::string &path)
 {
-  return fs::path(path).is_relative();
+  return toFsPath(path).is_relative();
 }
 
 std::string Dir::filePath(const std::string &path,bool acceptsAbsPath) const
@@ -292,7 +291,7 @@ std::string Dir::filePath(const std::string &path,bool acceptsAbsPath) const
   }
   else
   {
-    result = (p->path / path).string();
+    result = fromFsPath(p->path / toFsPath(path));
   }
   correctPath(result);
   return result;
@@ -308,7 +307,7 @@ bool Dir::mkdir(const std::string &path,bool acceptsAbsPath) const
   }
   else
   {
-    return fs::create_directory(result,ec);
+    return fs::create_directory(toFsPath(result),ec);
   }
 }
 
@@ -321,7 +320,7 @@ bool Dir::remove(const std::string &path,bool acceptsAbsPath) const
 {
   std::error_code ec;
   std::string result = filePath(path,acceptsAbsPath);
-  return fs::remove(result,ec);
+  return fs::remove(toFsPath(result),ec);
 }
 
 bool Dir::rename(const std::string &orgName,const std::string &newName,bool acceptsAbsPath) const
@@ -329,7 +328,7 @@ bool Dir::rename(const std::string &orgName,const std::string &newName,bool acce
   std::error_code ec;
   std::string fn1 = filePath(orgName,acceptsAbsPath);
   std::string fn2 = filePath(newName,acceptsAbsPath);
-  fs::rename(fn1,fn2,ec);
+  fs::rename(toFsPath(fn1),toFsPath(fn2),ec);
   return !ec;
 }
 
@@ -339,16 +338,16 @@ bool Dir::copy(const std::string &srcName,const std::string &dstName,bool accept
   std::error_code ec, ec_perm;
   std::string sn = filePath(srcName,acceptsAbsPath);
   std::string dn = filePath(dstName,acceptsAbsPath);
-  fs::copy(sn,dn,copyOptions,ec);
+  fs::copy(toFsPath(sn),toFsPath(dn),copyOptions,ec);
   // make sure the destination is writable for the owner (see issue #11600)
-  fs::permissions(dn, fs::perms::owner_write, fs::perm_options::add, ec_perm);
+  fs::permissions(toFsPath(dn), fs::perms::owner_write, fs::perm_options::add, ec_perm);
   return !ec;
 }
 
 std::string Dir::currentDirPath()
 {
   std::error_code ec;
-  std::string result = fs::current_path(ec).string();
+  std::string result = fromFsPath(fs::current_path(ec));
   correctPath(result);
   return result;
 }
@@ -356,13 +355,13 @@ std::string Dir::currentDirPath()
 bool Dir::setCurrent(const std::string &path)
 {
   std::error_code ec;
-  fs::current_path(path,ec);
+  fs::current_path(toFsPath(path),ec);
   return !ec;
 }
 
 std::string Dir::cleanDirPath(const std::string &path)
 {
-  std::string result = fs::path(path).lexically_normal().string();
+  std::string result = fromFsPath(toFsPath(path).lexically_normal());
   correctPath(result);
   return result;
 }
@@ -370,7 +369,7 @@ std::string Dir::cleanDirPath(const std::string &path)
 std::string Dir::absPath() const
 {
   std::error_code ec;
-  std::string result = fs::absolute(p->path,ec).string();
+  std::string result = fromFsPath(fs::absolute(p->path,ec));
   correctPath(result);
   return result;
 }
