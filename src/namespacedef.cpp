@@ -1517,6 +1517,10 @@ void NamespaceLinkedRefMap::writeDeclaration(OutputList &ol,const DString &title
       DString anc = nd->anchor();
       if (anc.empty()) anc=name; else anc.prepend(name+"_");
       ol.startMemberItem(anc,OutputGenerator::MemberItemType::Normal);
+      if (nd->isInline())
+      {
+        ol.docify("inline ");
+      }
       DString ct = nd->compoundTypeString();
       ol.docify(ct);
       ol.docify(" ");
@@ -1729,7 +1733,11 @@ DString NamespaceDefImpl::title() const
   }
   else
   {
-    pageTitle = getReferenceTitle([this](){
+    if (isInline())
+    {
+      pageTitle = "inline ";
+    }
+    pageTitle += getReferenceTitle([this](){
       return theTranslator->trNamespaceReference(displayName());
     });
   }
