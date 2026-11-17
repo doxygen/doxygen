@@ -321,6 +321,7 @@ DString convertToId(const DString &s);
 DString convertToHtml(const DString &s,bool keepEntities=true);
 DString convertToXML(const DString &s, bool keepEntities=false, bool citeEntry = false);
 DString convertToJSString(const DString &s,bool keepEntities=false,bool singleQuotes=false);
+DString convertSourceToJSString(std::string_view sv);
 
 //---------------------------------------------------------------
 

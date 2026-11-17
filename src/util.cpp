@@ -25,6 +25,8 @@
 #include <ctime>
 #include <mutex>
 #include <unordered_set>
+#include <sstream>
+#include <iomanip>
 
 // other includes (sorted)
 #include "arguments.h"
@@ -3380,6 +3382,34 @@ DString convertToJSString(const DString &s,bool keepEntities,bool singleQuotes)
   }
   return keepEntities ? result : HtmlEntityMapper::instance().convertCharEntitiesToUTF8(result);
 }
+
+DString convertSourceToJSString(std::string_view sv)
+{
+// Source - https://stackoverflow.com/a/33799784
+// Posted by vog, modified by community. See post 'Timeline' for change history
+// Retrieved 2026-11-17, License - CC BY-SA 4.0
+    std::ostringstream o;
+    for (auto c = sv.cbegin(); c != sv.cend(); c++) {
+        switch (*c) {
+        case '"': o << "\\\""; break;
+        case '\\': o << "\\\\"; break;
+        case '\b': o << "\\b"; break;
+        case '\f': o << "\\f"; break;
+        case '\n': o << "\\n"; break;
+        case '\r': o << "\\r"; break;
+        case '\t': o << "\\t"; break;
+        default:
+            if ('\x00' <= *c && *c <= '\x1f') {
+                o << "\\u"
+                  << std::hex << std::setw(4) << std::setfill('0') << static_cast<int>(*c);
+            } else {
+                o << *c;
+            }
+        }
+    }
+    return o.str();
+}
+
 
 /*! Extracts a (sub-)string from \a type starting at \a pos that
  *  could form a class. The index of the match is returned and the found

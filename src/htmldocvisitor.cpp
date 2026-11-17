@@ -41,6 +41,7 @@
 #include "reflist.h"
 #include "util.h"
 #include "vhdldocgen.h"
+#include <base64.h>
 
 static const int NUM_HTML_LIST_TYPES = 4;
 static const char g_types[][NUM_HTML_LIST_TYPES] = {"1", "a", "i", "A"};
@@ -689,6 +690,51 @@ void HtmlDocVisitor::operator()(const DocAnchor &anc)
   m_t << "<a class=\"anchor\" id=\"" << anc.anchor() << "\"" << anc.attribs().toString() << "></a>";
 }
 
+namespace 
+{
+namespace Godbolt
+{
+const DString clientStateTemplate = R"json({
+  "sessions": [
+    {
+      "id": 1,
+      "language": "c++",
+      "source": "$$godbolt$$",
+      "compilers": [],
+      "executors": [
+        {
+          "compiler": {
+            "id": "clang_trunk",
+            "libs": [],
+            "options": "-std=c++20"
+          }
+        }
+      ]
+    }
+  ]
+}
+)json";
+const DString sourceTag = "$$godbolt$$";
+
+DString ClientStateFor(const DString& fragment)
+{
+  auto leftSize = clientStateTemplate.find(sourceTag);
+  auto midStart = leftSize + sourceTag.size();
+  return clientStateTemplate.left(leftSize) + fragment + clientStateTemplate.mid(midStart);
+}
+
+DString UrlFor(DString fragmentRaw)
+{
+  DString request = "https://godbolt.org/clientstate/";
+  auto fragmentJSEncoded = convertSourceToJSString(fragmentRaw.view());
+  auto clientStateDS = ClientStateFor(fragmentJSEncoded);
+  auto clientState = std::string{clientStateDS.view()};
+  auto clientState64 = base64_encode(clientState, true);
+  return request + clientState64;
+}
+}
+}
+
 void HtmlDocVisitor::operator()(const DocInclude &inc)
 {
   if (m_hide) return;
@@ -759,15 +805,20 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
     case DocInclude::SnippetWithLines:
       forceEndParagraph(inc);
       m_ci.startCodeFragment("DoxyCode");
+      DString fragment;
+      DString* retrieveFragment = inc.canGodbolt() ? &fragment : nullptr;
       CodeFragmentManager::instance().parseCodeFragment(m_ci,
                                        inc.file(),
                                        inc.blockId(),
                                        inc.context(),
                                        inc.type()==DocInclude::SnippetWithLines,
                                        inc.trimLeft(),
-                                       inc.stripCodeComments()
+                                       inc.stripCodeComments(),
+                                       retrieveFragment
                                       );
       m_ci.endCodeFragment("DoxyCode");
+      if (inc.canGodbolt())
+        m_t << "<a href=\"" << Godbolt::UrlFor(fragment) << "\">Godbolt</a>";
       forceStartParagraph(inc);
       break;
   }

@@ -248,7 +248,8 @@ void CodeFragmentManager::parseCodeFragment(OutputCodeList & codeOutList,
                                             const DString &  scopeName,
                                             bool             showLineNumbers,
                                             bool             trimLeft,
-                                            bool             stripCodeComments
+                                            bool             stripCodeComments,
+                                            DString*         fragment // = nullptr 
                                            )
 {
   AUTO_TRACE("CodeFragmentManager::parseCodeFragment({},blockId={},scopeName={},showLineNumber={},trimLeft={},stripCodeComments={}",
@@ -310,6 +311,8 @@ void CodeFragmentManager::parseCodeFragment(OutputCodeList & codeOutList,
           .setCollectXRefs(false)
           );
     }
+    if (fragment)
+      *fragment = codeFragment->fileContents;
   }
   // use the recorded OutputCodeList from the cache to output a pre-recorded fragment
   auto blockKv = codeFragment->blocksById.find(blockId.str());

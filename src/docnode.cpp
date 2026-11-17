@@ -4009,6 +4009,7 @@ void DocPara::handleInclude(const DString &cmdName,DocInclude::Type t)
   bool isBlock = false;
   bool trimLeft = false;
   bool localScope = false;
+  bool canGodbolt = false;
   bool stripCodeComments = Config_getBool(STRIP_CODE_COMMENTS);
   if (tok.is(TokenRetval::TK_WORD) && parser()->context.token->name=="{")
   {
@@ -4032,6 +4033,10 @@ void DocPara::handleInclude(const DString &cmdName,DocInclude::Type t)
     if (t==DocInclude::Snippet && contains("trimleft"))
     {
       trimLeft = true;
+    }
+    if (t==DocInclude::Snippet && contains("canGodbolt"))
+    {
+      canGodbolt = true;
     }
 
     if (contains("lineno"))
@@ -4108,7 +4113,7 @@ void DocPara::handleInclude(const DString &cmdName,DocInclude::Type t)
                                 stripCodeComments,
                                 parser()->context.isExample,
                                 parser()->context.exampleName,
-                                blockId,isBlock,trimLeft);
+                                blockId,isBlock,trimLeft,canGodbolt);
   children().get_last<DocInclude>()->parse();
 }
 

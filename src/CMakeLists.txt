@@ -1,6 +1,7 @@
 # vim:ts=4:sw=4:expandtab:autoindent:
 
 include_directories(
+    ${PROJECT_SOURCE_DIR}/deps/cpp-base64
     ${PROJECT_SOURCE_DIR}/deps/TinyDeflate
     ${PROJECT_SOURCE_DIR}/deps/filesystem
     ${PROJECT_SOURCE_DIR}/deps/libmd5
@@ -401,6 +402,7 @@ target_link_libraries(doxygen PRIVATE
     xml
     doxygen_version
     vhdlparser
+    cpp-base64
     ${Iconv_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     ${EXTRA_LIBS}
