@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void main()
+int main()
 {
   int i,n,temp,j,arr[25];
   printf("Enter the number of elements in the Array: ");

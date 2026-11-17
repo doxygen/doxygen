@@ -694,7 +694,7 @@ namespace
 {
 namespace Godbolt
 {
-const DString clientStateTemplate = R"json({
+const DString defaultClientStateTemplate = R"json({
   "sessions": [
     {
       "id": 1,
@@ -716,18 +716,39 @@ const DString clientStateTemplate = R"json({
 )json";
 const DString sourceTag = "$$godbolt$$";
 
-DString ClientStateFor(const DString& fragment)
+DString ClientStateTemplateFor(const DString& godboltClientStateTemplateName)
+{
+  StringVector inputList=Config_getList(INPUT);
+  std::set<std::string> scannedDirs;
+  for (const auto &i : inputList)
+  {
+    FileInfo fii(i);
+    auto dirPath = fii.dirPath();
+    if (auto found = scannedDirs.find(dirPath); found != scannedDirs.end()) continue;
+    FileInfo fiDir(dirPath);
+    if (!fiDir.exists() || !fiDir.isDir()) continue;
+    FileInfo fiTemplate(dirPath + "/" + std::string{godboltClientStateTemplateName.view()});
+    if (fiTemplate.exists() || fiTemplate.isFile())
+    {
+       return fileToString(fiTemplate.absFilePath());
+    }
+  }
+  return defaultClientStateTemplate;
+}
+
+DString ClientStateFor(const DString& clientStateTemplate, const DString& fragment)
 {
   auto leftSize = clientStateTemplate.find(sourceTag);
   auto midStart = leftSize + sourceTag.size();
   return clientStateTemplate.left(leftSize) + fragment + clientStateTemplate.mid(midStart);
 }
 
-DString UrlFor(DString fragmentRaw)
+DString UrlFor(const DString& godboltClientStateTemplateName, const DString& fragmentRaw)
 {
   DString request = "https://godbolt.org/clientstate/";
   auto fragmentJSEncoded = convertSourceToJSString(fragmentRaw.view());
-  auto clientStateDS = ClientStateFor(fragmentJSEncoded);
+  auto clientStateTemplate = ClientStateTemplateFor(godboltClientStateTemplateName);
+  auto clientStateDS = ClientStateFor(clientStateTemplate, fragmentJSEncoded);
   auto clientState = std::string{clientStateDS.view()};
   auto clientState64 = base64_encode(clientState, true);
   return request + clientState64;
@@ -806,7 +827,8 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
       forceEndParagraph(inc);
       m_ci.startCodeFragment("DoxyCode");
       DString fragment;
-      DString* retrieveFragment = inc.canGodbolt() ? &fragment : nullptr;
+      bool godbolt = !inc.godboltClientState().empty();
+      DString* retrieveFragment = godbolt ? &fragment : nullptr;
       CodeFragmentManager::instance().parseCodeFragment(m_ci,
                                        inc.file(),
                                        inc.blockId(),
@@ -817,8 +839,8 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
                                        retrieveFragment
                                       );
       m_ci.endCodeFragment("DoxyCode");
-      if (inc.canGodbolt())
-        m_t << "<a href=\"" << Godbolt::UrlFor(fragment) << "\">Godbolt</a>";
+      if (godbolt)
+        m_t << "<a href=\"" << Godbolt::UrlFor(inc.godboltClientState(), fragment) << "\">Godbolt</a>";
       forceStartParagraph(inc);
       break;
   }
