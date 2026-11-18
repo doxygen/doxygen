@@ -3399,7 +3399,7 @@ DString convertSourceToJSString(std::string_view sv)
         case '\r': o << "\\r"; break;
         case '\t': o << "\\t"; break;
         default:
-            if ('\x00' <= *c && *c <= '\x1f') {
+            if (*c <= '\x1f') {
                 o << "\\u"
                   << std::hex << std::setw(4) << std::setfill('0') << static_cast<int>(*c);
             } else {
