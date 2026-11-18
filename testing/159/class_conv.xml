@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_conv" kind="class" language="C++" prot="public">
+    <compoundname>Conv</compoundname>
+    <templateparamlist>
+      <param>
+        <type>typename A</type>
+      </param>
+    </templateparamlist>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_conv_1a7129b43b8129db5681f15f5dd9ff3b6b" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename B</type>
+            <defval>A</defval>
+          </param>
+          <param>
+            <type>typename std::enable_if_t&lt; std::is_convertible_v&lt; const B &amp;, A &gt; &gt; *</type>
+            <defval>nullptr</defval>
+          </param>
+        </templateparamlist>
+        <type>constexpr</type>
+        <definition>Conv&lt; A &gt;::Conv</definition>
+        <argsstring>(const B &amp;b) noexcept</argsstring>
+        <name>Conv</name>
+        <qualifiedname>Conv::Conv</qualifiedname>
+        <param>
+          <type>const B &amp;</type>
+          <declname>b</declname>
+        </param>
+        <briefdescription>
+          <para>Implicit converting constructor. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="159_template_overload_anchors.cpp" line="13" column="15" bodyfile="159_template_overload_anchors.cpp" bodystart="13" bodyend="13"/>
+      </memberdef>
+      <memberdef kind="function" id="class_conv_1a261cece3cf54dc1c6c0cbeef74da9e29" prot="public" static="no" constexpr="yes" const="no" explicit="yes" inline="yes" noexcept="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename B</type>
+          </param>
+          <param>
+            <type>typename std::enable_if_t&lt;!std::is_convertible_v&lt; const B &amp;, A &gt; &gt; *</type>
+            <defval>nullptr</defval>
+          </param>
+        </templateparamlist>
+        <type>constexpr</type>
+        <definition>Conv&lt; A &gt;::Conv</definition>
+        <argsstring>(const B &amp;b) noexcept</argsstring>
+        <name>Conv</name>
+        <qualifiedname>Conv::Conv</qualifiedname>
+        <param>
+          <type>const B &amp;</type>
+          <declname>b</declname>
+        </param>
+        <briefdescription>
+          <para>Explicit converting constructor. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="159_template_overload_anchors.cpp" line="18" column="24" bodyfile="159_template_overload_anchors.cpp" bodystart="18" bodyend="18"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>A class template. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="159_template_overload_anchors.cpp" line="7" column="1" bodyfile="159_template_overload_anchors.cpp" bodystart="8" bodyend="19"/>
+    <listofallmembers>
+      <member refid="class_conv_1a7129b43b8129db5681f15f5dd9ff3b6b" prot="public" virt="non-virtual">
+        <scope>Conv</scope>
+        <name>Conv</name>
+      </member>
+      <member refid="class_conv_1a261cece3cf54dc1c6c0cbeef74da9e29" prot="public" virt="non-virtual">
+        <scope>Conv</scope>
+        <name>Conv</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
