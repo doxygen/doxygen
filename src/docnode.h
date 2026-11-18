@@ -471,9 +471,9 @@ class DocInclude final : public DocNode
     bool      m_isExample;
     bool      m_isBlock;
     bool      m_trimLeft;
-    DString  m_godboltClientState;  
     DString  m_exampleFile;
     DString  m_blockId;
+    DString  m_godboltClientState;  
 };
 
 /** Node representing a include/dontinclude operator block */
