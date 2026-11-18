@@ -30,3 +30,4 @@ cmake-build-debug-event-trace/
 /.vs/doxygen.slnx
 /.vs
 /out
+/CMakeSettings.json
