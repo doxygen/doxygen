@@ -2888,6 +2888,14 @@ static void writeMemberList(OutputList &ol,bool useSections,const std::string &p
 
         // member name
         if (!firstItem) ol.endItemListItem();
+        if ((prevName.empty() ||
+            tolower(name.at(startIndex))!=tolower(prevName.at(0))) &&
+            !useSections) // new letter
+        {
+          DString cs     = letterToLabel(letter);
+          DString anchor = "index_"+convertToId(cs);
+          ol.writeString("<a id=\"" + anchor + "\"/>\n");
+        }
         ol.startItemListItem();
         firstItem=false;
         ol.docify(name);
@@ -3180,12 +3188,7 @@ static void writeMemberIndex(OutputList &ol,
   bool first=true;
   ol.writeString("<br/>\n");
   DString alphaLinks = "<div class=\"qindex\">";
-  StringMap usedLetters;
   for (const auto &[letter,list] : map)
-  {
-    usedLetters.emplace(convertUTF8ToUpper(letter),letter);
-  }
-  for (const auto &[letterUC,letter] : usedLetters)
   {
     DString ci(letter);
     DString is = letterToLabel(ci);
@@ -3200,10 +3203,10 @@ static void writeMemberIndex(OutputList &ol,
 
     if (!first) alphaLinks += alphaSepar;
     first=false;
-    DString li = letterToLabel(letter);
+    DString li = convertToId(letterToLabel(letter));
     alphaLinks += "<a class=\"qindex\" href=\"" + anchor +
                   li + "\">" +
-                  letterUC + "</a>";
+                  convertUTF8ToUpper(letter) + "</a>";
   }
   alphaLinks += "</div>\n";
   ol.writeString(alphaLinks);
