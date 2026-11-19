@@ -28,6 +28,7 @@
 #define YYSTYPE CPPValue
 #define YY_TYPEDEF_YY_SCANNER_T
 
+#define yyalloc constexpYYalloc
 #define yyguts_t constexpYYguts_t
 struct yyguts_t;
 typedef yyguts_t* yyscan_t;

@@ -32,6 +32,7 @@
 #define yylex mscgenYYlex
 #define yyin mscgenYYin
 #define yylval mscgenYYlval
+#define yyalloc mscgenYYalloc
 #include "mscgen_lexer.h"
 #include "mscgen_safe.h"
 #include "mscgen_msc.h"
