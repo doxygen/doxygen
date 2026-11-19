@@ -23,6 +23,7 @@
 %option 8bit noyywrap
 %top{
 #include <stdint.h>
+#define yyguts_t xmlYYguts_t
 }
 
 %{
