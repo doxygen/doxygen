@@ -52,8 +52,12 @@ static const char *stateToString(int state);
 
 /* Not used, so prevent compiler warning */
 %option never-interactive
+%option prefix="mscgenYY"
 %option noinput
 %option noyywrap
+%top{
+#define yylval mscgenYYlval
+}
 
 %x IN_COMMENT
 %x BODY

@@ -28,6 +28,10 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#define yylex_destroy mscgenYYlex_destroy
+#define yylex mscgenYYlex
+#define yyin mscgenYYin
+#define yylval mscgenYYlval
 #include "mscgen_lexer.h"
 #include "mscgen_safe.h"
 #include "mscgen_msc.h"
