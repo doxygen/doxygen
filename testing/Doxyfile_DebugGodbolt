@@ -1,0 +1,21 @@
+PROJECT_NAME           = "DEBUG"
+OUTPUT_DIRECTORY       = ./debug-output
+
+# Eingabedatei festlegen (Pfad anpassen!)
+INPUT                  = D:/BitFactory/doxygen/testing/154_snippet_godbolt.cpp
+EXAMPLE_PATH           = D:/BitFactory/doxygen/testing
+RECURSIVE              = NO
+
+# Alles dokumentieren (auch ohne Doxygen-Kommentare)
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+
+# Ausgabeformate (nur HTML, kein LaTeX)
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+GENERATE_XML           = YES
+
+# Rauschen reduzieren
+QUIET                  = YES
+

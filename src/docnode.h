@@ -441,11 +441,12 @@ class DocInclude final : public DocNode
     DocInclude(DocParser *parser,DocNodeVariant *parent,const DString &file,
                const DString &context, Type t, bool stripCodeComments,
                bool isExample,const DString &exampleFile,
-               const DString &blockId, bool isBlock, bool trimLeft)
+               const DString &blockId, bool isBlock, bool trimLeft, const DString& godboltClientState)
     : DocNode(parser,parent), m_file(file), m_context(context), m_type(t),
       m_stripCodeComments(stripCodeComments),
       m_isExample(isExample), m_isBlock(isBlock), m_trimLeft(trimLeft),
-      m_exampleFile(exampleFile), m_blockId(blockId) {}
+      m_exampleFile(exampleFile), m_blockId(blockId), 
+      m_godboltClientState(godboltClientState) {}
     DString file() const        { return m_file; }
     DString extension() const   { size_t i=m_file.rfind('.'); return i!=DString::npos ? m_file.mid(i) : DString(); }
     Type type() const           { return m_type; }
@@ -457,6 +458,8 @@ class DocInclude final : public DocNode
     DString exampleFile() const { return m_exampleFile; }
     bool isBlock() const        { return m_isBlock; }
     bool trimLeft() const       { return m_trimLeft; }
+    DString godboltClientState() const
+                                { return m_godboltClientState; }
     void parse();
 
   private:
@@ -470,6 +473,7 @@ class DocInclude final : public DocNode
     bool      m_trimLeft;
     DString  m_exampleFile;
     DString  m_blockId;
+    DString  m_godboltClientState;  
 };
 
 /** Node representing a include/dontinclude operator block */

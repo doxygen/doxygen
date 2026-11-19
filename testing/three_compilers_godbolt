@@ -1,0 +1,80 @@
+{
+  "sessions": [
+    {
+      "id": 1,
+      "language": "c++",
+      "source": "$$godbolt$$",
+      "conformanceview": false,
+      "compilers": [
+        {
+          "_internalid": 1,
+          "id": "g152assert",
+          "options": "-std=c++23 -O3 -Wall -Wextra -pedantic -pedantic-errors -DNTEST",
+          "filters": {
+            "binary": false,
+            "binaryObject": false,
+            "commentOnly": true,
+            "demangle": true,
+            "directives": true,
+            "execute": true,
+            "intel": true,
+            "labels": true,
+            "libraryCode": true,
+            "trim": false,
+            "debugCalls": false
+          },
+          "libs": [],
+          "specialoutputs": [],
+          "tools": [],
+          "overrides": []
+        },
+        {
+          "_internalid": 2,
+          "id": "clang_trunk",
+          "options": "-std=c++23 -O3 -Wall -Wextra -pedantic -pedantic-errors -DNTEST",
+          "filters": {
+            "binary": false,
+            "binaryObject": false,
+            "commentOnly": true,
+            "demangle": true,
+            "directives": true,
+            "execute": true,
+            "intel": true,
+            "labels": true,
+            "libraryCode": true,
+            "trim": false,
+            "debugCalls": false
+          },
+          "libs": [],
+          "specialoutputs": [],
+          "tools": [],
+          "overrides": []
+        },
+        {
+          "_internalid": 3,
+          "id": "vcpp_v19_latest_x64",
+          "options": "/std:c++23preview /O2 /W4 /DNTEST /Zc:preprocessor",
+          "filters": {
+            "binary": false,
+            "binaryObject": false,
+            "commentOnly": true,
+            "demangle": true,
+            "directives": true,
+            "execute": true,
+            "intel": true,
+            "labels": true,
+            "libraryCode": true,
+            "trim": false,
+            "debugCalls": false
+          },
+          "libs": [],
+          "specialoutputs": [],
+          "tools": [],
+          "overrides": []
+        }
+      ],
+      "executors": []
+    }
+  ],
+  "trees": []
+}

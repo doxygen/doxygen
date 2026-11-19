@@ -1,0 +1,19 @@
+{
+  "sessions": [
+    {
+      "id": 1,
+      "language": "c++",
+      "source": "$$godbolt$$",
+      "compilers": [],
+      "executors": [
+        {
+          "compiler": {
+            "id": "g162",
+            "libs": [],
+            "options": "-std=c++20"
+          }
+        }
+      ]
+    }
+  ]
+}
