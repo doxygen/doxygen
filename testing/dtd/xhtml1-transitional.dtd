@@ -49,9 +49,6 @@
 
      March 28, 2025
      - added loading attribute with special iframe amd img
-
-     November 18,2026
-     - added a tag possibility to ul
 -->
 
 <!--================ Character mnemonic entities =========================-->
@@ -538,7 +535,7 @@
 
 <!-- Unordered list -->
 
-<!ELEMENT ul (li|a)+>
+<!ELEMENT ul (li)+>
 <!ATTLIST ul
   %attrs;
   type        %ULStyle;     #IMPLIED

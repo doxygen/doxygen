@@ -2888,15 +2888,15 @@ static void writeMemberList(OutputList &ol,bool useSections,const std::string &p
 
         // member name
         if (!firstItem) ol.endItemListItem();
+        ol.startItemListItem();
         if ((prevName.empty() ||
             tolower(name.at(startIndex))!=tolower(prevName.at(0))) &&
             !useSections) // new letter
         {
           DString cs     = letterToLabel(letter);
           DString anchor = "index_"+convertToId(cs);
-          ol.writeString("<a id=\"" + anchor + "\"/>\n");
+          ol.writeString("<a id=\"" + anchor + "\"/>");
         }
-        ol.startItemListItem();
         firstItem=false;
         ol.docify(name);
         if (isFunc) ol.docify("()");
