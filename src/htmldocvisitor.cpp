@@ -27,6 +27,7 @@
 #include "filedef.h"
 #include "fileinfo.h"
 #include "formula.h"
+#include "godbolt.h"
 #include "htmlentity.h"
 #include "indexlist.h"
 #include "language.h"
@@ -41,7 +42,6 @@
 #include "reflist.h"
 #include "util.h"
 #include "vhdldocgen.h"
-#include <base64.h>
 
 static const int NUM_HTML_LIST_TYPES = 4;
 static const char g_types[][NUM_HTML_LIST_TYPES] = {"1", "a", "i", "A"};
@@ -690,72 +690,6 @@ void HtmlDocVisitor::operator()(const DocAnchor &anc)
   m_t << "<a class=\"anchor\" id=\"" << anc.anchor() << "\"" << anc.attribs().toString() << "></a>";
 }
 
-namespace 
-{
-namespace Godbolt
-{
-const DString defaultClientStateTemplate = R"json({
-  "sessions": [
-    {
-      "id": 1,
-      "language": "c++",
-      "source": "$$godbolt$$",
-      "compilers": [],
-      "executors": [
-        {
-          "compiler": {
-            "id": "clang_trunk",
-            "libs": [],
-            "options": "-std=c++20"
-          }
-        }
-      ]
-    }
-  ]
-}
-)json";
-const DString sourceTag = "$$godbolt$$";
-
-DString ClientStateTemplateFor(const DString& godboltClientStateTemplateName)
-{
-  StringVector inputList=Config_getList(INPUT);
-  std::set<std::string> scannedDirs;
-  for (const auto &i : inputList)
-  {
-    FileInfo fii(i);
-    auto dirPath = fii.dirPath();
-    if (auto found = scannedDirs.find(dirPath); found != scannedDirs.end()) continue;
-    FileInfo fiDir(dirPath);
-    if (!fiDir.exists() || !fiDir.isDir()) continue;
-    FileInfo fiTemplate(dirPath + "/" + std::string{godboltClientStateTemplateName.view()});
-    if (fiTemplate.exists() || fiTemplate.isFile())
-    {
-       return fileToString(fiTemplate.absFilePath());
-    }
-  }
-  return defaultClientStateTemplate;
-}
-
-DString ClientStateFor(const DString& clientStateTemplate, const DString& fragment)
-{
-  auto leftSize = clientStateTemplate.find(sourceTag);
-  auto midStart = leftSize + sourceTag.size();
-  return clientStateTemplate.left(leftSize) + fragment + clientStateTemplate.mid(midStart);
-}
-
-DString UrlFor(const DString& godboltClientStateTemplateName, const DString& fragmentRaw)
-{
-  DString request = "https://godbolt.org/clientstate/";
-  auto fragmentJSEncoded = convertSourceToJSString(fragmentRaw.view());
-  auto clientStateTemplate = ClientStateTemplateFor(godboltClientStateTemplateName);
-  auto clientStateDS = ClientStateFor(clientStateTemplate, fragmentJSEncoded);
-  auto clientState = std::string{clientStateDS.view()};
-  auto clientState64 = base64_encode(clientState, true);
-  return request + clientState64;
-}
-}
-}
-
 void HtmlDocVisitor::operator()(const DocInclude &inc)
 {
   if (m_hide) return;
@@ -825,22 +759,38 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
     case DocInclude::Snippet:
     case DocInclude::SnippetWithLines:
       forceEndParagraph(inc);
-      m_ci.startCodeFragment("DoxyCode");
       DString fragment;
       bool godbolt = !inc.godboltClientState().empty();
-      DString* retrieveFragment = godbolt ? &fragment : nullptr;
-      CodeFragmentManager::instance().parseCodeFragment(m_ci,
-                                       inc.file(),
-                                       inc.blockId(),
-                                       inc.context(),
-                                       inc.type()==DocInclude::SnippetWithLines,
-                                       inc.trimLeft(),
-                                       inc.stripCodeComments(),
-                                       retrieveFragment
-                                      );
-      m_ci.endCodeFragment("DoxyCode");
-      if (godbolt)
+      if(godbolt)
+      {
+        OutputCodeList dummyOutput;
+        DString* retrieveFragment = godbolt ? &fragment : nullptr;
+        CodeFragmentManager::instance().parseCodeFragment(dummyOutput,
+                                         inc.file(),
+                                         inc.blockId(),
+                                         inc.context(),
+                                         inc.type()==DocInclude::SnippetWithLines,
+                                         inc.trimLeft(),
+                                         inc.stripCodeComments(),
+                                         retrieveFragment
+                                        );
         m_t << "<a href=\"" << Godbolt::UrlFor(inc.godboltClientState(), fragment) << "\">Godbolt</a>";
+        DString x = "<iframe width=\"100%\" height=\"350px\" src=\"" + Godbolt::EmbeddUrlFor(inc.godboltClientState(), fragment) + "\"></iframe>";
+        m_t << x;
+      }
+      else
+      {
+        m_ci.startCodeFragment("DoxyCode");
+        CodeFragmentManager::instance().parseCodeFragment(m_ci,
+                                         inc.file(),
+                                         inc.blockId(),
+                                         inc.context(),
+                                         inc.type()==DocInclude::SnippetWithLines,
+                                         inc.trimLeft(),
+                                         inc.stripCodeComments()
+                                        );
+        m_ci.endCodeFragment("DoxyCode");
+      }
       forceStartParagraph(inc);
       break;
   }

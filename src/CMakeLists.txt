@@ -272,6 +272,7 @@ add_library(doxymain STATIC
     formula.cpp
     ftvhelp.cpp
     groupdef.cpp
+    godbolt.cpp
     htags.cpp
     htmldocvisitor.cpp
     htmlentity.cpp
@@ -327,6 +328,9 @@ add_library(doxymain STATIC
 )
 target_link_libraries(doxymain PRIVATE
     spdlog::spdlog
+    CURL::libcurl
+    nlohmann_json::nlohmann_json
+    cpp-base64
 )
 add_sanitizers(doxymain)
 add_dependencies(doxymain generate_configvalues_header)
@@ -402,7 +406,6 @@ target_link_libraries(doxygen PRIVATE
     xml
     doxygen_version
     vhdlparser
-    cpp-base64
     ${Iconv_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     ${EXTRA_LIBS}
