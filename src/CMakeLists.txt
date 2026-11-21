@@ -328,7 +328,6 @@ add_library(doxymain STATIC
 )
 target_link_libraries(doxymain PRIVATE
     spdlog::spdlog
-    CURL::libcurl
     nlohmann_json::nlohmann_json
     cpp-base64
 )

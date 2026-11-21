@@ -310,28 +310,13 @@ include(cmake/Coverage.cmake)
 include(cmake/WindowsEncoding.cmake)
 
 include(FetchContent)
-set(BUILD_CURL_EXE OFF CACHE BOOL "" FORCE)
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
-if(MSVC)
-set(CURL_USE_SCHANNEL ON CACHE BOOL "" FORCE)
-else()
-set(CURL_USE_OPENSSL ON CACHE BOOL "" FORCE)
-endif()
-set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
 set(JSON_BuildTests OFF CACHE INTERNAL "")
-FetchContent_Declare(
-    curl
-    GIT_REPOSITORY  https://github.com/curl/curl.git
-    GIT_TAG        curl-8_11_0
-)
 FetchContent_Declare(
     nlohmann_json
     GIT_REPOSITORY https://github.com/nlohmann/json.git
     GIT_TAG        v3.11.3
     GIT_SHALLOW    TRUE
 )
-FetchContent_MakeAvailable(curl)
 FetchContent_MakeAvailable(nlohmann_json)
 
 add_subdirectory(deps)
