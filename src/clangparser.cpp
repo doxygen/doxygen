@@ -20,6 +20,7 @@
 #include <cstdio>
 #include <cstdint>
 #include <cstdlib>
+#include <string>
 #include <vector>
 #include <mutex>
 
@@ -33,6 +34,7 @@
 #include "clang-c/Index.h"
 
 // other includes
+#include "classdef.h"
 #include "config.h"
 #include "doxygen.h"
 #include "filedef.h"
@@ -83,6 +85,27 @@ static const char * keywordToType(const char *keyword)
   if (flowKeywords.find(keyword)!=flowKeywords.end()) return "keywordflow";
   if (typeKeywords.find(keyword)!=typeKeywords.end()) return "keywordtype";
   return "keyword";
+}
+
+static std::string getQualifiedCursorName(CXCursor cursor)
+{
+  std::vector<std::string> names;
+  while (!clang_Cursor_isNull(cursor) &&
+         clang_getCursorKind(cursor)!=CXCursor_TranslationUnit)
+  {
+    CXString spelling = clang_getCursorSpelling(cursor);
+    const char *name = clang_getCString(spelling);
+    if (name && *name) names.emplace_back(name);
+    clang_disposeString(spelling);
+    cursor = clang_getCursorSemanticParent(cursor);
+  }
+  std::string result;
+  for (auto it=names.rbegin();it!=names.rend();++it)
+  {
+    if (!result.empty()) result+="::";
+    result+=*it;
+  }
+  return result;
 }
 
 
@@ -699,7 +722,7 @@ void ClangTUParser::writeMultiLineCodeLink(OutputCodeList &ol,
 }
 
 void ClangTUParser::linkInclude(OutputCodeList &ol,const FileDef *fd,
-    uint32_t &line,uint32_t &column,const char *text)
+    uint32_t &line,uint32_t &column,const char *text,bool inPreprocessor)
 {
   DString incName = text;
   incName = incName.mid(1,incName.length()-2); // strip ".." or  <..>
@@ -730,10 +753,11 @@ void ClangTUParser::linkInclude(OutputCodeList &ol,const FileDef *fd,
                      DString(),
                      text,
                      ifd->briefDescriptionAsTooltip());
+    column+=static_cast<uint32_t>(strlen(text));
   }
   else
   {
-    codifyLines(ol,ifd,text,line,column,"preprocessor");
+    codifyLines(ol,fd,text,line,column,inPreprocessor ? nullptr : "preprocessor");
   }
 }
 
@@ -788,6 +812,11 @@ void ClangTUParser::linkIdentifier(OutputCodeList &ol,const FileDef *fd,
   if (kv!=Doxygen::clangUsrMap->end())
   {
     d = kv->second;
+  }
+  if (!d)
+  {
+    DString qualifiedName = getQualifiedCursorName(c);
+    d = getClass(qualifiedName);
   }
   if (d==0)
   {
@@ -863,6 +892,61 @@ void ClangTUParser::writeSources(OutputCodeList &ol,const FileDef *fd)
   unsigned int line=1,column=1;
   DString lineNumber,lineAnchor;
   bool inlineCodeFragment = false;
+  auto getIncludeText = [this](unsigned int start,unsigned int &end)
+  {
+    std::string includeName;
+    end=start;
+    if (start>=p->numTokens ||
+        clang_getCursorKind(p->cursors[start])!=CXCursor_InclusionDirective)
+    {
+      return includeName;
+    }
+    CXTokenKind firstKind=clang_getTokenKind(p->tokens[start]);
+    if (firstKind==CXToken_Literal)
+    {
+      CXString tokenString=clang_getTokenSpelling(p->tu,p->tokens[start]);
+      includeName=clang_getCString(tokenString);
+      clang_disposeString(tokenString);
+      return includeName;
+    }
+    CXString firstTokenString=clang_getTokenSpelling(p->tu,p->tokens[start]);
+    const char *firstToken=clang_getCString(firstTokenString);
+    if (firstKind!=CXToken_Punctuation || strcmp(firstToken,"<")!=0)
+    {
+      clang_disposeString(firstTokenString);
+      return includeName;
+    }
+    includeName=firstToken;
+    clang_disposeString(firstTokenString);
+    unsigned int previousLine=0,previousColumn=0;
+    CXSourceLocation firstStart=clang_getTokenLocation(p->tu,p->tokens[start]);
+    clang_getSpellingLocation(firstStart,nullptr,&previousLine,&previousColumn,nullptr);
+    size_t previousTokenLength=1;
+    for (unsigned int j=start+1;j<p->numTokens;j++)
+    {
+      if (clang_getCursorKind(p->cursors[j])!=CXCursor_InclusionDirective) break;
+      CXString nextTokenString=clang_getTokenSpelling(p->tu,p->tokens[j]);
+      const char *nextToken=clang_getCString(nextTokenString);
+      unsigned int nextLine=0,nextColumn=0;
+      CXSourceLocation nextStart=clang_getTokenLocation(p->tu,p->tokens[j]);
+      clang_getSpellingLocation(nextStart,nullptr,&nextLine,&nextColumn,nullptr);
+      if (nextLine==previousLine &&
+          nextColumn>previousColumn+previousTokenLength)
+      {
+        includeName.append(nextColumn-previousColumn-previousTokenLength,' ');
+      }
+      includeName+=nextToken;
+      previousLine=nextLine;
+      previousColumn=nextColumn;
+      previousTokenLength=strlen(nextToken);
+      end=j;
+      bool closed=clang_getTokenKind(p->tokens[j])==CXToken_Punctuation &&
+                  strcmp(nextToken,">")==0;
+      clang_disposeString(nextTokenString);
+      if (closed) return includeName;
+    }
+    return std::string();
+  };
   writeLineNumber(ol,fd,line,!inlineCodeFragment);
   ol.startCodeLine(line);
   for (unsigned int i=0;i<p->numTokens;i++)
@@ -884,6 +968,54 @@ void ClangTUParser::writeSources(OutputCodeList &ol,const FileDef *fd)
     CXCursorKind cursorKind  = clang_getCursorKind(p->cursors[i]);
     CXTokenKind tokenKind = clang_getTokenKind(p->tokens[i]);
     //printf("%d:%d %s cursorKind=%d tokenKind=%d\n",line,column,s,cursorKind,tokenKind);
+    if (tokenKind==CXToken_Punctuation &&
+        strcmp(s,"#")==0 && i+1<p->numTokens)
+    {
+      CXString nextTokenString = clang_getTokenSpelling(p->tu,p->tokens[i+1]);
+      const char *nextToken = clang_getCString(nextTokenString);
+      unsigned int nextLine=0,nextColumn=0;
+      CXSourceLocation nextStart = clang_getTokenLocation(p->tu,p->tokens[i+1]);
+      clang_getSpellingLocation(nextStart,nullptr,&nextLine,&nextColumn,nullptr);
+      if (nextLine==line &&
+          strcmp(nextToken,"include")==0)
+      {
+        std::string directive="#";
+        if (nextColumn>column+1) directive.append(nextColumn-column-1,' ');
+        directive+=nextToken;
+        unsigned int includeEnd=i+1;
+        std::string includeName=getIncludeText(i+2,includeEnd);
+        if (!includeName.empty())
+        {
+          ol.startFontClass("preprocessor");
+          ol.codify(directive.c_str());
+          column+=static_cast<uint32_t>(directive.length());
+          unsigned int includeLine=0,includeColumn=0;
+          CXSourceLocation includeStart=clang_getTokenLocation(p->tu,p->tokens[i+2]);
+          clang_getSpellingLocation(includeStart,nullptr,&includeLine,&includeColumn,nullptr);
+          while (line<includeLine)
+          {
+            line++;
+            ol.endCodeLine();
+            writeLineNumber(ol,fd,line,!inlineCodeFragment);
+            ol.startCodeLine(line);
+            column=1;
+          }
+          while (column<includeColumn) { ol.codify(" "); column++; }
+          linkInclude(ol,fd,line,column,includeName.c_str(),true);
+          ol.endFontClass();
+          clang_disposeString(nextTokenString);
+          clang_disposeString(tokenString);
+          i=includeEnd;
+          continue;
+        }
+        codifyLines(ol,fd,directive.c_str(),line,column,"preprocessor");
+        clang_disposeString(nextTokenString);
+        clang_disposeString(tokenString);
+        ++i;
+        continue;
+      }
+      clang_disposeString(nextTokenString);
+    }
     switch (tokenKind)
     {
       case CXToken_Keyword:
@@ -930,7 +1062,24 @@ void ClangTUParser::writeSources(OutputCodeList &ol,const FileDef *fd)
             codifyLines(ol,fd,s,line,column,"preprocessor");
             break;
           case CXCursor_InclusionDirective:
-            linkInclude(ol,fd,line,column,s);
+            if (tokenKind==CXToken_Punctuation && strcmp(s,"<")==0)
+            {
+              unsigned int end=i;
+              std::string includeName=getIncludeText(i,end);
+              if (!includeName.empty())
+              {
+                linkInclude(ol,fd,line,column,includeName.c_str());
+                i=end;
+              }
+              else
+              {
+                codifyLines(ol,fd,s,line,column,"preprocessor");
+              }
+            }
+            else
+            {
+              linkInclude(ol,fd,line,column,s);
+            }
             break;
           case CXCursor_MacroExpansion:
             linkMacro(ol,fd,line,column,s);

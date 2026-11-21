@@ -8977,7 +8977,11 @@ static void generateFileSources()
         {
           if (processedFiles.find(fd->absFilePath().str())==processedFiles.end()) // not yet processed
           {
-            if (fd->getLanguage()==SrcLangExt::Cpp) // C/C++ file, use clang parser
+            if (fd->isReference())
+            {
+              processedFiles.insert(fd->absFilePath().str());
+            }
+            else if (fd->getLanguage()==SrcLangExt::Cpp) // C/C++ file, use clang parser
             {
               auto clangParser = ClangParser::instance()->createTUParser(fd.get());
               clangParser->parse();
