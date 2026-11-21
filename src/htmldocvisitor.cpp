@@ -774,9 +774,7 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
                                          inc.stripCodeComments(),
                                          retrieveFragment
                                         );
-        m_t << "<a href=\"" << Godbolt::UrlFor(inc.godboltClientState(), fragment) << "\">Godbolt</a>";
-        DString x = "<iframe width=\"100%\" height=\"350px\" src=\"" + Godbolt::EmbeddUrlFor(inc.godboltClientState(), fragment) + "\"></iframe>";
-        m_t << x;
+        m_t << Godbolt::Html(inc.godboltClientState(), fragment);
       }
       else
       {

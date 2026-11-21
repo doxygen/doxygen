@@ -249,12 +249,13 @@ std::string urlEncodeRison(const std::string& rison) {
 // 4. Überführt deinen ClientState in die vollständige GoldenLayout-Struktur für /e#
 std::string buildEmbedUrlFromClientState(const json& clientState, bool hideToolbars = true) {
     const auto& session = clientState["sessions"][0];
-    const auto& execObj = session["executors"][0];
-    const auto& compiler = execObj["compiler"];
-
     int sessionId = session.value("id", 1);
     std::string lang = session.value("language", "c++");
     std::string source = session.value("source", "");
+
+    const auto& execObj = session["executors"][0];
+    
+    const auto& compiler = execObj["compiler"];
     std::string compilerId = compiler.value("id", "clang_trunk");
     std::string options = compiler.value("options", "");
     json libs = compiler.value("libs", json::array());
@@ -349,36 +350,28 @@ std::string buildEmbedUrlFromClientState(const json& clientState, bool hideToolb
 
 }
 
-DString Godbolt::EmbeddUrlFor(const DString& godboltClientStateTemplateName, const DString& fragmentRaw)
+std::optional<DString> Godbolt::EmbeddUrlFor(const DString& godboltClientStateTemplateName, const DString& fragmentRaw)
 {
-   // Raw-String-Literal verwenden, damit keine doppelten Backslashes (\\n) entstehen
-    std::string cppSource = R"(#include <stdio.h>
-int main() {
-  printf("Hello World\n");
+  DString clientStateTemplateRaw = ClientStateTemplateFor(godboltClientStateTemplateName);
+  auto clientState = json::parse(clientStateTemplateRaw.c_str());
+  if(clientState["sessions"].size() > 1u)
+    return {};
+  auto& const session0 = clientState["sessions"][0];
+  if (!session0.contains("executors") || session0["executors"].size() != 1u)
+    return {};
+  clientState["sessions"][0]["source"] = fragmentRaw.c_str();
+  return buildEmbedUrlFromClientState(clientState, true);
 }
-)";
 
-    json state = {
-        {"sessions", {{
-            {"id", 1},
-            {"language", "c++"},
-            {"source", cppSource},
-            {"executors", {{
-                {"compiler", {
-                    {"id", "clang_trunk"},
-                    {"libs", json::array()},
-                    {"options", "-std=c++20"}
-                }}
-            }}}
-        }}}
-    };
-
-  std::cout << '\n';
-  std::cout << buildEmbedUrlFromClientState(state, true) << '\n';
-  auto s = "https://godbolt.org/e#g:!((g:!((g:!((h:codeEditor,i:(filename:'1',fontScale:14,id:1,lang:'c%2B%2B',source:'%23include%20%3Cstdio.h%3E%0Aint%20main()%20%7B%0A%20%20printf(%22Hello%20World%5Cn%22)%3B%0A%7D%0A'),l:'5',n:'0',o:'C%2B%2B%20source%20%231',t:'0')),k:50,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:executor,i:(argsPanelShown:!f,compilationPanelShown:!f,compiler:clang_trunk,compilerOutShown:!f,execArgs:'',execStdin:'',fontScale:14,lang:'c%2B%2B',libs:!(),options:'-std%3Dc%2B%2B20',overrides:!(),runtimeTools:!(),source:1,stdinPanelShown:!f,wrap:!f),l:'5',n:'0',o:'Executor%20clang_trunk',t:'0')),k:50,l:'4',m:100,n:'0',o:'',s:0,t:'0')),l:'2',n:'0',o:'',t:'0')),hideEditorToolbars:!t,version:4";
-  std::cout << s << "\n";
-
-  return s;
+DString Godbolt::Html(const DString& godboltClientStateTemplateName, const DString& fragment){
+  if(auto embeddUrl = Godbolt::EmbeddUrlFor(godboltClientStateTemplateName, fragment))
+  {
+    return "<iframe width=\"100%\" height=\"350px\" src=\"" + *embeddUrl + "\"></iframe>";
+  }
+  else
+  {
+    return "<a href=\"" + UrlFor(godboltClientStateTemplateName, fragment) + "\">Godbolt</a>";
+  }
 }
 
 
