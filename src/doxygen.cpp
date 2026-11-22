@@ -6736,6 +6736,40 @@ static void addMemberFunction(const Entry *root,
     bool strictProtoMatching = Config_getBool(STRICT_PROTO_MATCHING);
     if (!strictProtoMatching)
     {
+      if (root->lang==SrcLangExt::Cpp && !root->section.isMemberDoc() &&
+          root->tArgLists.empty() && candidates>1 && !ecd)
+      {
+        MemberDefMutable *partialMatch=nullptr;
+        FileDef *fd=root->fileDef();
+        NamespaceDef *nd=namespaceName.empty() ? nullptr : getResolvedNamespace(namespaceName);
+        const ClassDef *targetClass=findClassDefinition(fd,nd,scopeName);
+        for (const auto &candidate : *mn)
+        {
+          MemberDefMutable *md=toMemberDefMutable(candidate.get());
+          if (!md || !md->getClassDef()) continue;
+          const ClassDef *candidateClass=md->getClassDef();
+          if (candidateClass!=targetClass &&
+              !(targetClass==nullptr && stripAnonymousNamespaceScope(candidateClass->name())==scopeName)) continue;
+          if (!md->templateArguments().empty() || !candidateClass->getTemplateParameterLists().empty()) continue;
+          ArgumentList argList=md->argumentList();
+          if (matchArguments2(candidateClass,md->getFileDef(),md->typeString(),&argList,
+                              candidateClass,fd,root->type,&root->argList,
+                              true,root->lang,true))
+          {
+            if (partialMatch)
+            {
+              partialMatch=nullptr;
+              break;
+            }
+            partialMatch=md;
+          }
+        }
+        if (partialMatch)
+        {
+          addMemberDocs(root,partialMatch,funcDecl,nullptr,overloaded,spec);
+          return;
+        }
+      }
       if (candidates==1 && ucd && umd)
       {
         // we didn't find an actual match on argument lists, but there is only 1 member with this

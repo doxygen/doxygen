@@ -9,3 +9,9 @@ static int helper(void) { return 1; }
 
 /** @copydoc helper() */
 int api(void) { return helper(); }
+
+/** @copydoc cross_helper() */
+int cross_api(void) { return 0; }
+
+/** @copydoc more_145_b.c::cross_helper() */
+int qualified_api(void) { return 0; }

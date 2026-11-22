@@ -543,6 +543,7 @@ bool DocParser::findDocsForMemberOrCompound(const DString &commandName,
       name,
       args);
   input.checkCV=true;
+  input.allowCrossFileStatic=true;
   // the file of the documentation block, so that a static in that file can be found
   if (input.currentFile==nullptr)
   {

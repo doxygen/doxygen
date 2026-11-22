@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_overloads" kind="class" language="C++" prot="public">
+    <compoundname>Overloads</compoundname>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_overloads_1af2b48f0d63ae8c25cbfe01a026bddc16" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type/>
+        <definition>Overloads::Overloads</definition>
+        <argsstring>(int, bool)</argsstring>
+        <name>Overloads</name>
+        <qualifiedname>Overloads::Overloads</qualifiedname>
+        <param>
+          <type>int</type>
+        </param>
+        <param>
+          <type>bool</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="155_unresolved_overload_ambiguity.cpp" line="18" column="3"/>
+      </memberdef>
+      <memberdef kind="function" id="class_overloads_1aa8a4b11b0addc36af987f3950ed77720" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type/>
+        <definition>Overloads::Overloads</definition>
+        <argsstring>(int, const clang::Type &amp;)</argsstring>
+        <name>Overloads</name>
+        <qualifiedname>Overloads::Overloads</qualifiedname>
+        <param>
+          <type>int</type>
+        </param>
+        <param>
+          <type>const clang::Type &amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="155_unresolved_overload_ambiguity.cpp" line="19" column="3"/>
+      </memberdef>
+      <memberdef kind="function" id="class_overloads_1afc37d447a026e44e96c13c516121ab00" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type/>
+        <definition>Overloads::Overloads</definition>
+        <argsstring>(int, const clang::Decl *)</argsstring>
+        <name>Overloads</name>
+        <qualifiedname>Overloads::Overloads</qualifiedname>
+        <param>
+          <type>int</type>
+        </param>
+        <param>
+          <type>const clang::Decl *</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="155_unresolved_overload_ambiguity.cpp" line="20" column="3"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="155_unresolved_overload_ambiguity.cpp" line="15" column="1" bodyfile="155_unresolved_overload_ambiguity.cpp" bodystart="16" bodyend="21"/>
+    <listofallmembers>
+      <member refid="class_overloads_1af2b48f0d63ae8c25cbfe01a026bddc16" prot="public" virt="non-virtual">
+        <scope>Overloads</scope>
+        <name>Overloads</name>
+      </member>
+      <member refid="class_overloads_1aa8a4b11b0addc36af987f3950ed77720" prot="public" virt="non-virtual">
+        <scope>Overloads</scope>
+        <name>Overloads</name>
+      </member>
+      <member refid="class_overloads_1afc37d447a026e44e96c13c516121ab00" prot="public" virt="non-virtual">
+        <scope>Overloads</scope>
+        <name>Overloads</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

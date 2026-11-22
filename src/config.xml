@@ -1222,6 +1222,8 @@ Go to the <a href="commands.html">next</a> section or return to the
  if there is only one candidate or it is obvious which candidate to choose
  by doing a simple string match. By disabling \c STRICT_PROTO_MATCHING Doxygen
  will still accept a match between prototype and implementation in such cases.
+ For C++ member definitions, it can also match an unresolved unqualified type
+ against a qualified type when exactly one overload matches.
 ]]>
       </docs>
     </option>

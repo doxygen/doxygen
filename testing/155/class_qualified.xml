@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_qualified" kind="class" language="C++" prot="public">
+    <compoundname>Qualified</compoundname>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_qualified_1aaa6364118e9427e22057a39ea980d6d8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Qualified::f</definition>
+        <argsstring>(const A::LocalType &amp;)</argsstring>
+        <name>f</name>
+        <qualifiedname>Qualified::f</qualifiedname>
+        <param>
+          <type>const A::LocalType &amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="155_unresolved_overload_ambiguity.cpp" line="56" column="8"/>
+      </memberdef>
+      <memberdef kind="function" id="class_qualified_1a6c0418571cba59ed235920d3d2e72a30" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Qualified::f</definition>
+        <argsstring>(int)</argsstring>
+        <name>f</name>
+        <qualifiedname>Qualified::f</qualifiedname>
+        <param>
+          <type>int</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="155_unresolved_overload_ambiguity.cpp" line="57" column="8"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="155_unresolved_overload_ambiguity.cpp" line="53" column="1" bodyfile="155_unresolved_overload_ambiguity.cpp" bodystart="54" bodyend="58"/>
+    <listofallmembers>
+      <member refid="class_qualified_1aaa6364118e9427e22057a39ea980d6d8" prot="public" virt="non-virtual">
+        <scope>Qualified</scope>
+        <name>f</name>
+      </member>
+      <member refid="class_qualified_1a6c0418571cba59ed235920d3d2e72a30" prot="public" virt="non-virtual">
+        <scope>Qualified</scope>
+        <name>f</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

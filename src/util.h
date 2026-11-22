@@ -103,6 +103,7 @@ struct GetDefInput
   const FileDef *currentFile = nullptr;
   bool checkCV = false;
   bool insideCode = false;
+  bool allowCrossFileStatic = false;
 };
 
 /*! Helper to pass the result parameters from getDefs() */
@@ -168,7 +169,7 @@ DString externalRef(const DString &relPath,const DString &ref);
 /*! Compares two parameter lists \a srcAl and \a dstAl and returns true if they match. */
 bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,const DString &srcReturnType,const ArgumentList *srcAl,
                      const Definition *dstScope,const FileDef *dstFileScope,const DString &dstReturnType,const ArgumentList *dstAl,
-                     bool checkCV,SrcLangExt lang
+                     bool checkCV,SrcLangExt lang,bool allowUnresolved=false
                     );
 
 /*! Merges the information of two parameter lists (typically a declaration and a definition).

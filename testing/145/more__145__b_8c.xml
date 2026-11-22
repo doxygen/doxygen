@@ -37,6 +37,23 @@
         </inbodydescription>
         <location file="more_145_b.c" line="7" column="5" bodyfile="more_145_b.c" bodystart="7" bodyend="7"/>
       </memberdef>
+      <memberdef kind="function" id="more__145__b_8c_1a508430812d79675ef88b0c7dae657b1e" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>static int cross_helper</definition>
+        <argsstring>(void)</argsstring>
+        <name>cross_helper</name>
+        <param>
+          <type>void</type>
+        </param>
+        <briefdescription>
+          <para>Cross-file helper. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="more_145_b.c" line="10" column="12" bodyfile="more_145_b.c" bodystart="10" bodyend="10"/>
+      </memberdef>
     </sectiondef>
     <briefdescription>
     </briefdescription>

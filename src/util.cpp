@@ -1528,10 +1528,60 @@ static bool matchCanonicalTypes(
                          true,lang);
 }
 
+static bool matchUnresolvedTypes(const Definition *srcScope,const FileDef *srcFileScope,const DString &srcType,
+                                 const Definition *dstScope,const FileDef *dstFileScope,const DString &dstType)
+{
+  // Do not infer names inside expressions, template arguments, or declarators.
+  if (srcType.find('<')!=DString::npos || dstType.find('<')!=DString::npos ||
+      srcType.find('(')!=DString::npos || dstType.find('(')!=DString::npos ||
+      srcType.find('[')!=DString::npos || dstType.find('[')!=DString::npos) return false;
+  static const reg::Ex re(R"(\a[\w:]*)");
+  std::string src = srcType.str();
+  std::string dst = dstType.str();
+  reg::Iterator srcIt(src,re), dstIt(dst,re), end;
+  size_t srcPos=0, dstPos=0;
+  for (; srcIt!=end && dstIt!=end; ++srcIt,++dstIt)
+  {
+    const auto &srcMatch=*srcIt;
+    const auto &dstMatch=*dstIt;
+    if (src.substr(srcPos,srcMatch.position()-srcPos)!=dst.substr(dstPos,dstMatch.position()-dstPos)) return false;
+    DString srcWord=srcMatch.str();
+    DString dstWord=dstMatch.str();
+    if (srcWord!=dstWord)
+    {
+      const Definition *scope;
+      const FileDef *fileScope;
+      DString unqualified;
+      if (srcWord.find("::")==DString::npos && rightScopeMatch(dstWord,srcWord))
+      {
+        scope=srcScope;
+        fileScope=srcFileScope;
+        unqualified=srcWord;
+      }
+      else if (dstWord.find("::")==DString::npos && rightScopeMatch(srcWord,dstWord))
+      {
+        scope=dstScope;
+        fileScope=dstFileScope;
+        unqualified=dstWord;
+      }
+      else
+      {
+        return false;
+      }
+      SymbolResolver resolver(fileScope);
+      const ClassDef *cd=resolver.resolveClass(scope,unqualified,true,true);
+      if (cd || resolver.getTypedef()) return false;
+    }
+    srcPos=srcMatch.position()+srcMatch.length();
+    dstPos=dstMatch.position()+dstMatch.length();
+  }
+  return srcIt==end && dstIt==end && src.substr(srcPos)==dst.substr(dstPos);
+}
+
 static bool matchArgument2(
     const Definition *srcScope,const FileDef *srcFileScope,Argument &srcA,
     const Definition *dstScope,const FileDef *dstFileScope,Argument &dstA,
-    SrcLangExt lang
+    SrcLangExt lang,bool allowUnresolved
     )
 {
   AUTO_TRACE("src: scope={} type={} name={} canType={}, dst: scope={} type={} name={} canType={}",
@@ -1576,7 +1626,9 @@ static bool matchArgument2(
 
   if (matchCanonicalTypes(srcScope,srcFileScope,srcA.canType,
                           dstScope,dstFileScope,dstA.canType,
-                          lang))
+                          lang) ||
+      (allowUnresolved && matchUnresolvedTypes(srcScope,srcFileScope,srcA.canType,
+                                               dstScope,dstFileScope,dstA.canType)))
   {
     MATCH
     AUTO_TRACE_EXIT("true");
@@ -1596,7 +1648,7 @@ static bool matchArgument2(
 // new algorithm for argument matching
 bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,const DString &srcReturnType,const ArgumentList *srcAl,
                      const Definition *dstScope,const FileDef *dstFileScope,const DString &dstReturnType,const ArgumentList *dstAl,
-                     bool checkCV,SrcLangExt lang)
+                     bool checkCV,SrcLangExt lang,bool allowUnresolved)
 {
   ASSERT(srcScope!=nullptr && dstScope!=nullptr);
 
@@ -1678,7 +1730,7 @@ bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,cons
     Argument &dstA = const_cast<Argument&>(*dstIt);
     if (!matchArgument2(srcScope,srcFileScope,srcA,
                         dstScope,dstFileScope,dstA,
-                        lang)
+                        lang,allowUnresolved)
        )
     {
       NOMATCH
@@ -1893,6 +1945,72 @@ GetDefResult getDefs(const GetDefInput &input)
   //printf("@@  -> found scope scope=%s member=%s out=%s\n",qPrint(input.scopeName),qPrint(input.memberName),qPrint(scope?scope->name():""));
   //
   const Definition *symbol = resolver.resolveSymbol(scope,input.memberName,input.args,input.checkCV,input.insideCode,true);
+  if (!symbol && input.allowCrossFileStatic)
+  {
+    DString memberName=input.memberName;
+    DString explicitFile;
+    size_t qualifierIndex=memberName.rfind("::");
+    if (qualifierIndex!=DString::npos)
+    {
+      explicitFile=memberName.left(qualifierIndex);
+      memberName=memberName.mid(qualifierIndex+2);
+      std::string normalized=explicitFile.str();
+      for (size_t i=0; i+1<normalized.size(); )
+      {
+        if (normalized[i]==':' && normalized[i+1]==':')
+        {
+          normalized.replace(i,2,".");
+          i++;
+        }
+        else
+        {
+          i++;
+        }
+      }
+      explicitFile=normalized.c_str();
+    }
+
+    MemberDef *uniqueStatic=nullptr;
+    const auto &range=Doxygen::symbolMap->find(memberName);
+    for (Definition *candidate : range)
+    {
+      if (candidate->definitionType()!=Definition::TypeMember) continue;
+      MemberDef *md=toMemberDef(candidate);
+      if (!md->isStatic() || md->getClassDef()!=nullptr) continue;
+      const FileDef *mdFile=md->getFileDef();
+      if (!mdFile) continue;
+      if (!explicitFile.empty())
+      {
+        DString fileName=mdFile->name();
+        if (fileName!=explicitFile &&
+            !fileName.endsWith("/"+explicitFile) &&
+            !fileName.endsWith("\\"+explicitFile))
+        {
+          continue;
+        }
+      }
+
+      const Definition *resolved=md;
+      if (explicitFile.empty())
+      {
+        SymbolResolver candidateResolver(mdFile);
+        resolved=candidateResolver.resolveSymbol(Doxygen::globalScope,memberName,input.args,input.checkCV,input.insideCode,true);
+      }
+      if (resolved==md)
+      {
+        if (uniqueStatic && uniqueStatic!=md)
+        {
+          uniqueStatic=nullptr;
+          break;
+        }
+        uniqueStatic=md;
+      }
+    }
+    if (uniqueStatic)
+    {
+      symbol=uniqueStatic;
+    }
+  }
   //printf("@@  -> found symbol in=%s out=%s\n",qPrint(input.memberName),qPrint(symbol?symbol->qualifiedName():DString()));
   if (symbol && symbol->definitionType()==Definition::TypeMember)
   {
