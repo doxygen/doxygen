@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_log" kind="class" language="C++" prot="public">
+    <compoundname>Log</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="class_log_1a8230a47acc301f5b969398bb93c012ed" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool Log::dirty</definition>
+        <argsstring/>
+        <name>dirty</name>
+        <qualifiedname>Log::dirty</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>See <ref refid="class_log_1ad144399d5c2afe477fac342ebd0df898" kindref="member">Log::write(int)</ref>, <ref refid="class_log_1ace44a329cf6881c8dc3de6d6bf999baa" kindref="member">write()</ref>, and the <ref refid="module___diagnostics" kindref="compound">Diagnostics</ref> module. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="154_module_class_member_ref.cppm" line="16" column="10" bodyfile="154_module_class_member_ref.cppm" bodystart="16" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_log_1ace44a329cf6881c8dc3de6d6bf999baa" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Log::write</definition>
+        <argsstring>()</argsstring>
+        <name>write</name>
+        <qualifiedname>Log::write</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>Write a message. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="154_module_class_member_ref.cppm" line="12" column="10"/>
+      </memberdef>
+      <memberdef kind="function" id="class_log_1ad144399d5c2afe477fac342ebd0df898" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Log::write</definition>
+        <argsstring>(int)</argsstring>
+        <name>write</name>
+        <qualifiedname>Log::write</qualifiedname>
+        <param>
+          <type>int</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>Write a message with a severity. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="154_module_class_member_ref.cppm" line="14" column="10"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>Logging interface. </para>
+    </detaileddescription>
+    <location file="154_module_class_member_ref.cppm" line="8" column="1" bodyfile="154_module_class_member_ref.cppm" bodystart="9" bodyend="17"/>
+    <listofallmembers>
+      <member refid="class_log_1a8230a47acc301f5b969398bb93c012ed" prot="public" virt="non-virtual">
+        <scope>Log</scope>
+        <name>dirty</name>
+      </member>
+      <member refid="class_log_1ace44a329cf6881c8dc3de6d6bf999baa" prot="public" virt="non-virtual">
+        <scope>Log</scope>
+        <name>write</name>
+      </member>
+      <member refid="class_log_1ad144399d5c2afe477fac342ebd0df898" prot="public" virt="non-virtual">
+        <scope>Log</scope>
+        <name>write</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
