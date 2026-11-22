@@ -12,6 +12,7 @@ DString UrlFor(const DString& godboltClientStateTemplateName, const DString& fra
 bool CanEmbedd(const DString &godboltClientStateTemplateName);
 DString EmbeddUrlFor(const DString& godboltClientStateTemplateName, const DString& fragmentRaw);
 DString LinkHtml(const DString& godboltClientStateTemplateName, const DString& fragmentRaw);
+DString LinkIFrame(const DString &godboltClientStateTemplateName, const DString &fragmentRaw);
 }
 
 #endif

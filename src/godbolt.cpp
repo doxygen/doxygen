@@ -313,6 +313,7 @@ DString Godbolt::EmbeddUrlFor(const DString &godboltClientStateTemplateName, con
   return buildEmbedUrlFromClientState(clientState, true);
 }
 
+
 DString Godbolt::LinkHtml(const DString &godboltClientStateTemplateName, const DString &fragmentRaw)
 {
   return R"html(<a href=")html" + Godbolt::UrlFor(godboltClientStateTemplateName, fragmentRaw) + //
@@ -324,4 +325,9 @@ DString Godbolt::LinkHtml(const DString &godboltClientStateTemplateName, const D
             </svg>
             <span>Godbolt</span>
           </a>)html";
+}
+
+DString Godbolt::LinkIFrame(const DString &godboltClientStateTemplateName, const DString &fragmentRaw)
+{
+  return R"html(<iframe width="100%" height="350px" src=")html" + Godbolt::EmbeddUrlFor(godboltClientStateTemplateName, fragmentRaw) + R"html("></iframe>)html";
 }
