@@ -1937,6 +1937,11 @@ GetDefResult getDefs(const GetDefInput &input)
   if (!input.scopeName.empty() && !input.forceEmptyScope)
   {
     scope = resolver.resolveSymbol(scope,input.scopeName);
+    // A C++ module name does not introduce a scope for its exported class members.
+    if (scope && scope->definitionType() == Definition::TypeModule)
+    {
+      if (const ClassDef *cd = getClass(input.scopeName)) scope = cd;
+    }
   }
   if (scope==Doxygen::globalScope)
   {
