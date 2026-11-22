@@ -11,7 +11,7 @@ DString ClientStateFor(const DString& clientStateTemplate, const DString& fragme
 DString UrlFor(const DString& godboltClientStateTemplateName, const DString& fragmentRaw);
 bool CanEmbedd(const DString &godboltClientStateTemplateName);
 DString EmbeddUrlFor(const DString& godboltClientStateTemplateName, const DString& fragmentRaw);
-DString Html(const DString& godboltClientStateTemplateName, const DString& fragmentRaw);
+DString LinkHtml(const DString& godboltClientStateTemplateName, const DString& fragmentRaw);
 }
 
 #endif

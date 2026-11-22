@@ -780,7 +780,7 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
           m_t << "<iframe width=\"100%\" height=\"350px\" src=\"" + Godbolt::EmbeddUrlFor(clientState, fragment) + "\"></iframe>";
         }
         else{
-        m_ci.startCodeFragment("DoxyCode");
+        m_ci.startCodeFragment("Godbolt");
         CodeFragmentManager::instance().parseCodeFragment(m_ci,
                                                           inc.file(),
                                                           inc.blockId(),
@@ -789,8 +789,8 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
                                                           inc.trimLeft(),
                                                           inc.stripCodeComments()
                                                         );
-        m_ci.endCodeFragment("DoxyCode");
-        m_t << "<a href=\"" + Godbolt::UrlFor(clientState, fragment) + "\">Godbolt</a>";
+        m_t << Godbolt::LinkHtml(clientState, fragment);
+        m_ci.endCodeFragment("Godbolt");
         }
       }
       else
@@ -798,7 +798,7 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
         m_ci.startCodeFragment("DoxyCode");
         CodeFragmentManager::instance().parseCodeFragment(m_ci,
                                          inc.file(),
-                                         inc.blockId(),
+ inc.blockId(),
                                          inc.context(),
                                          inc.type()==DocInclude::SnippetWithLines,
                                          inc.trimLeft(),
