@@ -15,6 +15,8 @@
 #include <cstdio>
 #include <iostream>
 
+using namespace Godbolt;
+
 namespace
 {
 const DString defaultClientStateTemplate = R"json({
@@ -285,29 +287,29 @@ std::string buildEmbedUrlFromClientState(const json &clientState, bool hideToolb
   return baseUrl + urlEncodeRison(risonBody);
 }
 
-} // namespace
-
-std::optional<DString> Godbolt::EmbeddUrlFor(const DString &godboltClientStateTemplateName, const DString &fragmentRaw)
+json ClientStateTemplateJSONFor(const DString &godboltClientStateTemplateName)
 {
   DString clientStateTemplateRaw = ClientStateTemplateFor(godboltClientStateTemplateName);
-  auto    clientState            = json::parse(clientStateTemplateRaw.c_str());
+  return json::parse(clientStateTemplateRaw.c_str());
+}
+
+} // namespace
+
+bool Godbolt::CanEmbedd(const DString &godboltClientStateTemplateName)
+{
+  auto clientState = ClientStateTemplateJSONFor(godboltClientStateTemplateName);
   if (clientState["sessions"].size() > 1u)
-    return {};
-  auto &const session0 = clientState["sessions"][0];
+    return false;
+  const auto &session0 = clientState["sessions"][0];
   if (!session0.contains("executors") || session0["executors"].size() != 1u)
-    return {};
+    return false;
+  return true;
+}
+
+DString Godbolt::EmbeddUrlFor(const DString &godboltClientStateTemplateName, const DString &fragmentRaw)
+{
+  auto clientState                     = ClientStateTemplateJSONFor(godboltClientStateTemplateName);
   clientState["sessions"][0]["source"] = fragmentRaw.c_str();
   return buildEmbedUrlFromClientState(clientState, true);
 }
 
-DString Godbolt::Html(const DString &godboltClientStateTemplateName, const DString &fragment)
-{
-  if (auto embeddUrl = Godbolt::EmbeddUrlFor(godboltClientStateTemplateName, fragment))
-  {
-    return "<iframe width=\"100%\" height=\"350px\" src=\"" + *embeddUrl + "\"></iframe>";
-  }
-  else
-  {
-    return "<a href=\"" + UrlFor(godboltClientStateTemplateName, fragment) + "\">Godbolt</a>";
-  }
-}

@@ -763,18 +763,35 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
       bool godbolt = !inc.godboltClientState().empty();
       if(godbolt)
       {
-        OutputCodeList dummyOutput;
         DString* retrieveFragment = godbolt ? &fragment : nullptr;
-        CodeFragmentManager::instance().parseCodeFragment(dummyOutput,
-                                         inc.file(),
-                                         inc.blockId(),
-                                         inc.context(),
-                                         inc.type()==DocInclude::SnippetWithLines,
-                                         inc.trimLeft(),
-                                         inc.stripCodeComments(),
-                                         retrieveFragment
-                                        );
-        m_t << Godbolt::Html(inc.godboltClientState(), fragment);
+        auto clientState = inc.godboltClientState();
+        if(Godbolt::CanEmbedd(clientState))
+        {
+          OutputCodeList dummyOutput;
+          CodeFragmentManager::instance().parseCodeFragment(dummyOutput,
+                                                            inc.file(),
+                                                            inc.blockId(),
+                                                            inc.context(),
+                                                            inc.type()==DocInclude::SnippetWithLines,
+                                                            inc.trimLeft(),
+                                                            inc.stripCodeComments(),
+                                                            retrieveFragment
+                                                          );
+          m_t << "<iframe width=\"100%\" height=\"350px\" src=\"" + Godbolt::EmbeddUrlFor(clientState, fragment) + "\"></iframe>";
+        }
+        else{
+        m_ci.startCodeFragment("DoxyCode");
+        CodeFragmentManager::instance().parseCodeFragment(m_ci,
+                                                          inc.file(),
+                                                          inc.blockId(),
+                                                          inc.context(),
+                                                          inc.type()==DocInclude::SnippetWithLines,
+                                                          inc.trimLeft(),
+                                                          inc.stripCodeComments()
+                                                        );
+        m_ci.endCodeFragment("DoxyCode");
+        m_t << "<a href=\"" + Godbolt::UrlFor(clientState, fragment) + "\">Godbolt</a>";
+        }
       }
       else
       {
