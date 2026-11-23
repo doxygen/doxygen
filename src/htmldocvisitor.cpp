@@ -28,6 +28,7 @@
 #include "fileinfo.h"
 #include "formula.h"
 #include "godbolt.h"
+#include "godboltoptions.h"
 #include "htmlentity.h"
 #include "indexlist.h"
 #include "language.h"
@@ -760,12 +761,12 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
     case DocInclude::SnippetWithLines:
       forceEndParagraph(inc);
       DString fragment;
-      bool godbolt = !inc.godboltClientState().empty();
+      auto godbolt = inc.godboltOptions();
       if(godbolt)
       {
         DString* retrieveFragment = godbolt ? &fragment : nullptr;
-        auto clientState = inc.godboltClientState();
-        if(Godbolt::CanEmbedd(clientState))
+        auto clientState = godbolt->clientState;
+        if(godbolt->bridge == Godbolt::Bridge::iframe && Godbolt::CanEmbedd(clientState))
         {
           OutputCodeList dummyOutput;
           CodeFragmentManager::instance().parseCodeFragment(dummyOutput,

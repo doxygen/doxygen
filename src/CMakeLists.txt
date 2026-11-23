@@ -273,6 +273,7 @@ add_library(doxymain STATIC
     ftvhelp.cpp
     groupdef.cpp
     godbolt.cpp
+    godboltoptions.cpp
     htags.cpp
     htmldocvisitor.cpp
     htmlentity.cpp
@@ -329,6 +330,7 @@ add_library(doxymain STATIC
 target_link_libraries(doxymain PRIVATE
     spdlog::spdlog
     nlohmann_json::nlohmann_json
+    scn::scn
     cpp-base64
 )
 add_sanitizers(doxymain)

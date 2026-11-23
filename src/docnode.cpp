@@ -4009,7 +4009,7 @@ void DocPara::handleInclude(const DString &cmdName,DocInclude::Type t)
   bool isBlock = false;
   bool trimLeft = false;
   bool localScope = false;
-  DString godboltClientState;
+  std::optional<Godbolt::Options> godboltOptions;
   bool stripCodeComments = Config_getBool(STRIP_CODE_COMMENTS);
   if (tok.is(TokenRetval::TK_WORD) && parser()->context.token->name=="{")
   {
@@ -4034,19 +4034,18 @@ void DocPara::handleInclude(const DString &cmdName,DocInclude::Type t)
     {
       trimLeft = true;
     }
-    if (t==DocInclude::Snippet)
-      if(auto found = std::find_if(optList.begin(),optList.end(),
-        [&](const DString& o){ return o.endsWith("godbolt");}); 
-        found != optList.end())
-    {
-      godboltClientState = *found;
-    }
-
     if (contains("lineno"))
     {
       if      (t==DocInclude::Include)     t = DocInclude::IncWithLines;
       else if (t==DocInclude::Snippet)     t = DocInclude::SnippetWithLines;
       else if (t==DocInclude::DontInclude) t = DocInclude::DontIncWithLines;
+    }
+    for (const auto &opt : optList)
+    {
+      if (auto gb = Godbolt::ScanOptions(std::string{stripWhiteSpace(opt)}))
+      {
+        godboltOptions = gb;
+      }
     }
     tok=parser()->tokenizer.lex();
     if (!tok.is(TokenRetval::TK_WHITESPACE))
@@ -4116,7 +4115,7 @@ void DocPara::handleInclude(const DString &cmdName,DocInclude::Type t)
                                 stripCodeComments,
                                 parser()->context.isExample,
                                 parser()->context.exampleName,
-                                blockId,isBlock,trimLeft,godboltClientState);
+                                blockId,isBlock,trimLeft,godboltOptions);
   children().get_last<DocInclude>()->parse();
 }
 

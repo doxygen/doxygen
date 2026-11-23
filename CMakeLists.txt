@@ -317,7 +317,14 @@ FetchContent_Declare(
     GIT_TAG        v3.11.3
     GIT_SHALLOW    TRUE
 )
+FetchContent_Declare(
+    scn
+    GIT_REPOSITORY https://github.com/eliaskosunen/scnlib.git
+    GIT_TAG        v4.0.1
+    GIT_SHALLOW    TRUE
+)
 FetchContent_MakeAvailable(nlohmann_json)
+FetchContent_MakeAvailable(scn)
 
 add_subdirectory(deps)
 add_subdirectory(libversion)

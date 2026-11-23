@@ -1318,9 +1318,16 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_Options>{ID}       {
                          yyextra->token.name+=yytext;
                        }
+<St_Options>[^{}\n\r\t ,:=]+ {
+                         yyextra->token.name+=yytext;
+                       }
 <St_Options>{WS}*":"{WS}* {
                          lineCount(yytext,yyleng);
                          yyextra->token.name+=":";
+                       }
+<St_Options>{WS}*"="{WS}* {
+                         lineCount(yytext,yyleng);
+                         yyextra->token.name+="=";
                        }
 <St_Options>{WS}*","{WS}* |
 <St_Options>{WS}       { /* option separator */
