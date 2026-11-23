@@ -167,6 +167,7 @@ static bool handleCopyDetails(yyscan_t yyscanner,const DString &, const StringVe
 static bool handleParBlock(yyscan_t yyscanner,const DString &, const StringVector &);
 static bool handleEndParBlock(yyscan_t yyscanner,const DString &, const StringVector &);
 static bool handleParam(yyscan_t yyscanner,const DString &, const StringVector &);
+static bool handleField(yyscan_t yyscanner,const DString &, const StringVector &);
 static bool handleRetval(yyscan_t yyscanner,const DString &, const StringVector &);
 static bool handleFileInfo(yyscan_t yyscanner,const DString &cmdName, const StringVector &optList);
 static bool handleFileInfoSection(yyscan_t yyscanner,const DString &cmdName, const StringVector &optList);
@@ -324,6 +325,7 @@ static const std::unordered_map< std::string, DocCmdMap > docCmdMap =
   { "mainpage",               { &handleMainpage,                 CommandSpacing::Invisible, SectionHandling::Break   }},
   { "maninclude",             { nullptr,                         CommandSpacing::Inline,    SectionHandling::Break   }},
   { "manonly",                { &handleFormatBlock,              CommandSpacing::Invisible, SectionHandling::Break   }},
+  { "field",                  { &handleField,                    CommandSpacing::Block,     SectionHandling::Break   }},
   { "memberof",               { &handleMemberOf,                 CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "module",                 { &handleModule,                   CommandSpacing::Invisible, SectionHandling::Escape  }},
   { "msc",                    { &handleFormatBlock,              CommandSpacing::Block,     SectionHandling::Break   }},
@@ -438,6 +440,7 @@ enum OutputContext
 {
   OutputDoc,
   OutputBrief,
+  OutputField,
   OutputXRef,
   OutputInbody
 };
@@ -662,6 +665,7 @@ STopt  [^\n@\\]*
 %x      XRefItemParam3
 %x      FileDocArg1
 %x      ParamArg1
+%x      FieldArg
 %x      EnumDocArg1
 %x      NameSpaceDocArg1
 %x      PackageDocArg1
@@ -1657,6 +1661,18 @@ STopt  [^\n@\\]*
 <PageDocArg2>.                          {
                                           yyextra->current->args += yytext;
                                         }
+  /* --------- handle the argument of the field command ------------ */
+<FieldArg>{ID}                          {
+                                          yyextra->current->fieldDocs.push_back({yytext,{},yyextra->fileName,yyextra->lineNr});
+                                          setOutput(yyscanner,OutputField);
+                                          BEGIN(Comment);
+                                        }
+<FieldArg>{DOCNL}|.                     {
+                                          warn_doc_error(yyextra->fileName,yyextra->lineNr,"expected a field name after \\field");
+                                          unput_string(yytext,yyleng);
+                                          BEGIN(Comment);
+                                        }
+
   /* --------- handle arguments of the param command ------------ */
 <ParamArg1>{ID}/{B}*","                 {
                                           addOutput(yyscanner,yytext);
@@ -3269,6 +3285,13 @@ static bool handleParam(yyscan_t yyscanner,const DString &, const StringVector &
   return false;
 }
 
+static bool handleField(yyscan_t yyscanner,const DString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  BEGIN(FieldArg);
+  return false;
+}
+
 static bool handleRetval(yyscan_t yyscanner,const DString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -4768,7 +4791,14 @@ static inline void setOutput(yyscan_t yyscanner,OutputContext ctx)
     case OutputDoc:
       if (oldContext!=yyextra->inContext)
       {
-        stripTrailingWhiteSpace(yyextra->current->doc);
+        if (oldContext==OutputField)
+        {
+          if (!yyextra->current->doc.empty()) yyextra->current->doc += '\n';
+        }
+        else
+        {
+          stripTrailingWhiteSpace(yyextra->current->doc);
+        }
         if (yyextra->current->doc.empty()) yyextra->current->docLine = yyextra->lineNr;
         if (yyextra->current->docFile.empty())
         {
@@ -4830,6 +4860,9 @@ static inline void setOutput(yyscan_t yyscanner,OutputContext ctx)
           yyextra->inContext = OutputDoc; // need to switch to detailed docs, see bug 631380
         }
       }
+      break;
+    case OutputField:
+      yyextra->pOutputString = &yyextra->current->fieldDocs.back().doc;
       break;
     case OutputXRef:
       yyextra->pOutputString = &yyextra->outputXRef;

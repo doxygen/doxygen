@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_not_a_struct" kind="class" language="C++" prot="public">
+    <compoundname>NotAStruct</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="class_not_a_struct_1a5371414305683557e6e62d6ef47bc32e" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int NotAStruct::field</definition>
+        <argsstring/>
+        <name>field</name>
+        <qualifiedname>NotAStruct::field</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A class field. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="158_field_command_invalid.cpp" line="36" column="7" bodyfile="158_field_command_invalid.cpp" bodystart="36" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-static-attrib">
+      <memberdef kind="variable" id="class_not_a_struct_1a607b9db030dac8568fa513ec8b2ec90a" prot="public" static="yes" mutable="no">
+        <type>int</type>
+        <definition>int NotAStruct::shared</definition>
+        <argsstring/>
+        <name>shared</name>
+        <qualifiedname>NotAStruct::shared</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A static class variable. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="158_field_command_invalid.cpp" line="37" column="14" bodyfile="158_field_command_invalid.cpp" bodystart="37" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_not_a_struct_1a5a52a4a29e18fffb7d4cd79634e05533" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void NotAStruct::method</definition>
+        <argsstring>()</argsstring>
+        <name>method</name>
+        <qualifiedname>NotAStruct::method</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="158_field_command_invalid.cpp" line="38" column="8"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>A class. </para>
+    </detaileddescription>
+    <location file="158_field_command_invalid.cpp" line="33" column="1" bodyfile="158_field_command_invalid.cpp" bodystart="34" bodyend="39"/>
+    <listofallmembers>
+      <member refid="class_not_a_struct_1a5371414305683557e6e62d6ef47bc32e" prot="public" virt="non-virtual">
+        <scope>NotAStruct</scope>
+        <name>field</name>
+      </member>
+      <member refid="class_not_a_struct_1a5a52a4a29e18fffb7d4cd79634e05533" prot="public" virt="non-virtual">
+        <scope>NotAStruct</scope>
+        <name>method</name>
+      </member>
+      <member refid="class_not_a_struct_1a607b9db030dac8568fa513ec8b2ec90a" prot="public" virt="non-virtual">
+        <scope>NotAStruct</scope>
+        <name>shared</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="struct_c_pair" kind="struct" language="C++" prot="public">
+    <compoundname>CPair</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="struct_c_pair_1ae87a8384ce36fde77aa8edcc02f33a96" prot="public" static="no" mutable="no">
+        <type>unsigned</type>
+        <definition>unsigned CPair::first</definition>
+        <argsstring/>
+        <name>first</name>
+        <qualifiedname>CPair::first</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>First value. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="more_157_field_command.c" line="7" column="12" bodyfile="more_157_field_command.c" bodystart="7" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="struct_c_pair_1a8637fad0d90d80270daf0b844338ab94" prot="public" static="no" mutable="no">
+        <type>unsigned</type>
+        <definition>unsigned CPair::second</definition>
+        <argsstring/>
+        <name>second</name>
+        <qualifiedname>CPair::second</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>Second value. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="more_157_field_command.c" line="7" column="18" bodyfile="more_157_field_command.c" bodystart="7" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>A C pair. </para>
+    </detaileddescription>
+    <location file="more_157_field_command.c" line="5" column="1" bodyfile="more_157_field_command.c" bodystart="6" bodyend="8"/>
+    <listofallmembers>
+      <member refid="struct_c_pair_1ae87a8384ce36fde77aa8edcc02f33a96" prot="public" virt="non-virtual">
+        <scope>CPair</scope>
+        <name>first</name>
+      </member>
+      <member refid="struct_c_pair_1a8637fad0d90d80270daf0b844338ab94" prot="public" virt="non-virtual">
+        <scope>CPair</scope>
+        <name>second</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

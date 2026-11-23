@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="structspace_1_1_record" kind="struct" language="C++" prot="public">
+    <compoundname>space::Record</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structspace_1_1_record_1afdecfa7bea65a1fa89b93833f22c04c2" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int space::Record::value</definition>
+        <argsstring/>
+        <name>value</name>
+        <qualifiedname>space::Record::value</qualifiedname>
+        <briefdescription>
+          <para>Existing documentation. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>Field documented separately. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="157_field_command.cpp" line="45" column="7" bodyfile="157_field_command.cpp" bodystart="45" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>A record. </para>
+    </detaileddescription>
+    <location file="157_field_command.cpp" line="43" column="1" bodyfile="157_field_command.cpp" bodystart="44" bodyend="46"/>
+    <listofallmembers>
+      <member refid="structspace_1_1_record_1afdecfa7bea65a1fa89b93833f22c04c2" prot="public" virt="non-virtual">
+        <scope>space::Record</scope>
+        <name>value</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

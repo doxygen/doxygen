@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="struct_coordinates" kind="struct" language="C++" prot="public">
+    <compoundname>Coordinates</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="struct_coordinates_1a11c878fbd2d0805c91af17d2ba2289a1" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Coordinates::x</definition>
+        <argsstring/>
+        <name>x</name>
+        <qualifiedname>Coordinates::x</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>Horizontal <bold>coordinate</bold>, continued on the next line. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="157_field_command.cpp" line="23" column="7" bodyfile="157_field_command.cpp" bodystart="23" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="struct_coordinates_1aae83211da8e94ae2edd3b407c19bff07" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Coordinates::y</definition>
+        <argsstring/>
+        <name>y</name>
+        <qualifiedname>Coordinates::y</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>Vertical coordinate. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="157_field_command.cpp" line="23" column="9" bodyfile="157_field_command.cpp" bodystart="23" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="struct_coordinates_1a0faff1cad115f4799c57847d1eeddbfd" prot="public" static="no" mutable="no">
+        <type>long</type>
+        <definition>long Coordinates::_other</definition>
+        <argsstring/>
+        <name>_other</name>
+        <qualifiedname>Coordinates::_other</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>Another field. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="157_field_command.cpp" line="24" column="8" bodyfile="157_field_command.cpp" bodystart="24" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para><ref refid="struct_coordinates" kindref="compound">Coordinates</ref>.</para>
+      <para>More about the coordinates. <simplesect kind="note"><para>A note about the struct. </para></simplesect>
+</para>
+    </detaileddescription>
+    <location file="157_field_command.cpp" line="21" column="1" bodyfile="157_field_command.cpp" bodystart="22" bodyend="25"/>
+    <listofallmembers>
+      <member refid="struct_coordinates_1a0faff1cad115f4799c57847d1eeddbfd" prot="public" virt="non-virtual">
+        <scope>Coordinates</scope>
+        <name>_other</name>
+      </member>
+      <member refid="struct_coordinates_1a11c878fbd2d0805c91af17d2ba2289a1" prot="public" virt="non-virtual">
+        <scope>Coordinates</scope>
+        <name>x</name>
+      </member>
+      <member refid="struct_coordinates_1aae83211da8e94ae2edd3b407c19bff07" prot="public" virt="non-virtual">
+        <scope>Coordinates</scope>
+        <name>y</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

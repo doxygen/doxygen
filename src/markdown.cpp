@@ -666,6 +666,7 @@ size_t Markdown::Private::isSpecialCommand(std::string_view data,size_t offset)
     { "interface",      endOfLine  },
     { "latexinclude",   endOfLine  },
     { "maninclude",     endOfLine  },
+    { "field",          endOfLabel },
     { "memberof",       endOfLabel },
     { "mermaidfile",    endOfLine  },
     { "mscfile",        endOfLine  },

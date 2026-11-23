@@ -32,6 +32,14 @@ class SectionInfo;
 
 //--------------------------------------------------------------
 
+struct FieldDocumentation
+{
+  DString name;
+  DString doc;
+  DString file;
+  int line;
+};
+
 #define COMMAND_OVERRIDES                                       \
   OVERRIDE_ENTRY(bool,          bool, 1, callGraph            ) \
   OVERRIDE_ENTRY(bool,          bool, 1, callerGraph          ) \
@@ -198,6 +206,7 @@ class Entry
     DString      includeFile; //!< include file (2 arg of \\class, must be unique)
     DString      includeName; //!< include name (3 arg of \\class)
     DString      doc;         //!< documentation block (partly parsed)
+    std::vector<FieldDocumentation> fieldDocs; //!< documentation from \\field commands
     int          docLine;     //!< line number at which the documentation was found
     DString      docFile;     //!< file in which the documentation was found
     DString      brief;       //!< brief description (doc block)

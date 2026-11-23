@@ -75,6 +75,7 @@ Entry::Entry(const Entry &e) : section(e.section)
   includeFile = e.includeFile;
   includeName = e.includeName;
   doc         = e.doc;
+  fieldDocs   = e.fieldDocs;
   docLine     = e.docLine;
   docFile     = e.docFile;
   brief       = e.brief;
@@ -193,6 +194,7 @@ void Entry::reset()
   includeFile.clear();
   includeName.clear();
   doc.clear();
+  fieldDocs.clear();
   docFile.clear();
   docLine=-1;
   relates.clear();

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="union_value" kind="union" language="C++" prot="public">
+    <compoundname>Value</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="union_value_1af6de6143cb39282acade5c2087150516" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Value::integer</definition>
+        <argsstring/>
+        <name>integer</name>
+        <qualifiedname>Value::integer</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>An integer. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="157_field_command.cpp" line="33" column="7" bodyfile="157_field_command.cpp" bodystart="33" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="union_value_1a1597799af2acb1e4b99ae1e04830e274" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double Value::real</definition>
+        <argsstring/>
+        <name>real</name>
+        <qualifiedname>Value::real</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A real. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="157_field_command.cpp" line="34" column="10" bodyfile="157_field_command.cpp" bodystart="34" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>A value. </para>
+    </detaileddescription>
+    <location file="157_field_command.cpp" line="31" column="1" bodyfile="157_field_command.cpp" bodystart="32" bodyend="35"/>
+    <listofallmembers>
+      <member refid="union_value_1af6de6143cb39282acade5c2087150516" prot="public" virt="non-virtual">
+        <scope>Value</scope>
+        <name>integer</name>
+      </member>
+      <member refid="union_value_1a1597799af2acb1e4b99ae1e04830e274" prot="public" virt="non-virtual">
+        <scope>Value</scope>
+        <name>real</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

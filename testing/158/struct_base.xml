@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="struct_base" kind="struct" language="C++" prot="public">
+    <compoundname>Base</compoundname>
+    <derivedcompoundref refid="struct_derived" prot="public" virt="non-virtual">Derived</derivedcompoundref>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="struct_base_1a6daa680dc74b988b0c4760a240f77956" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Base::inherited</definition>
+        <argsstring/>
+        <name>inherited</name>
+        <qualifiedname>Base::inherited</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="158_field_command_invalid.cpp" line="11" column="7" bodyfile="158_field_command_invalid.cpp" bodystart="11" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="1">
+        <label>Base</label>
+        <link refid="struct_base"/>
+      </node>
+      <node id="2">
+        <label>Derived</label>
+        <link refid="struct_derived"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <location file="158_field_command_invalid.cpp" line="9" column="1" bodyfile="158_field_command_invalid.cpp" bodystart="10" bodyend="12"/>
+    <listofallmembers>
+      <member refid="struct_base_1a6daa680dc74b988b0c4760a240f77956" prot="public" virt="non-virtual">
+        <scope>Base</scope>
+        <name>inherited</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

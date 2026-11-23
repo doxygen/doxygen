@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="struct_box" kind="struct" language="C++" prot="public">
+    <compoundname>Box</compoundname>
+    <templateparamlist>
+      <param>
+        <type>typename T</type>
+      </param>
+    </templateparamlist>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="struct_box_1ad4c14f772b434e1a6bbde0f7702afaad" prot="public" static="no" mutable="no">
+        <type>T</type>
+        <definition>T Box&lt; T &gt;::data</definition>
+        <argsstring/>
+        <name>data</name>
+        <qualifiedname>Box::data</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>The stored value. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="157_field_command.cpp" line="54" column="5" bodyfile="157_field_command.cpp" bodystart="54" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>A box. </para>
+    </detaileddescription>
+    <location file="157_field_command.cpp" line="52" column="11" bodyfile="157_field_command.cpp" bodystart="53" bodyend="55"/>
+    <listofallmembers>
+      <member refid="struct_box_1ad4c14f772b434e1a6bbde0f7702afaad" prot="public" virt="non-virtual">
+        <scope>Box</scope>
+        <name>data</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

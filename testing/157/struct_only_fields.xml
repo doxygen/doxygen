@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="struct_only_fields" kind="struct" language="C++" prot="public">
+    <compoundname>OnlyFields</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="struct_only_fields_1ae28f8586b1732a435a305ce205d6e1b1" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int OnlyFields::field</definition>
+        <argsstring/>
+        <name>field</name>
+        <qualifiedname>OnlyFields::field</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>Documentation without a separate struct description. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="157_field_command.cpp" line="60" column="7" bodyfile="157_field_command.cpp" bodystart="60" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="157_field_command.cpp" line="58" column="1" bodyfile="157_field_command.cpp" bodystart="59" bodyend="61"/>
+    <listofallmembers>
+      <member refid="struct_only_fields_1ae28f8586b1732a435a305ce205d6e1b1" prot="public" virt="non-virtual">
+        <scope>OnlyFields</scope>
+        <name>field</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

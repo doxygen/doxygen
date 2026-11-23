@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="struct_derived" kind="struct" language="C++" prot="public">
+    <compoundname>Derived</compoundname>
+    <basecompoundref refid="struct_base" prot="public" virt="non-virtual">Base</basecompoundref>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="struct_derived_1a6227425bdf860723dbe3459cc208ec0a" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Derived::own</definition>
+        <argsstring/>
+        <name>own</name>
+        <qualifiedname>Derived::own</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A direct field. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="158_field_command_invalid.cpp" line="23" column="7" bodyfile="158_field_command_invalid.cpp" bodystart="23" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-static-attrib">
+      <memberdef kind="variable" id="struct_derived_1ab82f4d3eef407925edac4d5bcb971630" prot="public" static="yes" mutable="no">
+        <type>int</type>
+        <definition>int Derived::shared</definition>
+        <argsstring/>
+        <name>shared</name>
+        <qualifiedname>Derived::shared</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="158_field_command_invalid.cpp" line="25" column="14" bodyfile="158_field_command_invalid.cpp" bodystart="25" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="struct_derived_1ac230f0cadeea03b03cadf53546ef929c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Derived::method</definition>
+        <argsstring>()</argsstring>
+        <name>method</name>
+        <qualifiedname>Derived::method</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="158_field_command_invalid.cpp" line="24" column="8"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para><ref refid="struct_derived" kindref="compound">Derived</ref>. </para>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>Base</label>
+        <link refid="struct_base"/>
+      </node>
+      <node id="1">
+        <label>Derived</label>
+        <link refid="struct_derived"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="2">
+        <label>Base</label>
+        <link refid="struct_base"/>
+      </node>
+      <node id="1">
+        <label>Derived</label>
+        <link refid="struct_derived"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="158_field_command_invalid.cpp" line="21" column="1" bodyfile="158_field_command_invalid.cpp" bodystart="22" bodyend="26"/>
+    <listofallmembers>
+      <member refid="struct_base_1a6daa680dc74b988b0c4760a240f77956" prot="public" virt="non-virtual">
+        <scope>Derived</scope>
+        <name>inherited</name>
+      </member>
+      <member refid="struct_derived_1ac230f0cadeea03b03cadf53546ef929c" prot="public" virt="non-virtual">
+        <scope>Derived</scope>
+        <name>method</name>
+      </member>
+      <member refid="struct_derived_1a6227425bdf860723dbe3459cc208ec0a" prot="public" virt="non-virtual">
+        <scope>Derived</scope>
+        <name>own</name>
+      </member>
+      <member refid="struct_derived_1ab82f4d3eef407925edac4d5bcb971630" prot="public" virt="non-virtual">
+        <scope>Derived</scope>
+        <name>shared</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

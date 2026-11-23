@@ -7839,6 +7839,57 @@ static void findMemberDocumentation(const Entry *root)
 
 //----------------------------------------------------------------------
 
+static void findFieldDocumentation(const Entry *root)
+{
+  if (!root->fieldDocs.empty())
+  {
+    ClassDef *cd = nullptr;
+    if ((root->section.isCompound() || root->section.isCompoundDoc()) && !root->name.empty())
+    {
+      DString name = stripTemplateSpecifiersFromScope(root->name);
+      if (root->parent() && root->parent()->section.isScope() &&
+          !root->parent()->name.empty() && !leftScopeMatch(root->parent()->name,name))
+      {
+        name.prepend(root->parent()->name+"::");
+      }
+      cd = getClass(name);
+    }
+    for (const auto &fieldDoc : root->fieldDocs)
+    {
+      if (!cd || (cd->compoundType()!=ClassDef::Struct && cd->compoundType()!=ClassDef::Union &&
+                  cd->compoundType()!=ClassDef::Class))
+      {
+        warn_doc_error(fieldDoc.file,fieldDoc.line,"\\field is only supported in documentation for a class, struct or union");
+        continue;
+      }
+      MemberDefMutable *field = nullptr;
+      if (MemberName *members = Doxygen::memberNameLinkedMap->find(fieldDoc.name))
+      {
+        for (const auto &member : *members)
+        {
+          if (member->getClassDef()==cd && member->isVariable() &&
+              (cd->compoundType()==ClassDef::Class || !member->isStatic()))
+          {
+            field = toMemberDefMutable(member.get());
+            break;
+          }
+        }
+      }
+      if (field)
+      {
+        field->setDocumentation(fieldDoc.doc,fieldDoc.file,fieldDoc.line);
+      }
+      else
+      {
+        warn_doc_error(fieldDoc.file,fieldDoc.line,"\\field '{}' does not name an eligible variable of {}",fieldDoc.name,cd->name());
+      }
+    }
+  }
+  for (const auto &entry : root->children()) findFieldDocumentation(entry.get());
+}
+
+//----------------------------------------------------------------------
+
 static void findObjCMethodDefinitions(const Entry *root)
 {
   AUTO_TRACE();
@@ -13256,6 +13307,7 @@ void parseInput()
   g_s.begin("Searching for member function documentation...\n");
   findObjCMethodDefinitions(root.get());
   findMemberDocumentation(root.get()); // may introduce new members !
+  findFieldDocumentation(root.get());
   findUsingDeclImports(root.get()); // may introduce new members !
   g_usingClassMap.clear();
   transferRelatedFunctionDocumentation();
