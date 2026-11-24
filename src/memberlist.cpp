@@ -24,6 +24,7 @@
 #include "filedef.h"
 #include "groupdef.h"
 #include "language.h"
+#include "md5hash.h"
 #include "membergroup.h"
 #include "message.h"
 #include "moduledef.h"
@@ -545,7 +546,9 @@ void MemberList::writeDeclarations(OutputList &ol,
       }
       else
       {
-        ol.startMemberHeader(m_listType.toLabel());
+        DString anchor = m_listType.toLabel();
+        if (m_listType.isMemberGroup()) anchor += "-" + md5str(title.view());
+        ol.startMemberHeader(anchor);
       }
       ol.parseText(title);
       if (showInline)
