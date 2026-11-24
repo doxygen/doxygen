@@ -761,12 +761,11 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
     case DocInclude::SnippetWithLines:
       forceEndParagraph(inc);
       DString fragment;
-      auto godbolt = inc.godboltOptions();
-      if(godbolt)
+      if (auto godbolt = inc.godboltOptions())
       {
         DString* retrieveFragment = godbolt ? &fragment : nullptr;
         auto clientState = godbolt->clientState;
-        if(godbolt->bridge == Godbolt::Bridge::iframe && Godbolt::CanEmbedd(clientState))
+        if (godbolt->bridge == Godbolt::Bridge::iframe && Godbolt::CanEmbedd(clientState))
         {
           OutputCodeList dummyOutput;
           CodeFragmentManager::instance().parseCodeFragment(dummyOutput,
@@ -799,7 +798,7 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
         m_ci.startCodeFragment("DoxyCode");
         CodeFragmentManager::instance().parseCodeFragment(m_ci,
                                          inc.file(),
- inc.blockId(),
+                                         inc.blockId(),
                                          inc.context(),
                                          inc.type()==DocInclude::SnippetWithLines,
                                          inc.trimLeft(),
