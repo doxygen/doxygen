@@ -39,6 +39,7 @@
 #include "outputlist.h"
 #include "parserintf.h"
 #include "plantuml.h"
+#include "presentdocinclude.h"
 #include "portable.h"
 #include "reflist.h"
 #include "util.h"
@@ -760,49 +761,7 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
     case DocInclude::Snippet:
     case DocInclude::SnippetWithLines:
       forceEndParagraph(inc);
-      if (auto godbolt = inc.godboltOptions())
-      {
-        auto clientState = godbolt->clientState;
-        if (godbolt->bridge == Godbolt::Bridge::iframe && Godbolt::CanEmbedd(clientState))
-        {
-          OutputCodeList dummyOutput;
-          CodeFragmentManager::instance().parseCodeFragment(dummyOutput,
-                                                            inc.file(),
-                                                            inc.blockId(),
-                                                            inc.context(),
-                                                            inc.type()==DocInclude::SnippetWithLines,
-                                                            inc.trimLeft(),
-                                                            inc.stripCodeComments()
-                                                          );
-          m_t << "<iframe width=\"100%\" height=\"350px\" src=\"" + Godbolt::EmbeddUrlFor(clientState, inc.text()) + "\"></iframe>";
-        }
-        else{
-          m_ci.startCodeFragment("Godbolt");
-          CodeFragmentManager::instance().parseCodeFragment(m_ci,
-                                                            inc.file(),
-                                                            inc.blockId(),
-                                                            inc.context(),
-                                                            inc.type()==DocInclude::SnippetWithLines,
-                                                            inc.trimLeft(),
-                                                            inc.stripCodeComments()
-                                                          );
-          m_t << Godbolt::LinkHtml(clientState, inc.text());
-          m_ci.endCodeFragment("Godbolt");
-        }
-      }
-      else
-      {
-        m_ci.startCodeFragment("DoxyCode");
-        CodeFragmentManager::instance().parseCodeFragment(m_ci,
-                                         inc.file(),
-                                         inc.blockId(),
-                                         inc.context(),
-                                         inc.type()==DocInclude::SnippetWithLines,
-                                         inc.trimLeft(),
-                                         inc.stripCodeComments()
-                                        );
-        m_ci.endCodeFragment("DoxyCode");
-      }
+      presentDocInclude(m_t, m_ci, inc);
       forceStartParagraph(inc);
       break;
   }

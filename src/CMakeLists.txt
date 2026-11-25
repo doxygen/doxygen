@@ -302,6 +302,7 @@ add_library(doxymain STATIC
     perlmodgen.cpp
     plantuml.cpp
     qhp.cpp
+    presentdocinclude.cpp
     reflist.cpp
     regex.cpp
     requirement.cpp
