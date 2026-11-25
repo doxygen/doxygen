@@ -878,11 +878,11 @@ void ClangTUParser::detectFunctionBody(const char *s)
   }
 }
 
-static bool isDoxygenC(DString s)
+static bool isDoxygenCPPC(DString s)
 {
   return s.startsWith("///") || s.startsWith("//!");
 }
-static bool isDoxygenCPPC(DString s)
+static bool isDoxygenC(DString s)
 {
   return s.startsWith("/**") || s.startsWith("/*!");
 }
@@ -968,10 +968,13 @@ void ClangTUParser::writeSources(OutputCodeList &ol,const FileDef *fd)
     bool setL = false;
 
     if (l > line) column = 1;
-    if (line<l && (isDoxygenCPPC(s) || isDoxygenC(s)))
+    if (Config_getBool(STRIP_CODE_COMMENTS))
     {
-      l--;
-      setL = true;
+      if (line<l && (isDoxygenCPPC(s) || isDoxygenC(s)))
+      {
+        l--;
+        setL = true;
+      }
     }
     while (line<l)
     {
@@ -980,7 +983,7 @@ void ClangTUParser::writeSources(OutputCodeList &ol,const FileDef *fd)
       writeLineNumber(ol,fd,line,!inlineCodeFragment);
       ol.startCodeLine(line);
     }
-    if (setL)
+    if (setL) // is automatically protected as only when STRIP_CODE_COMMENTS is set it can be true
     {
       l++;
       line++;
@@ -1069,21 +1072,21 @@ void ClangTUParser::writeSources(OutputCodeList &ol,const FileDef *fd)
       case CXToken_Comment:
         if (Config_getBool(STRIP_CODE_COMMENTS))
         {
-          if (isDoxygenCPPC(s))
+          if (isDoxygenC(s))
           {
             line += DString(s).contains('\n');
             break;
           }
-          else if (isDoxygenC(s))
+          else if (isDoxygenCPPC(s))
           {
-            while (i+1 != p->numTokens)
+            while (i < p->numTokens)
             {
               unsigned int l1=0;
               CXSourceLocation start1 = clang_getTokenLocation(p->tu, p->tokens[i+1]);
               clang_getSpellingLocation(start1, nullptr, &l1, nullptr, nullptr);
               CXString tokenString1 = clang_getTokenSpelling(p->tu, p->tokens[i+1]);
               char const *s1 = clang_getCString(tokenString1);
-              if (isDoxygenC(s1))
+              if (isDoxygenCPPC(s1))
               {
                 if (line+1 != l1)
                 {
