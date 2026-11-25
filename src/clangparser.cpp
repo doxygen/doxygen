@@ -878,6 +878,15 @@ void ClangTUParser::detectFunctionBody(const char *s)
   }
 }
 
+static bool isDoxygenCPPC(DString s)
+{
+  return s.startsWith("///") || s.startsWith("//!");
+}
+static bool isDoxygenC(DString s)
+{
+  return s.startsWith("/**") || s.startsWith("/*!");
+}
+
 void ClangTUParser::writeSources(OutputCodeList &ol,const FileDef *fd)
 {
   AUTO_TRACE("file={}",fd->name());
@@ -954,7 +963,19 @@ void ClangTUParser::writeSources(OutputCodeList &ol,const FileDef *fd)
     CXSourceLocation start = clang_getTokenLocation(p->tu, p->tokens[i]);
     unsigned int l=0, c=0;
     clang_getSpellingLocation(start, nullptr, &l, &c, nullptr);
+    CXString tokenString = clang_getTokenSpelling(p->tu, p->tokens[i]);
+    char const *s = clang_getCString(tokenString);
+    bool setL = false;
+
     if (l > line) column = 1;
+    if (Config_getBool(STRIP_CODE_COMMENTS))
+    {
+      if (line<l && (isDoxygenCPPC(s) || isDoxygenC(s)))
+      {
+        l--;
+        setL = true;
+      }
+    }
     while (line<l)
     {
       line++;
@@ -962,9 +983,13 @@ void ClangTUParser::writeSources(OutputCodeList &ol,const FileDef *fd)
       writeLineNumber(ol,fd,line,!inlineCodeFragment);
       ol.startCodeLine(line);
     }
+    if (setL) // is automatically protected as only when STRIP_CODE_COMMENTS is set it can be true
+    {
+      l++;
+      line++;
+      setL = false;
+    }
     while (column<c) { ol.codify(" "); column++; }
-    CXString tokenString = clang_getTokenSpelling(p->tu, p->tokens[i]);
-    char const *s = clang_getCString(tokenString);
     CXCursorKind cursorKind  = clang_getCursorKind(p->cursors[i]);
     CXTokenKind tokenKind = clang_getTokenKind(p->tokens[i]);
     //printf("%d:%d %s cursorKind=%d tokenKind=%d\n",line,column,s,cursorKind,tokenKind);
@@ -1045,6 +1070,49 @@ void ClangTUParser::writeSources(OutputCodeList &ol,const FileDef *fd)
         }
         break;
       case CXToken_Comment:
+        if (Config_getBool(STRIP_CODE_COMMENTS))
+        {
+          if (isDoxygenC(s))
+          {
+            line += DString(s).contains('\n');
+            break;
+          }
+          else if (isDoxygenCPPC(s))
+          {
+            while (i < p->numTokens)
+            {
+              unsigned int l1=0;
+              CXSourceLocation start1 = clang_getTokenLocation(p->tu, p->tokens[i+1]);
+              clang_getSpellingLocation(start1, nullptr, &l1, nullptr, nullptr);
+              CXString tokenString1 = clang_getTokenSpelling(p->tu, p->tokens[i+1]);
+              char const *s1 = clang_getCString(tokenString1);
+              if (isDoxygenCPPC(s1))
+              {
+                if (line+1 != l1)
+                {
+                  for (unsigned int j = line+1; j < l1; j++)
+                  {
+                    line++;
+                    l++;
+                    ol.endCodeLine();
+                    writeLineNumber(ol,fd,line,!inlineCodeFragment);
+                    ol.startCodeLine(line);
+                  }
+                }
+                line++;
+                l++;
+                i++;
+                clang_disposeString(tokenString1);
+              }
+              else
+              {
+                clang_disposeString(tokenString1);
+                break;
+              }
+            }
+            break;
+          }
+        }
         codifyLines(ol,fd,s,line,column,"comment");
         break;
       default:  // CXToken_Punctuation or CXToken_Identifier
