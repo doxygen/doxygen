@@ -37,7 +37,7 @@ void presentDocInclude(
     else
     {
       ci.startCodeFragment("Godbolt");
-      parseCode(ci, inc);
+      parseCode(inc);
       t << Godbolt::LinkHtml(clientState, inc.text());
       ci.endCodeFragment("Godbolt");
     }
@@ -45,7 +45,7 @@ void presentDocInclude(
   else
   {
     ci.startCodeFragment("DoxyCode");
-    parseCode(ci, inc);
+    parseCode(inc);
     ci.endCodeFragment("DoxyCode");
   }
 }

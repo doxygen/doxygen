@@ -700,8 +700,10 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
   {
     case DocInclude::Include:
       forceEndParagraph(inc);
-      m_ci.startCodeFragment("DoxyCode");
-      getCodeParser(inc.extension()).parseCode(m_ci,
+      presentDocInclude(m_t, m_ci, inc, 
+        [langExt, this](const DocInclude &inc)
+        { 
+          getCodeParser(inc.extension()).parseCode(m_ci,
                                         inc.context(),
                                         inc.text(),
                                         langExt,
@@ -712,16 +714,17 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
                                         .setShowLineNumbers(false)
                                         .setSearchCtx(m_ctx)
                                        );
-      m_ci.endCodeFragment("DoxyCode");
+        });
       forceStartParagraph(inc);
       break;
     case DocInclude::IncWithLines:
-      {
-         forceEndParagraph(inc);
-         m_ci.startCodeFragment("DoxyCode");
-         FileInfo cfi( inc.file().str() );
-         auto fd = createFileDef( cfi.dirPath(), cfi.fileName() );
-         getCodeParser(inc.extension()).parseCode(m_ci,
+      forceEndParagraph(inc);
+      presentDocInclude(m_t, m_ci, inc, 
+        [langExt, this](const DocInclude &inc)
+        { 
+           FileInfo cfi( inc.file().str() );
+           auto fd = createFileDef( cfi.dirPath(), cfi.fileName() );
+           getCodeParser(inc.extension()).parseCode(m_ci,
                                            inc.context(),
                                            inc.text(),
                                            langExt,
@@ -732,9 +735,8 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
                                            .setInlineFragment(true)
                                            .setSearchCtx(m_ctx)
                                            );
-         m_ci.endCodeFragment("DoxyCode");
-         forceStartParagraph(inc);
-      }
+        });
+      forceStartParagraph(inc);
       break;
     case DocInclude::DontInclude:
     case DocInclude::LatexInclude:
@@ -762,9 +764,9 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
     case DocInclude::SnippetWithLines:
       forceEndParagraph(inc);
       presentDocInclude(m_t, m_ci, inc, 
-        []( OutputCodeList &ci,const DocInclude &inc)
+        [this](const DocInclude &inc)
         { 
-          CodeFragmentManager::instance().parseCodeFragment(ci,
+          CodeFragmentManager::instance().parseCodeFragment(m_ci,
                                                             inc.file(),
                                                             inc.blockId(),
                                                             inc.context(),
