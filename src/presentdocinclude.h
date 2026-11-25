@@ -22,11 +22,14 @@
 class OutputCodeList;
 class TextStream;
 
+using DocIncludeParseFunction = std::function<void(OutputCodeList &, const DocInclude &)>;
+
 /*! @brief generates HTML/XML to present source code requested from \snippet \example and \include commands
  */
 void presentDocInclude(
-  TextStream       &m_t,
-  OutputCodeList   &m_ci,
-  const DocInclude &inc);
+  TextStream                    &t,
+  OutputCodeList                &ci,
+  const DocInclude              &inc,
+  const DocIncludeParseFunction &parseCode);
 
 #endif

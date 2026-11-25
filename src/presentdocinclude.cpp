@@ -14,18 +14,18 @@
  */
 
 // own header
-#include "htmldocvisitor.h"
+#include "presentdocinclude.h"
 
 // other includes
-#include "codefragment.h"
 #include "godbolt.h"
 #include "outputlist.h"
 #include "textstream.h"
 
 void presentDocInclude(
-  TextStream       &t,
-  OutputCodeList   &ci,
-  const DocInclude &inc)
+  TextStream                    &t,
+  OutputCodeList                &ci,
+  const DocInclude              &inc,
+  const DocIncludeParseFunction &parseCode)
 {
   if (auto godbolt = inc.godboltOptions())
   {
@@ -37,13 +37,7 @@ void presentDocInclude(
     else
     {
       ci.startCodeFragment("Godbolt");
-      CodeFragmentManager::instance().parseCodeFragment(ci,
-                                                        inc.file(),
-                                                        inc.blockId(),
-                                                        inc.context(),
-                                                        inc.type() == DocInclude::SnippetWithLines,
-                                                        inc.trimLeft(),
-                                                        inc.stripCodeComments());
+      parseCode(ci, inc);
       t << Godbolt::LinkHtml(clientState, inc.text());
       ci.endCodeFragment("Godbolt");
     }
@@ -51,13 +45,7 @@ void presentDocInclude(
   else
   {
     ci.startCodeFragment("DoxyCode");
-    CodeFragmentManager::instance().parseCodeFragment(ci,
-                                                      inc.file(),
-                                                      inc.blockId(),
-                                                      inc.context(),
-                                                      inc.type() == DocInclude::SnippetWithLines,
-                                                      inc.trimLeft(),
-                                                      inc.stripCodeComments());
+    parseCode(ci, inc);
     ci.endCodeFragment("DoxyCode");
   }
 }

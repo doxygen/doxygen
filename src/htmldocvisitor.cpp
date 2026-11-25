@@ -761,7 +761,17 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
     case DocInclude::Snippet:
     case DocInclude::SnippetWithLines:
       forceEndParagraph(inc);
-      presentDocInclude(m_t, m_ci, inc);
+      presentDocInclude(m_t, m_ci, inc, 
+        []( OutputCodeList &ci,const DocInclude &inc)
+        { 
+          CodeFragmentManager::instance().parseCodeFragment(ci,
+                                                            inc.file(),
+                                                            inc.blockId(),
+                                                            inc.context(),
+                                                            inc.type() == DocInclude::SnippetWithLines,
+                                                            inc.trimLeft(),
+                                                            inc.stripCodeComments());
+        });
       forceStartParagraph(inc);
       break;
   }
