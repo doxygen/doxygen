@@ -16,7 +16,7 @@ std::optional<Options> Godbolt::ScanOptions(const std::string &input)
 {
   static const std::string iframe = "iframe";
   static const std::string link   = "link";
-  if (auto result = scn::scan<std::string, std::string>(input, "godbolt={:[^;]};{:[^)]}"))
+  if (auto result = scn::scan<std::string, std::string>(input, "godbolt=({:[^;]};{:[^)]})"))
   {
     auto [b, cs] = result->values();
     return { { b == iframe ? Bridge::iframe : Bridge::link, cs } };

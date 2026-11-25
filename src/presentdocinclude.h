@@ -22,7 +22,7 @@
 class OutputCodeList;
 class TextStream;
 
-using DocIncludeParseFunction = std::function<void(const DocInclude &)>;
+using DocIncludeParseFunction = std::function<void(OutputCodeList &ci, const DocInclude &)>;
 
 /*! @brief generates HTML/XML to present source code requested from \snippet \example and \include commands
  */

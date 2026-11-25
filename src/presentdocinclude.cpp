@@ -32,12 +32,14 @@ void presentDocInclude(
     auto clientState = godbolt->clientState;
     if (godbolt->bridge == Godbolt::Bridge::iframe && Godbolt::CanEmbedd(clientState))
     {
+      OutputCodeList dummy;
+      parseCode(dummy, inc);
       t << "<iframe width=\"100%\" height=\"350px\" src=\"" + Godbolt::EmbeddUrlFor(clientState, inc.text()) + "\"></iframe>";
     }
     else
     {
       ci.startCodeFragment("Godbolt");
-      parseCode(inc);
+      parseCode(ci, inc);
       t << Godbolt::LinkHtml(clientState, inc.text());
       ci.endCodeFragment("Godbolt");
     }
@@ -45,7 +47,7 @@ void presentDocInclude(
   else
   {
     ci.startCodeFragment("DoxyCode");
-    parseCode(inc);
+    parseCode(ci, inc);
     ci.endCodeFragment("DoxyCode");
   }
 }

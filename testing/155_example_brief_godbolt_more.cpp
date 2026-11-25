@@ -9,7 +9,7 @@ class Test
     void example();
 };
 
-/** \example{godbolt={iframe;simple_godbolt}} example_test.cpp
+/** \example{godbolt=(iframe;simple_godbolt)} example_test.cpp
  *  \brief Brief description of the example.
  *
  *  Detailed description of the example.

@@ -701,9 +701,9 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
     case DocInclude::Include:
       forceEndParagraph(inc);
       presentDocInclude(m_t, m_ci, inc, 
-        [langExt, this](const DocInclude &inc)
+        [langExt, this](OutputCodeList &ci, const DocInclude &inc)
         { 
-          getCodeParser(inc.extension()).parseCode(m_ci,
+          getCodeParser(inc.extension()).parseCode(ci,
                                         inc.context(),
                                         inc.text(),
                                         langExt,
@@ -720,11 +720,11 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
     case DocInclude::IncWithLines:
       forceEndParagraph(inc);
       presentDocInclude(m_t, m_ci, inc, 
-        [langExt, this](const DocInclude &inc)
+        [langExt, this](OutputCodeList &ci, const DocInclude &inc)
         { 
            FileInfo cfi( inc.file().str() );
            auto fd = createFileDef( cfi.dirPath(), cfi.fileName() );
-           getCodeParser(inc.extension()).parseCode(m_ci,
+           getCodeParser(inc.extension()).parseCode(ci,
                                            inc.context(),
                                            inc.text(),
                                            langExt,
@@ -764,7 +764,7 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
     case DocInclude::SnippetWithLines:
       forceEndParagraph(inc);
       presentDocInclude(m_t, m_ci, inc, 
-        [this](const DocInclude &inc)
+        [this](OutputCodeList &ci, const DocInclude &inc)
         { 
           CodeFragmentManager::instance().parseCodeFragment(m_ci,
                                                             inc.file(),
