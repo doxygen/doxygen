@@ -36,7 +36,7 @@
 class PageDefImpl final : public DefinitionMixin<PageDef>
 {
   public:
-    PageDefImpl(const DString &f,int l,const DString &n,const DString &d,const DString &t);
+    PageDefImpl(const DString &f,int l,const DString &n,const DString &d,const DString &t, const DString& godbolt);
     ~PageDefImpl() override;
     NON_COPYABLE(PageDefImpl)
 
@@ -74,6 +74,7 @@ class PageDefImpl final : public DefinitionMixin<PageDef>
     void writePageNavigation(OutputList &ol) const override;
     void addListReferences() override;
     void addRequirementReferences() override;
+    DString getGodbolt() const override;
 
   private:
     DString m_fileName;
@@ -84,17 +85,18 @@ class PageDefImpl final : public DefinitionMixin<PageDef>
     int m_nestingLevel;
     LocalToc m_localToc;
     bool m_showLineNo;
+    DString m_godbolt;
 };
 
-std::unique_ptr<PageDef> createPageDef(const DString &f,int l,const DString &n,const DString &d,const DString &t)
+std::unique_ptr<PageDef> createPageDef(const DString &f,int l,const DString &n,const DString &d,const DString &t, const DString& godbolt)
 {
-  return std::make_unique<PageDefImpl>(f,l,n,d,t);
+  return std::make_unique<PageDefImpl>(f,l,n,d,t, godbolt);
 }
 
 //------------------------------------------------------------------------------------------
 
 PageDefImpl::PageDefImpl(const DString &f,int l,const DString &n,
-                 const DString &d,const DString &t)
+                 const DString &d,const DString &t, const DString& godbolt)
  : DefinitionMixin(f,l,1,n)
 {
   setDocumentation(d,f,l);
@@ -103,6 +105,7 @@ PageDefImpl::PageDefImpl(const DString &f,int l,const DString &n,
   m_fileName = ::convertNameToFile(n,false,true);
   m_showLineNo = false;
   setTitle(t);
+  m_godbolt = godbolt;
 }
 
 PageDefImpl::~PageDefImpl()
@@ -517,6 +520,11 @@ void PageDefImpl::setTitle(const DString &title)
 DString PageDefImpl::titleAsText() const
 {
   return m_titleAsText;
+}
+
+DString PageDefImpl::getGodbolt() const
+{
+  return m_godbolt;
 }
 
 // ----------------------

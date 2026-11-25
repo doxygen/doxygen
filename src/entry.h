@@ -243,6 +243,7 @@ class Entry
     DString     metaData;     //!< Slice metadata
     DString     req;          //!< C++20 requires clause
     std::vector<std::string> qualifiers;  //!< qualifiers specified with the qualifier command
+    DString     godbolt;     
 
     /// return the command name used to define GROUPDOC_SEC
     const char *groupDocCmd() const

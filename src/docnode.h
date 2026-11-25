@@ -32,6 +32,7 @@
 #include "construct.h"
 #include "doctokenizer.h"
 #include "cite.h"
+#include "godboltoptions.h"
 
 class MemberDef;
 class Definition;
@@ -378,7 +379,8 @@ class DocVerbatim final : public DocNode
     enum Type { Code, HtmlOnly, ManOnly, LatexOnly, RtfOnly, XmlOnly, Verbatim, Dot, Msc, DocbookOnly, PlantUML, Mermaid, JavaDocCode, JavaDocLiteral };
     DocVerbatim(DocParser *parser,DocNodeVariant *parent,const DString &context,
                 const DString &text, Type t,bool isExample,
-                const DString &exampleFile,bool isBlock=false,const DString &lang=DString());
+                const DString &exampleFile,bool isBlock=false,const DString &lang=DString(),
+                const std::optional<Godbolt::Options>& godboltOptions = {});
     Type type() const            { return p->type; }
     DString text() const         { return p->text; }
     DString context() const      { return p->context; }
@@ -396,6 +398,8 @@ class DocVerbatim final : public DocNode
     DocNodeList &children()      { return p->children; }
     DString srcFile() const      { return p->srcFile; }
     int srcLine() const          { return p->srcLine; }
+    std::optional<Godbolt::Options> godboltOptions() const 
+                                 { return p->godboltOptions; }
     void setText(const DString &t)    { p->text=t;   }
     void setWidth(const DString &w)   { p->width=w;  }
     void setHeight(const DString &h)  { p->height=h; }
@@ -407,9 +411,11 @@ class DocVerbatim final : public DocNode
     struct Private
     {
       Private(const DString &context_,const DString &text_, Type type_, bool isExample_,
-              const DString &exampleFile_, const DString &relPath_,const DString &lang_, bool isBlock_)
-        : context(context_),         text(text_),       type(type_),       isExample(isExample_),
-          exampleFile(exampleFile_), relPath(relPath_), lang(lang_), isBlock(isBlock_) {}
+              const DString &exampleFile_, const DString &relPath_,const DString &lang_, bool isBlock_,
+              const std::optional<Godbolt::Options>& godboltOptions_)
+         : context(context_),         text(text_),       type(type_),       isExample(isExample_),
+          exampleFile(exampleFile_), relPath(relPath_), lang(lang_), isBlock(isBlock_), 
+          godboltOptions(godboltOptions_) {}
       DString   context;
       DString   text;
       Type      type = Code;
@@ -425,6 +431,7 @@ class DocVerbatim final : public DocNode
       DocNodeList children;
       DString   srcFile;
       int       srcLine = -1;
+      std::optional<Godbolt::Options> godboltOptions;
     };
     std::unique_ptr<Private> p;
 };
@@ -441,11 +448,12 @@ class DocInclude final : public DocNode
     DocInclude(DocParser *parser,DocNodeVariant *parent,const DString &file,
                const DString &context, Type t, bool stripCodeComments,
                bool isExample,const DString &exampleFile,
-               const DString &blockId, bool isBlock, bool trimLeft)
+               const DString &blockId, bool isBlock, bool trimLeft, const std::optional<Godbolt::Options>& godboltOptions = {})
     : DocNode(parser,parent), m_file(file), m_context(context), m_type(t),
       m_stripCodeComments(stripCodeComments),
       m_isExample(isExample), m_isBlock(isBlock), m_trimLeft(trimLeft),
-      m_exampleFile(exampleFile), m_blockId(blockId) {}
+      m_exampleFile(exampleFile), m_blockId(blockId), 
+      m_godboltOptions(godboltOptions) {}
     DString file() const        { return m_file; }
     DString extension() const   { size_t i=m_file.rfind('.'); return i!=DString::npos ? m_file.mid(i) : DString(); }
     Type type() const           { return m_type; }
@@ -457,6 +465,8 @@ class DocInclude final : public DocNode
     DString exampleFile() const { return m_exampleFile; }
     bool isBlock() const        { return m_isBlock; }
     bool trimLeft() const       { return m_trimLeft; }
+    std::optional<Godbolt::Options> godboltOptions() const
+                                { return m_godboltOptions; }
     void parse();
 
   private:
@@ -470,6 +480,7 @@ class DocInclude final : public DocNode
     bool      m_trimLeft;
     DString  m_exampleFile;
     DString  m_blockId;
+    std::optional<Godbolt::Options> m_godboltOptions;  
 };
 
 /** Node representing a include/dontinclude operator block */

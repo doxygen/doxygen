@@ -311,6 +311,7 @@ void CodeFragmentManager::parseCodeFragment(OutputCodeList & codeOutList,
           );
     }
   }
+
   // use the recorded OutputCodeList from the cache to output a pre-recorded fragment
   auto blockKv = codeFragment->blocksById.find(blockId.str());
   if (blockKv != codeFragment->blocksById.end())

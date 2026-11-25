@@ -1,6 +1,7 @@
 # vim:ts=4:sw=4:expandtab:autoindent:
 
 include_directories(
+    ${PROJECT_SOURCE_DIR}/deps/cpp-base64
     ${PROJECT_SOURCE_DIR}/deps/TinyDeflate
     ${PROJECT_SOURCE_DIR}/deps/filesystem
     ${PROJECT_SOURCE_DIR}/deps/libmd5
@@ -271,6 +272,8 @@ add_library(doxymain STATIC
     formula.cpp
     ftvhelp.cpp
     groupdef.cpp
+    godbolt.cpp
+    godboltoptions.cpp
     htags.cpp
     htmldocvisitor.cpp
     htmlentity.cpp
@@ -299,6 +302,7 @@ add_library(doxymain STATIC
     perlmodgen.cpp
     plantuml.cpp
     qhp.cpp
+    presentdocinclude.cpp
     reflist.cpp
     regex.cpp
     requirement.cpp
@@ -326,6 +330,9 @@ add_library(doxymain STATIC
 )
 target_link_libraries(doxymain PRIVATE
     spdlog::spdlog
+    nlohmann_json::nlohmann_json
+    scn::scn
+    cpp-base64
 )
 add_sanitizers(doxymain)
 add_dependencies(doxymain generate_configvalues_header)

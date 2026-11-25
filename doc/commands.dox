@@ -3100,6 +3100,34 @@ Commands for displaying examples
  \noop [snippet_txt]
  - The `option` `trimleft` can be used to remove the common spacing in front of all lines
    (also taking in account the setting of the \ref cfg_tab_size "TAB_SIZE" tag).
+ - The `option` `*godbolt` can be used to show a link below the code to execute the file <file-name> on https://godbolt.org/.
+   The configuration of that execution is controlled by the file with the name given as an option, e.g., `gcc_162_godbolt`, 
+   which could look like this:
+   \code
+      {
+        "sessions": [
+          {
+            "id": 1,
+            "language": "c++",
+            "source": "$$godbolt$$",
+            "compilers": [],
+            "executors": [
+              {
+                "compiler": {
+                  "id": "g162",
+                  "libs": [],
+                  "options": "-std=c++20"
+                }
+              }
+            ]
+          }
+        ]
+      }
+   \endcode
+   - $$godbolt$$ is the placeholder where the snippet file is inserted.
+   - Such a file is called the "Client State" of Godbolt. The simplest way to get such a "Client State" is to set up 
+     the scene interactively and obtain a short link via "Share". This short link can then be easily transformed into JSON
+     via https://godbolt.org/api/shortlinkinfo/`last part of short link`. These files are found in the INPUT directories.
  \noop [snippet_txt1]
 
  The options `lineno`, `trimleft`, `local`, `strip` and `nostrip` have no effect in combination with the `option` `doc`.

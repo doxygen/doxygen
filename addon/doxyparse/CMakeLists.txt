@@ -41,6 +41,7 @@ mscgen
 doxygen_version
 doxycfg
 vhdlparser
+cpp-base64
 ${Iconv_LIBRARIES}
 ${CMAKE_THREAD_LIBS_INIT}
 ${SQLITE3_LIBRARIES}

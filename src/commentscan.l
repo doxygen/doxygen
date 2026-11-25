@@ -3313,11 +3313,16 @@ static bool handleExample(yyscan_t yyscanner,const DString &cmd, const StringVec
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   MakeEntryType sectionMaker = EntryType::makeExample;
+  DString godbolt;
   for (const auto &opt : optList)
   {
     if (opt=="lineno")
     {
       sectionMaker=EntryType::makeExampleLineno;
+    }
+    if (opt.find("godbolt") == 0)
+    {
+      godbolt = opt;
     }
     else
     {
@@ -3326,7 +3331,11 @@ static bool handleExample(yyscan_t yyscanner,const DString &cmd, const StringVec
     }
   }
   bool stop=makeStructuralIndicator(yyscanner,sectionMaker);
-  if (!stop) yyextra->current->name = yyextra->fileName;
+  if (!stop) 
+  { 
+    yyextra->current->name = yyextra->fileName;
+    yyextra->current->godbolt = godbolt;
+  }
   BEGIN( FileDocArg1 );
   return stop;
 }

@@ -49,6 +49,7 @@ class PageDef : public DefinitionMutable, public Definition
     virtual void setPageScope(Definition *) = 0;
     virtual Definition *getPageScope() const = 0;
     virtual bool showLineNo() const = 0;
+    virtual DString getGodbolt() const = 0;
 
     virtual void writeDocumentation(OutputList &) = 0;
     virtual void writeTagFile(TextStream &) = 0;
@@ -60,7 +61,7 @@ class PageDef : public DefinitionMutable, public Definition
 
 };
 
-std::unique_ptr<PageDef> createPageDef(const DString &f,int l,const DString &n,const DString &d,const DString &t);
+std::unique_ptr<PageDef> createPageDef(const DString &f,int l,const DString &n,const DString &d,const DString &t, const DString &godbolt={});
 
 // ----------------------
 

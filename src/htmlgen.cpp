@@ -1154,9 +1154,14 @@ void HtmlCodeGenerator::writeCodeAnchor(const DString &anchor)
   *m_t << "<a id=\"" << anchor << "\" name=\"" << anchor << "\"></a>";
 }
 
-void HtmlCodeGenerator::startCodeFragment(const DString &)
+void HtmlCodeGenerator::startCodeFragment(const DString &style)
 {
-  *m_t << "<div class=\"fragment\">";
+  *m_t << R"html(<div class="fragment")html";
+  if (style == "Godbolt")
+  {
+    *m_t << R"html( style="position: relative")html";
+  }
+  *m_t << ">";
 }
 
 void HtmlCodeGenerator::endCodeFragment(const DString &)

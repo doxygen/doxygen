@@ -1,3 +1,4 @@
+add_subdirectory(cpp-base64)
 add_subdirectory(libmd5)
 add_subdirectory(liblodepng)
 add_subdirectory(libmscgen)

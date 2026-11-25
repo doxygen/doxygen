@@ -1705,8 +1705,8 @@ static bool parseIncludeOptions(yyscan_t yyscanner,std::string_view s)
       break;
     }
   }
-
-  if (isDoc)
+ 
+ if (isDoc)
   {
     yyextra->replacements.clear();
     for (const auto &opt : optList)

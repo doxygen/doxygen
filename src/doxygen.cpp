@@ -10359,7 +10359,7 @@ static void buildExampleList(Entry *root)
     {
       PageDef *pd = Doxygen::exampleLinkedMap->add(root->name,
                createPageDef(root->fileName,root->startLine,
-                 root->name,root->doc+" "+root->inbodyDocs,root->args));
+                 root->name,root->doc+" "+root->inbodyDocs,root->args, root->godbolt));
       pd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
       pd->setFileName(convertNameToFile(pd->name()+"-example",false,true));
       pd->addSectionsToDefinition(root->anchors);
@@ -10435,9 +10435,20 @@ static void generateExampleDocs()
     endTitle(*g_outputList,n,DString());
     g_outputList->startContents();
     DString lineNoOptStr;
-    if (pd->showLineNo())
+    if (pd->showLineNo() || pd->getGodbolt().size())
     {
-      lineNoOptStr="{lineno}";
+      lineNoOptStr="{";
+      if (pd->showLineNo())
+      {
+        lineNoOptStr+="lineno";
+      }
+      if (pd->getGodbolt().size())
+      {
+        if (lineNoOptStr.size() > 1u)
+          lineNoOptStr+=",";
+        lineNoOptStr+=pd->getGodbolt();
+      }
+      lineNoOptStr+="}";
     }
     g_outputList->generateDoc(pd->docFile(),                            // file
                               pd->docLine(),                            // startLine
