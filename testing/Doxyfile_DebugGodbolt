@@ -2,7 +2,7 @@ PROJECT_NAME           = "DEBUG"
 OUTPUT_DIRECTORY       = ./debug-output
 
 # Eingabedatei festlegen (Pfad anpassen!)
-INPUT                  = D:/BitFactory/doxygen/testing/155_example_brief_godbolt_more.cpp
+INPUT                  = D:/BitFactory/doxygen/testing/157_include_godbolt.cpp
 EXAMPLE_PATH           = D:/BitFactory/doxygen/testing
 RECURSIVE              = NO
 
