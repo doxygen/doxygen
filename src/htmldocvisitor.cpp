@@ -760,10 +760,8 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
     case DocInclude::Snippet:
     case DocInclude::SnippetWithLines:
       forceEndParagraph(inc);
-      DString fragment;
       if (auto godbolt = inc.godboltOptions())
       {
-        DString* retrieveFragment = godbolt ? &fragment : nullptr;
         auto clientState = godbolt->clientState;
         if (godbolt->bridge == Godbolt::Bridge::iframe && Godbolt::CanEmbedd(clientState))
         {
@@ -774,23 +772,22 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
                                                             inc.context(),
                                                             inc.type()==DocInclude::SnippetWithLines,
                                                             inc.trimLeft(),
-                                                            inc.stripCodeComments(),
-                                                            retrieveFragment
+                                                            inc.stripCodeComments()
                                                           );
-          m_t << "<iframe width=\"100%\" height=\"350px\" src=\"" + Godbolt::EmbeddUrlFor(clientState, fragment) + "\"></iframe>";
+          m_t << "<iframe width=\"100%\" height=\"350px\" src=\"" + Godbolt::EmbeddUrlFor(clientState, inc.text()) + "\"></iframe>";
         }
         else{
-        m_ci.startCodeFragment("Godbolt");
-        CodeFragmentManager::instance().parseCodeFragment(m_ci,
-                                                          inc.file(),
-                                                          inc.blockId(),
-                                                          inc.context(),
-                                                          inc.type()==DocInclude::SnippetWithLines,
-                                                          inc.trimLeft(),
-                                                          inc.stripCodeComments()
-                                                        );
-        m_t << Godbolt::LinkHtml(clientState, fragment);
-        m_ci.endCodeFragment("Godbolt");
+          m_ci.startCodeFragment("Godbolt");
+          CodeFragmentManager::instance().parseCodeFragment(m_ci,
+                                                            inc.file(),
+                                                            inc.blockId(),
+                                                            inc.context(),
+                                                            inc.type()==DocInclude::SnippetWithLines,
+                                                            inc.trimLeft(),
+                                                            inc.stripCodeComments()
+                                                          );
+          m_t << Godbolt::LinkHtml(clientState, inc.text());
+          m_ci.endCodeFragment("Godbolt");
         }
       }
       else

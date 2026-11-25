@@ -33,8 +33,7 @@ class CodeFragmentManager
                    const DString &scopeName,
                    bool showLineNumbers,
                    bool trimLeft,
-                   bool stripCodeComments,
-                   DString* fragment = nullptr 
+                   bool stripCodeComments
                    );
   private:
     CodeFragmentManager();
