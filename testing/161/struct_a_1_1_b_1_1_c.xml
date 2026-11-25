@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="struct_a_1_1_b_1_1_c" kind="struct" language="C++" prot="public">
+    <compoundname>A::B::C</compoundname>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="struct_a_1_1_b_1_1_c_1a502fa04d8d49edc83a8a89ac1c9c6068" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type/>
+        <definition>A&lt; T &gt;::B::C::C</definition>
+        <argsstring>()=default</argsstring>
+        <name>C</name>
+        <qualifiedname>A::B::C::C</qualifiedname>
+        <briefdescription>
+          <para>Constructor. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="161_nested_class_template_definition.cpp" line="25" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="struct_a_1_1_b_1_1_c_1a485250cef15a088f8ac9138c387fa478" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void A&lt; T &gt;::B::C::f</definition>
+        <argsstring>()</argsstring>
+        <name>f</name>
+        <qualifiedname>A::B::C::f</qualifiedname>
+        <briefdescription>
+          <para>Does something. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="161_nested_class_template_definition.cpp" line="26" column="10"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>Class nested two levels deep. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="161_nested_class_template_definition.cpp" line="23" column="1" bodyfile="161_nested_class_template_definition.cpp" bodystart="24" bodyend="27"/>
+    <listofallmembers>
+      <member refid="struct_a_1_1_b_1_1_c_1a502fa04d8d49edc83a8a89ac1c9c6068" prot="public" virt="non-virtual">
+        <scope>A::B::C</scope>
+        <name>C</name>
+      </member>
+      <member refid="struct_a_1_1_b_1_1_c_1a485250cef15a088f8ac9138c387fa478" prot="public" virt="non-virtual">
+        <scope>A::B::C</scope>
+        <name>f</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

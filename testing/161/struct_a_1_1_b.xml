@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="struct_a_1_1_b" kind="struct" language="C++" prot="public">
+    <compoundname>A::B</compoundname>
+    <innerclass refid="struct_a_1_1_b_1_1_c" prot="public">A::B::C</innerclass>
+    <sectiondef kind="public-type">
+      <memberdef kind="typedef" id="struct_a_1_1_b_1aa9d9d23691d2ee724fd7be45021b061e" prot="public" static="no">
+        <type><ref refid="struct_a" kindref="compound">A</ref>&lt; U &gt;</type>
+        <definition>using A&lt; T &gt;::B::Outer = A&lt;U&gt;</definition>
+        <argsstring/>
+        <name>Outer</name>
+        <qualifiedname>A::B::Outer</qualifiedname>
+        <briefdescription>
+          <para>The enclosing class. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="161_nested_class_template_definition.cpp" line="16" column="5" bodyfile="161_nested_class_template_definition.cpp" bodystart="16" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="struct_a_1_1_b_1ad08652bc9ee68c835959d45dbb2f6e69" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int A&lt; T &gt;::B::value</definition>
+        <argsstring/>
+        <name>value</name>
+        <qualifiedname>A::B::value</qualifiedname>
+        <briefdescription>
+          <para>The value. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="161_nested_class_template_definition.cpp" line="17" column="9" bodyfile="161_nested_class_template_definition.cpp" bodystart="17" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>Nested class. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="161_nested_class_template_definition.cpp" line="14" column="1" bodyfile="161_nested_class_template_definition.cpp" bodystart="15" bodyend="19"/>
+    <listofallmembers>
+      <member refid="struct_a_1_1_b_1aa9d9d23691d2ee724fd7be45021b061e" prot="public" virt="non-virtual">
+        <scope>A::B</scope>
+        <name>Outer</name>
+      </member>
+      <member refid="struct_a_1_1_b_1ad08652bc9ee68c835959d45dbb2f6e69" prot="public" virt="non-virtual">
+        <scope>A::B</scope>
+        <name>value</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
