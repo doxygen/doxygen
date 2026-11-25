@@ -22,32 +22,33 @@
 #include "textstream.h"
 
 void presentDocInclude(
-  TextStream                    &t,
-  OutputCodeList                &ci,
-  const DocInclude              &inc,
-  const DocIncludeParseFunction &parseCode)
+  TextStream                            &t,
+  OutputCodeList                        &ci,
+  const DString                         &text,
+  const std::optional<Godbolt::Options> &godbolt,
+  const DocIncludeParseFunction         &parseCode)
 {
-  if (auto godbolt = inc.godboltOptions())
+  if (godbolt)
   {
     auto clientState = godbolt->clientState;
     if (godbolt->bridge == Godbolt::Bridge::iframe && Godbolt::CanEmbedd(clientState))
     {
       OutputCodeList dummy;
-      parseCode(dummy, inc);
-      t << "<iframe width=\"100%\" height=\"350px\" src=\"" + Godbolt::EmbeddUrlFor(clientState, inc.text()) + "\"></iframe>";
+      parseCode(dummy);
+      t << "<iframe width=\"100%\" height=\"350px\" src=\"" + Godbolt::EmbeddUrlFor(clientState, text) + "\"></iframe>";
     }
     else
     {
       ci.startCodeFragment("Godbolt");
-      parseCode(ci, inc);
-      t << Godbolt::LinkHtml(clientState, inc.text());
+      parseCode(ci);
+      t << Godbolt::LinkHtml(clientState, text);
       ci.endCodeFragment("Godbolt");
     }
   }
   else
   {
     ci.startCodeFragment("DoxyCode");
-    parseCode(ci, inc);
+    parseCode(ci);
     ci.endCodeFragment("DoxyCode");
   }
 }

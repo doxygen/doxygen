@@ -185,6 +185,8 @@ ID        [$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*
 LABELID   [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
 REQID     [a-z_A-Z0-9\x80-\xFF\-]+
 CODEID    [a-zA-Z][a-zA-Z0-9_+-]*
+CODEOPT   [^,{}\r\n]+ 
+CODEOPTS  (".")?{CODEOPT}(","{CODEOPT})*
 PHPTYPE   [?]?[\\:a-z_A-Z0-9\x80-\xFF\-]+
 CITESCHAR [a-z_A-Z0-9\x80-\xFF\-\?]
 CITEECHAR [a-z_A-Z0-9\x80-\xFF\-\+:\/\?]
@@ -766,13 +768,13 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                            return Token::make_TK_NEWPARA();
                          }
                        }
-<St_CodeOpt>{BLANK}*"{"(".")?{CODEID}"}" {
+<St_CodeOpt>{BLANK}*"{"{CODEOPTS}"}" {
                          yyextra->token.name = yytext;
                          size_t i=yyextra->token.name.find('{'); /* } to keep vi happy */
                          yyextra->token.name = yyextra->token.name.mid(i+1,yyextra->token.name.length()-i-2);
                          BEGIN(St_Code);
                        }
-<St_iCodeOpt>{BLANK}*"{"(".")?{CODEID}"}" {
+<St_iCodeOpt>{BLANK}*"{"{CODEOPTS}"}" {
                          yyextra->token.name = yytext;
                          size_t i=yyextra->token.name.find('{'); /* } to keep vi happy */
                          yyextra->token.name = yyextra->token.name.mid(i+1,yyextra->token.name.length()-i-2);

@@ -1,0 +1,37 @@
+// objective: test the \code command
+// check: indexpage.xml
+/** \mainpage
+ * \code{.py,godbolt}
+ * # comment in Python
+ * class Python:
+ *   pass
+ * \endcode
+ *
+ * \code{.cpp,godbolt}
+ * // comment in a code block
+ * #include <print>
+ * int main() {
+ *  std::println("Hello wordl!");
+ * }
+ * \endcode
+ *
+ * \code{.cpp,godbolt=(link;simple_godbolt)}
+ * // comment in a code block
+ * #include <print>
+ * int main() {
+ *  std::println("Hello wordl!");
+ * }
+ * \endcode
+ *
+ * \code{.cpp,godbolt=(iframe)}
+ * // comment in a code block
+ * #include <print>
+ * int main() {
+ *  std::println("Hello wordl!");
+ * }
+ * \endcode
+ *
+ * \code
+ * // implicit code language
+ * \endcode
+ */

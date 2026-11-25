@@ -379,7 +379,8 @@ class DocVerbatim final : public DocNode
     enum Type { Code, HtmlOnly, ManOnly, LatexOnly, RtfOnly, XmlOnly, Verbatim, Dot, Msc, DocbookOnly, PlantUML, Mermaid, JavaDocCode, JavaDocLiteral };
     DocVerbatim(DocParser *parser,DocNodeVariant *parent,const DString &context,
                 const DString &text, Type t,bool isExample,
-                const DString &exampleFile,bool isBlock=false,const DString &lang=DString());
+                const DString &exampleFile,bool isBlock=false,const DString &lang=DString(),
+                const std::optional<Godbolt::Options>& godboltOptions = {});
     Type type() const            { return p->type; }
     DString text() const         { return p->text; }
     DString context() const      { return p->context; }
@@ -397,6 +398,8 @@ class DocVerbatim final : public DocNode
     DocNodeList &children()      { return p->children; }
     DString srcFile() const      { return p->srcFile; }
     int srcLine() const          { return p->srcLine; }
+    std::optional<Godbolt::Options> godboltOptions() const 
+                                 { return p->godboltOptions; }
     void setText(const DString &t)    { p->text=t;   }
     void setWidth(const DString &w)   { p->width=w;  }
     void setHeight(const DString &h)  { p->height=h; }
@@ -408,9 +411,11 @@ class DocVerbatim final : public DocNode
     struct Private
     {
       Private(const DString &context_,const DString &text_, Type type_, bool isExample_,
-              const DString &exampleFile_, const DString &relPath_,const DString &lang_, bool isBlock_)
-        : context(context_),         text(text_),       type(type_),       isExample(isExample_),
-          exampleFile(exampleFile_), relPath(relPath_), lang(lang_), isBlock(isBlock_) {}
+              const DString &exampleFile_, const DString &relPath_,const DString &lang_, bool isBlock_,
+              const std::optional<Godbolt::Options>& godboltOptions_)
+         : context(context_),         text(text_),       type(type_),       isExample(isExample_),
+          exampleFile(exampleFile_), relPath(relPath_), lang(lang_), isBlock(isBlock_), 
+          godboltOptions(godboltOptions_) {}
       DString   context;
       DString   text;
       Type      type = Code;
@@ -426,6 +431,7 @@ class DocVerbatim final : public DocNode
       DocNodeList children;
       DString   srcFile;
       int       srcLine = -1;
+      std::optional<Godbolt::Options> godboltOptions;
     };
     std::unique_ptr<Private> p;
 };

@@ -31,7 +31,7 @@ const DString defaultClientStateTemplate = R"json({
           "compiler": {
             "id": "clang_trunk",
             "libs": [],
-            "options": "-std=c++20"
+            "options": "-std=c++23"
           }
         }
       ]

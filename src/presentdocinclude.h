@@ -18,18 +18,20 @@
 
 #include "docnode.h"
 #include "dstring.h"
+#include "godboltoptions.h"
 
 class OutputCodeList;
 class TextStream;
 
-using DocIncludeParseFunction = std::function<void(OutputCodeList &ci, const DocInclude &)>;
+using DocIncludeParseFunction = std::function<void(OutputCodeList &ci)>;
 
 /*! @brief generates HTML/XML to present source code requested from \snippet \example and \include commands
  */
 void presentDocInclude(
-  TextStream                    &t,
-  OutputCodeList                &ci,
-  const DocInclude              &inc,
-  const DocIncludeParseFunction &parseCode);
+  TextStream                            &t,
+  OutputCodeList                        &ci,
+  const DString                         &text,
+  const std::optional<Godbolt::Options> &godbolt,
+  const DocIncludeParseFunction         &parseCode);
 
 #endif

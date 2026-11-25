@@ -33,6 +33,7 @@
 #include "filename.h"
 #include "formula.h"
 #include "groupdef.h"
+#include "godboltoptions.h"
 #include "htmlentity.h"
 #include "language.h"
 #include "markdown.h"
@@ -272,8 +273,9 @@ DocAnchor::DocAnchor(DocParser *parser,DocNodeVariant *parent,const DString &id,
 
 DocVerbatim::DocVerbatim(DocParser *parser,DocNodeVariant *parent,const DString &context,
     const DString &text, Type t,bool isExample,
-    const DString &exampleFile,bool isBlock,const DString &lang)
-  : DocNode(parser,parent), p(std::make_unique<Private>(context, text, t, isExample, exampleFile, parser->context.relPath, lang, isBlock))
+    const DString &exampleFile,bool isBlock,const DString &lang,
+    const std::optional<Godbolt::Options>& godboltOptions)
+  : DocNode(parser,parent), p(std::make_unique<Private>(context, text, t, isExample, exampleFile, parser->context.relPath, lang, isBlock, godboltOptions))
 {
 }
 
@@ -4040,13 +4042,7 @@ void DocPara::handleInclude(const DString &cmdName,DocInclude::Type t)
       else if (t==DocInclude::Snippet)     t = DocInclude::SnippetWithLines;
       else if (t==DocInclude::DontInclude) t = DocInclude::DontIncWithLines;
     }
-    for (const auto &opt : optList)
-    {
-      if (auto gb = Godbolt::ScanOptions(std::string{stripWhiteSpace(opt)}))
-      {
-        godboltOptions = gb;
-      }
-    }
+    godboltOptions = Godbolt::scanOptions(optList);
     tok=parser()->tokenizer.lex();
     if (!tok.is(TokenRetval::TK_WHITESPACE))
     {
@@ -4168,15 +4164,32 @@ bool DocPara::injectToken(Token tok,const DString &tokText)
   return parser()->defaultHandleToken(thisVariant(),tok,children());
 }
 
+namespace {
+DString langFromOptions(const StringVector& optList){
+  if (optList.empty())
+    return {};
+  if (optList.size()==1u && optList.at(0).find("godbolt")==std::string::npos){
+    auto lang = optList.at(0);
+    if (lang.at(0)!='.')
+      return "."+lang;
+    return lang;
+  }
+  // if more than one option, a language must be the first one, and must start with '.'!
+  if (optList.at(0).at(0) == '.')
+    return optList.at(0);
+  return {};
+}
+std::pair<DString, std::optional<Godbolt::Options>> scanOptions(const StringVector& optList){
+  return {langFromOptions(optList), Godbolt::scanOptions(optList)};
+}
+}
+
 Token DocPara::handleStartCode()
 {
   AUTO_TRACE();
   Token retval = parser()->tokenizer.lex();
-  DString lang = parser()->context.token->name;
-  if (!lang.empty() && lang.at(0)!='.')
-  {
-    lang="."+lang;
-  }
+  StringVector optList=split(parser()->context.token->name.str(),",");
+  auto [lang, godboltOptions] = scanOptions(optList);
   if (parser()->context.xmlComment)
   {
     parser()->context.token->verb = substitute(substitute(parser()->context.token->verb,"&lt;","<"),"&gt;",">");
@@ -4194,7 +4207,7 @@ Token DocPara::handleStartCode()
                                  DocVerbatim::Code,
                                  parser()->context.isExample,
                                  parser()->context.exampleName,
-                                 false,lang);
+                                 false,lang, godboltOptions);
   if (retval.is_any_of(TokenRetval::TK_NONE,TokenRetval::TK_EOF))
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"code section ended without end marker");

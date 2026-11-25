@@ -27,8 +27,6 @@
 #include "filedef.h"
 #include "fileinfo.h"
 #include "formula.h"
-#include "godbolt.h"
-#include "godboltoptions.h"
 #include "htmlentity.h"
 #include "indexlist.h"
 #include "language.h"
@@ -548,18 +546,20 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
   {
     case DocVerbatim::Code:
       forceEndParagraph(s);
-      m_ci.startCodeFragment("DoxyCode");
-      getCodeParser(lang).parseCode(m_ci,
-                                        s.context(),
-                                        s.text(),
-                                        langExt,
-                                        Config_getBool(STRIP_CODE_COMMENTS),
-                                        CodeParserOptions()
-                                        .setExample(s.isExample(), s.exampleFile())
-                                        .setInlineFragment(true)
-                                        .setSearchCtx(m_ctx)
-                                       );
-      m_ci.endCodeFragment("DoxyCode");
+      presentDocInclude(m_t, m_ci, s.text(), s.godboltOptions(), 
+        [&langExt, &lang, &s, this](OutputCodeList &ci)
+        { 
+          getCodeParser(lang).parseCode(ci,
+                                            s.context(),
+                                            s.text(),
+                                            langExt,
+                                            Config_getBool(STRIP_CODE_COMMENTS),
+                                            CodeParserOptions()
+                                            .setExample(s.isExample(), s.exampleFile())
+                                            .setInlineFragment(true)
+                                            .setSearchCtx(m_ctx)
+                                           );
+        });
       forceStartParagraph(s);
       break;
     case DocVerbatim::Verbatim:
@@ -700,41 +700,41 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
   {
     case DocInclude::Include:
       forceEndParagraph(inc);
-      presentDocInclude(m_t, m_ci, inc, 
-        [langExt, this](OutputCodeList &ci, const DocInclude &inc)
+      presentDocInclude(m_t, m_ci, inc.text(), inc.godboltOptions(), 
+        [langExt, &inc, this](OutputCodeList &ci)
         { 
           getCodeParser(inc.extension()).parseCode(ci,
-                                        inc.context(),
-                                        inc.text(),
-                                        langExt,
-                                        inc.stripCodeComments(),
-                                        CodeParserOptions()
-                                        .setExample(inc.isExample(), inc.exampleFile())
-                                        .setInlineFragment(true)
-                                        .setShowLineNumbers(false)
-                                        .setSearchCtx(m_ctx)
-                                       );
+                                                    inc.context(),
+                                                    inc.text(),
+                                                    langExt,
+                                                    inc.stripCodeComments(),
+                                                    CodeParserOptions()
+                                                    .setExample(inc.isExample(), inc.exampleFile())
+                                                    .setInlineFragment(true)
+                                                    .setShowLineNumbers(false)
+                                                    .setSearchCtx(m_ctx)
+                                                    );
         });
       forceStartParagraph(inc);
       break;
     case DocInclude::IncWithLines:
       forceEndParagraph(inc);
-      presentDocInclude(m_t, m_ci, inc, 
-        [langExt, this](OutputCodeList &ci, const DocInclude &inc)
+      presentDocInclude(m_t, m_ci, inc.text(), inc.godboltOptions(), 
+        [langExt, &inc, this](OutputCodeList &ci)
         { 
            FileInfo cfi( inc.file().str() );
            auto fd = createFileDef( cfi.dirPath(), cfi.fileName() );
            getCodeParser(inc.extension()).parseCode(ci,
-                                           inc.context(),
-                                           inc.text(),
-                                           langExt,
-                                           inc.stripCodeComments(),
-                                           CodeParserOptions()
-                                           .setExample(inc.isExample(), inc.exampleFile())
-                                           .setFileDef(fd.get())
-                                           .setInlineFragment(true)
-                                           .setSearchCtx(m_ctx)
-                                           );
+                                                    inc.context(),
+                                                    inc.text(),
+                                                    langExt,
+                                                    inc.stripCodeComments(),
+                                                    CodeParserOptions()
+                                                    .setExample(inc.isExample(), inc.exampleFile())
+                                                    .setFileDef(fd.get())
+                                                    .setInlineFragment(true)
+                                                    .setSearchCtx(m_ctx)
+                                                    );
         });
       forceStartParagraph(inc);
       break;
@@ -763,10 +763,10 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
     case DocInclude::Snippet:
     case DocInclude::SnippetWithLines:
       forceEndParagraph(inc);
-      presentDocInclude(m_t, m_ci, inc, 
-        [this](OutputCodeList &ci, const DocInclude &inc)
+      presentDocInclude(m_t, m_ci, inc.text(), inc.godboltOptions(), 
+        [this,&inc](OutputCodeList &ci)
         { 
-          CodeFragmentManager::instance().parseCodeFragment(m_ci,
+          CodeFragmentManager::instance().parseCodeFragment(ci,
                                                             inc.file(),
                                                             inc.blockId(),
                                                             inc.context(),

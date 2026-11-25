@@ -1,6 +1,8 @@
 #ifndef GODBOLTOPTIONS_H
 #define GODBOLTOPTIONS_H
 
+#include "containers.h"
+
 #include <string>
 #include <optional>
 
@@ -18,7 +20,8 @@ struct Options
     std::string clientState;
 };
 
-std::optional<Options> ScanOptions(const std::string &input);
+std::optional<Options> scanOptions(const std::string &input);
+std::optional<Options> scanOptions(const StringVector &input);
 
 } // namespace Godbolt
 
