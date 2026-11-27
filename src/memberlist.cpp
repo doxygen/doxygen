@@ -16,6 +16,9 @@
 // own header
 #include "memberlist.h"
 
+// standard includes
+#include <unordered_map>
+
 // other includes
 #include "classdef.h"
 #include "config.h"
@@ -924,13 +927,23 @@ void MemberList::writeTagFile(TextStream &tagFile,bool useQualifiedName,bool sho
 // compute the HTML anchors for a list of members
 void MemberList::setAnchors()
 {
-  //int count=0;
+  // members that doxygen cannot tell apart, like function templates that only differ
+  // in their template parameters, get the same anchor, so number the later ones
+  std::unordered_map<std::string,const MemberDef *> anchors;
   for (const auto &md : m_members)
   {
     MemberDefMutable *mdm = toMemberDefMutable(md);
     if (mdm && !md->isReference())
     {
       mdm->setAnchor();
+      auto it = anchors.find(md->anchor().str());
+      while (it!=anchors.end() && it->second!=md)
+      {
+        mdm->setRedefineCount(md->redefineCount()+1);
+        mdm->setAnchor();
+        it = anchors.find(md->anchor().str());
+      }
+      anchors.emplace(md->anchor().str(),md);
     }
   }
 }

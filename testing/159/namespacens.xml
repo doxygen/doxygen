@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="namespacens" kind="namespace" language="C++">
+    <compoundname>ns</compoundname>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="namespacens_1a8d500aa2aeee685e33819d236e200212" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>std::enable_if_t&lt; std::is_integral_v&lt; T &gt;, int &gt;</type>
+            <defval>0</defval>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void ns::f</definition>
+        <argsstring>(T value)</argsstring>
+        <name>f</name>
+        <qualifiedname>ns::f</qualifiedname>
+        <param>
+          <type>T</type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+          <para>Overload for integral types. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="159_template_overload_anchors.cpp" line="26" column="6" declfile="159_template_overload_anchors.cpp" declline="26" declcolumn="6"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacens_1a8684a14872e218c95d47705b2094aa9e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>std::enable_if_t&lt; std::is_floating_point_v&lt; T &gt;, int &gt;</type>
+            <defval>0</defval>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void ns::f</definition>
+        <argsstring>(T value)</argsstring>
+        <name>f</name>
+        <qualifiedname>ns::f</qualifiedname>
+        <param>
+          <type>T</type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+          <para>Overload for floating point types. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="159_template_overload_anchors.cpp" line="30" column="6" declfile="159_template_overload_anchors.cpp" declline="30" declcolumn="6"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>A namespace. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="159_template_overload_anchors.cpp" line="22" column="1"/>
+  </compounddef>
+</doxygen>
