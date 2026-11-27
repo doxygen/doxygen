@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="structspace_1_1_external" kind="struct" language="C++" prot="public">
+    <compoundname>space::External</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structspace_1_1_external_1a24dc73601f613aba4562fc33893bec92" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int space::External::first</definition>
+        <argsstring/>
+        <name>first</name>
+        <qualifiedname>space::External::first</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>First qualified field. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="157_field_command.cpp" line="81" column="19" bodyfile="157_field_command.cpp" bodystart="81" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structspace_1_1_external_1ab8d61ee9231c7bac2fb8ba2b7baaea3a" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int space::External::second</definition>
+        <argsstring/>
+        <name>second</name>
+        <qualifiedname>space::External::second</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>Second qualified field. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="157_field_command.cpp" line="81" column="25" bodyfile="157_field_command.cpp" bodystart="81" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structspace_1_1_external_1a8cbdd2a03e1e7f9040a66f538f002af4" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int space::External::third</definition>
+        <argsstring/>
+        <name>third</name>
+        <qualifiedname>space::External::third</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>Third qualified field. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="157_field_command.cpp" line="81" column="32" bodyfile="157_field_command.cpp" bodystart="81" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structspace_1_1_external_1a30cec79379e1788ab5a8fe3b57962379" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int space::External::fourth</definition>
+        <argsstring/>
+        <name>fourth</name>
+        <qualifiedname>space::External::fourth</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>An unqualified field. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="157_field_command.cpp" line="81" column="38" bodyfile="157_field_command.cpp" bodystart="81" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>An out-of-place struct description. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="157_field_command.cpp" line="81" column="1" bodyfile="157_field_command.cpp" bodystart="81" bodyend="81"/>
+    <listofallmembers>
+      <member refid="structspace_1_1_external_1a24dc73601f613aba4562fc33893bec92" prot="public" virt="non-virtual">
+        <scope>space::External</scope>
+        <name>first</name>
+      </member>
+      <member refid="structspace_1_1_external_1a30cec79379e1788ab5a8fe3b57962379" prot="public" virt="non-virtual">
+        <scope>space::External</scope>
+        <name>fourth</name>
+      </member>
+      <member refid="structspace_1_1_external_1ab8d61ee9231c7bac2fb8ba2b7baaea3a" prot="public" virt="non-virtual">
+        <scope>space::External</scope>
+        <name>second</name>
+      </member>
+      <member refid="structspace_1_1_external_1a8cbdd2a03e1e7f9040a66f538f002af4" prot="public" virt="non-virtual">
+        <scope>space::External</scope>
+        <name>third</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

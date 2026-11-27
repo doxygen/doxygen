@@ -1662,7 +1662,7 @@ STopt  [^\n@\\]*
                                           yyextra->current->args += yytext;
                                         }
   /* --------- handle the argument of the field command ------------ */
-<FieldArg>{ID}                          {
+<FieldArg>("::")?{ID}("::"{ID})+|{ID}   {
                                           yyextra->current->fieldDocs.push_back({yytext,{},yyextra->fileName,yyextra->lineNr});
                                           setOutput(yyscanner,OutputField);
                                           BEGIN(Comment);
@@ -5106,6 +5106,23 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
 
   yyextra->current->doc=stripLeadingAndTrailingEmptyLines(yyextra->current->doc,yyextra->current->docLine);
   yyextra->current->brief=stripLeadingAndTrailingEmptyLines(yyextra->current->brief,yyextra->current->docLine);
+
+  if (!isInbody && yyextra->current->section.isEmpty() &&
+      yyextra->current->doc.stripWhiteSpace().empty() &&
+      yyextra->current->brief.stripWhiteSpace().empty() &&
+      !yyextra->current->fieldDocs.empty())
+  {
+    bool allQualified = true;
+    for (const auto &fieldDoc : yyextra->current->fieldDocs)
+    {
+      if (fieldDoc.name.find("::")==DString::npos)
+      {
+        allQualified = false;
+        break;
+      }
+    }
+    if (allQualified) makeStructuralIndicator(yyscanner,EntryType::makeFieldDoc);
+  }
 
   if (yyextra->current->section.isFileDoc() && yyextra->current->doc.empty())
   {

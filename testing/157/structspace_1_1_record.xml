@@ -17,7 +17,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="157_field_command.cpp" line="45" column="7" bodyfile="157_field_command.cpp" bodystart="45" bodyend="-1"/>
+        <location file="157_field_command.cpp" line="50" column="7" bodyfile="157_field_command.cpp" bodystart="50" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -25,7 +25,7 @@
     <detaileddescription>
       <para>A record. </para>
     </detaileddescription>
-    <location file="157_field_command.cpp" line="43" column="1" bodyfile="157_field_command.cpp" bodystart="44" bodyend="46"/>
+    <location file="157_field_command.cpp" line="48" column="1" bodyfile="157_field_command.cpp" bodystart="49" bodyend="51"/>
     <listofallmembers>
       <member refid="structspace_1_1_record_1afdecfa7bea65a1fa89b93833f22c04c2" prot="public" virt="non-virtual">
         <scope>space::Record</scope>

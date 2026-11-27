@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="struct_mixed" kind="struct" language="C++" prot="public">
+    <compoundname>Mixed</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="struct_mixed_1a475734659cfdfda9860d012f61bf90bd" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Mixed::first</definition>
+        <argsstring/>
+        <name>first</name>
+        <qualifiedname>Mixed::first</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A qualified field. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="157_field_command.cpp" line="121" column="16" bodyfile="157_field_command.cpp" bodystart="121" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="struct_mixed_1adeb981efb0cda0347b39b812004b1e3b" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Mixed::second</definition>
+        <argsstring/>
+        <name>second</name>
+        <qualifiedname>Mixed::second</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>An unqualified field. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="157_field_command.cpp" line="121" column="22" bodyfile="157_field_command.cpp" bodystart="121" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="157_field_command.cpp" line="121" column="1" bodyfile="157_field_command.cpp" bodystart="121" bodyend="121"/>
+    <listofallmembers>
+      <member refid="struct_mixed_1a475734659cfdfda9860d012f61bf90bd" prot="public" virt="non-virtual">
+        <scope>Mixed</scope>
+        <name>first</name>
+      </member>
+      <member refid="struct_mixed_1adeb981efb0cda0347b39b812004b1e3b" prot="public" virt="non-virtual">
+        <scope>Mixed</scope>
+        <name>second</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

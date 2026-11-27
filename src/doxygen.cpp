@@ -7856,19 +7856,62 @@ static void findFieldDocumentation(const Entry *root)
     }
     for (const auto &fieldDoc : root->fieldDocs)
     {
-      if (!cd || (cd->compoundType()!=ClassDef::Struct && cd->compoundType()!=ClassDef::Union &&
-                  cd->compoundType()!=ClassDef::Class))
+      DString fieldName = fieldDoc.name;
+      size_t separator = fieldName.rfind("::");
+      const ClassDef *fieldClass = cd;
+      if (root->section.isFieldDoc() && separator==DString::npos)
       {
-        warn_doc_error(fieldDoc.file,fieldDoc.line,"\\field is only supported in documentation for a class, struct or union");
+        warn_doc_error(fieldDoc.file,fieldDoc.line,"\\field '{}' needs a qualified name outside class, struct or union documentation",fieldDoc.name);
+        continue;
+      }
+      if (separator!=DString::npos)
+      {
+        DString scope = fieldName.left(separator);
+        fieldName = fieldName.mid(separator+2);
+        const ClassDef *target = nullptr;
+        if (scope.left(2)=="::")
+        {
+          target = getClass(scope.mid(2));
+        }
+        else
+        {
+          SymbolResolver resolver(root->fileDef());
+          const Definition *context = cd ? cd->getOuterScope() : Doxygen::globalScope;
+          if (!cd && root->parent() && root->parent()->section.isScope())
+          {
+            const DString &parentName = root->parent()->name;
+            if (const ClassDef *parentClass = getClass(parentName)) context = parentClass;
+            else if (const NamespaceDef *parentNamespace = getResolvedNamespace(parentName)) context = parentNamespace;
+          }
+          target = resolver.resolveClass(context,scope,true,true);
+        }
+        if (root->section.isFieldDoc())
+        {
+          fieldClass = target;
+        }
+        else if (target!=cd)
+        {
+          if (cd)
+            warn_doc_error(fieldDoc.file,fieldDoc.line,"\\field '{}' does not name an eligible variable of {}",fieldDoc.name,cd->name());
+          else
+            warn_doc_error(fieldDoc.file,fieldDoc.line,"\\field is only supported in documentation for a class, struct or union");
+          continue;
+        }
+      }
+      if (!fieldClass || (fieldClass->compoundType()!=ClassDef::Struct &&
+                          fieldClass->compoundType()!=ClassDef::Union &&
+                          fieldClass->compoundType()!=ClassDef::Class))
+      {
+        warn_doc_error(fieldDoc.file,fieldDoc.line,"\\field '{}' does not name an eligible class, struct or union variable",fieldDoc.name);
         continue;
       }
       MemberDefMutable *field = nullptr;
-      if (MemberName *members = Doxygen::memberNameLinkedMap->find(fieldDoc.name))
+      if (MemberName *members = Doxygen::memberNameLinkedMap->find(fieldName))
       {
         for (const auto &member : *members)
         {
-          if (member->getClassDef()==cd && member->isVariable() &&
-              (cd->compoundType()==ClassDef::Class || !member->isStatic()))
+          if (member->getClassDef()==fieldClass && member->isVariable() &&
+              (fieldClass->compoundType()==ClassDef::Class || !member->isStatic()))
           {
             field = toMemberDefMutable(member.get());
             break;
@@ -7881,7 +7924,7 @@ static void findFieldDocumentation(const Entry *root)
       }
       else
       {
-        warn_doc_error(fieldDoc.file,fieldDoc.line,"\\field '{}' does not name an eligible variable of {}",fieldDoc.name,cd->name());
+        warn_doc_error(fieldDoc.file,fieldDoc.line,"\\field '{}' does not name an eligible variable of {}",fieldDoc.name,fieldClass->name());
       }
     }
   }

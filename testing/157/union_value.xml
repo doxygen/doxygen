@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="157_field_command.cpp" line="33" column="7" bodyfile="157_field_command.cpp" bodystart="33" bodyend="-1"/>
+        <location file="157_field_command.cpp" line="38" column="7" bodyfile="157_field_command.cpp" bodystart="38" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="union_value_1a1597799af2acb1e4b99ae1e04830e274" prot="public" static="no" mutable="no">
         <type>double</type>
@@ -31,7 +31,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="157_field_command.cpp" line="34" column="10" bodyfile="157_field_command.cpp" bodystart="34" bodyend="-1"/>
+        <location file="157_field_command.cpp" line="39" column="10" bodyfile="157_field_command.cpp" bodystart="39" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -39,7 +39,7 @@
     <detaileddescription>
       <para>A value. </para>
     </detaileddescription>
-    <location file="157_field_command.cpp" line="31" column="1" bodyfile="157_field_command.cpp" bodystart="32" bodyend="35"/>
+    <location file="157_field_command.cpp" line="36" column="1" bodyfile="157_field_command.cpp" bodystart="37" bodyend="40"/>
     <listofallmembers>
       <member refid="union_value_1af6de6143cb39282acade5c2087150516" prot="public" virt="non-virtual">
         <scope>Value</scope>

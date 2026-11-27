@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="structfoo3" kind="struct" language="C++" prot="public">
+    <compoundname>foo3</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structfoo3_1ae0003705a6f33d9a19dacc2b809e9aa2" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int foo3::bar3</definition>
+        <argsstring/>
+        <name>bar3</name>
+        <qualifiedname>foo3::bar3</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>First member. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="157_field_command.cpp" line="98" column="7" bodyfile="157_field_command.cpp" bodystart="98" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structfoo3_1a61f95f2eb01e03d5996fa9e0d384c8aa" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int foo3::baz3</definition>
+        <argsstring/>
+        <name>baz3</name>
+        <qualifiedname>foo3::baz3</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>Second member. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="157_field_command.cpp" line="99" column="7" bodyfile="157_field_command.cpp" bodystart="99" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>the brief description </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="157_field_command.cpp" line="96" column="1" bodyfile="157_field_command.cpp" bodystart="97" bodyend="100"/>
+    <listofallmembers>
+      <member refid="structfoo3_1ae0003705a6f33d9a19dacc2b809e9aa2" prot="public" virt="non-virtual">
+        <scope>foo3</scope>
+        <name>bar3</name>
+      </member>
+      <member refid="structfoo3_1a61f95f2eb01e03d5996fa9e0d384c8aa" prot="public" virt="non-virtual">
+        <scope>foo3</scope>
+        <name>baz3</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

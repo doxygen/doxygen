@@ -19,6 +19,20 @@
         </inbodydescription>
         <location file="158_field_command_invalid.cpp" line="23" column="7" bodyfile="158_field_command_invalid.cpp" bodystart="23" bodyend="-1"/>
       </memberdef>
+      <memberdef kind="variable" id="struct_derived_1af75e1f642d90c2d6bf54d90d888d3343" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Derived::unrelated</definition>
+        <argsstring/>
+        <name>unrelated</name>
+        <qualifiedname>Derived::unrelated</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="158_field_command_invalid.cpp" line="23" column="11" bodyfile="158_field_command_invalid.cpp" bodystart="23" bodyend="-1"/>
+      </memberdef>
     </sectiondef>
     <sectiondef kind="public-static-attrib">
       <memberdef kind="variable" id="struct_derived_1ab82f4d3eef407925edac4d5bcb971630" prot="public" static="yes" mutable="no">
@@ -98,6 +112,10 @@
       <member refid="struct_derived_1ab82f4d3eef407925edac4d5bcb971630" prot="public" virt="non-virtual">
         <scope>Derived</scope>
         <name>shared</name>
+      </member>
+      <member refid="struct_derived_1af75e1f642d90c2d6bf54d90d888d3343" prot="public" virt="non-virtual">
+        <scope>Derived</scope>
+        <name>unrelated</name>
       </member>
     </listofallmembers>
   </compounddef>

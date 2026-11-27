@@ -826,6 +826,7 @@ enum class VhdlSpecifier
  ETYPE(EnumDoc,            Doc)             \
  ETYPE(PageDoc,            Doc)             \
  ETYPE(MemberDoc,          Doc)             \
+ ETYPE(FieldDoc,           Doc)             \
  ETYPE(OverloadDoc,        Doc)             \
  ETYPE(Example,            Doc)             \
  ETYPE(VariableDoc,        Doc)             \

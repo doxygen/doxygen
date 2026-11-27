@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="structspace_1_1_later" kind="struct" language="C++" prot="public">
+    <compoundname>space::Later</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structspace_1_1_later_1a5ccea2c2a12ed40b29f0a54c835064fc" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int space::Later::value</definition>
+        <argsstring/>
+        <name>value</name>
+        <qualifiedname>space::Later::value</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A namespaced standalone field. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="157_field_command.cpp" line="113" column="16" bodyfile="157_field_command.cpp" bodystart="113" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structspace_1_1_later_1adcd5494fc5a5dc22ddd5c633d3b349f7" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int space::Later::other</definition>
+        <argsstring/>
+        <name>other</name>
+        <qualifiedname>space::Later::other</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A field of another struct. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="157_field_command.cpp" line="113" column="22" bodyfile="157_field_command.cpp" bodystart="113" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>A namespaced struct. </para>
+    </detaileddescription>
+    <location file="157_field_command.cpp" line="113" column="1" bodyfile="157_field_command.cpp" bodystart="113" bodyend="113"/>
+    <listofallmembers>
+      <member refid="structspace_1_1_later_1adcd5494fc5a5dc22ddd5c633d3b349f7" prot="public" virt="non-virtual">
+        <scope>space::Later</scope>
+        <name>other</name>
+      </member>
+      <member refid="structspace_1_1_later_1a5ccea2c2a12ed40b29f0a54c835064fc" prot="public" virt="non-virtual">
+        <scope>space::Later</scope>
+        <name>value</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

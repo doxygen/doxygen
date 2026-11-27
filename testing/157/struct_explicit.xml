@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="struct_explicit" kind="struct" language="C++" prot="public">
+    <compoundname>Explicit</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="struct_explicit_1a5c1e0f46463b07a6ff7b46967c862d05" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Explicit::first</definition>
+        <argsstring/>
+        <name>first</name>
+        <qualifiedname>Explicit::first</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>First field. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="157_field_command.cpp" line="76" column="7" bodyfile="157_field_command.cpp" bodystart="76" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="struct_explicit_1a5c06ab7eaf06721b4fc8ec3c5db45e70" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Explicit::second</definition>
+        <argsstring/>
+        <name>second</name>
+        <qualifiedname>Explicit::second</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>Second field. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="157_field_command.cpp" line="76" column="13" bodyfile="157_field_command.cpp" bodystart="76" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>An explicitly documented struct. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="157_field_command.cpp" line="74" column="1" bodyfile="157_field_command.cpp" bodystart="75" bodyend="77"/>
+    <listofallmembers>
+      <member refid="struct_explicit_1a5c1e0f46463b07a6ff7b46967c862d05" prot="public" virt="non-virtual">
+        <scope>Explicit</scope>
+        <name>first</name>
+      </member>
+      <member refid="struct_explicit_1a5c06ab7eaf06721b4fc8ec3c5db45e70" prot="public" virt="non-virtual">
+        <scope>Explicit</scope>
+        <name>second</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

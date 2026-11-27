@@ -16,14 +16,14 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="157_field_command.cpp" line="60" column="7" bodyfile="157_field_command.cpp" bodystart="60" bodyend="-1"/>
+        <location file="157_field_command.cpp" line="65" column="7" bodyfile="157_field_command.cpp" bodystart="65" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="157_field_command.cpp" line="58" column="1" bodyfile="157_field_command.cpp" bodystart="59" bodyend="61"/>
+    <location file="157_field_command.cpp" line="63" column="1" bodyfile="157_field_command.cpp" bodystart="64" bodyend="66"/>
     <listofallmembers>
       <member refid="struct_only_fields_1ae28f8586b1732a435a305ce205d6e1b1" prot="public" virt="non-virtual">
         <scope>OnlyFields</scope>

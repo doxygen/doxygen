@@ -15,12 +15,12 @@ struct Base
  *  @field inherited Not a direct field.
  *  @field method Not a field.
  *  @field shared Not an instance field.
- *  @field missing Not declared.
+ *  @field missing Not declared. @field Base::unrelated Wrong class.
  *  @field own A direct field.
  */
 struct Derived : Base
 {
-  int own;
+  int own, unrelated;
   void method();
   static int shared;
 };
@@ -37,3 +37,9 @@ public:
   static int shared;
   void method();
 };
+
+/** @field Missing::value Unknown class.
+ *  @field Derived::method A function is not a field.
+ *  @field Derived::shared A static struct member.
+ *  @field Derived::inherited An inherited field.
+ */

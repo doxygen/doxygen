@@ -2143,6 +2143,11 @@ ALIASES  = "english=\if english" \
   Documents a variable by name in the documentation block of a class, struct,
   or union. The variable must be declared directly in that class, struct, or
   union. For structs and unions, only non-static fields are supported.
+  The variable name may be qualified with the name of the documented class,
+  struct, or union, including in an out-of-place \ref cmdstruct "\\struct"
+  documentation block.
+  A separate block containing only \c \\field commands can document fields
+  using their qualified names without a \c \\struct command.
   The description may span multiple lines and ends at a blank line or another
   sectioning command. A warning is issued if the variable cannot be found.
 
@@ -2152,6 +2157,21 @@ ALIASES  = "english=\if english" \
  *  \field y Vertical coordinate.
  */
 struct Point { int x, y; };
+  \endcode
+
+  An explicit, out-of-place description can also use qualified names:
+  \code
+/** \struct Point
+ *  \field Point::x Horizontal coordinate.
+ *  \field Point::y Vertical coordinate.
+ */
+  \endcode
+
+  A standalone field-only block can refer to fields of one or more compounds:
+  \code
+/** \field Point::x Horizontal coordinate.
+ *  \field Point::y Vertical coordinate.
+ */
   \endcode
 
 <hr>
