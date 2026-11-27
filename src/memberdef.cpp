@@ -4357,7 +4357,7 @@ void MemberDefImpl::warnIfUndocumentedParams() const
       !isReference() &&
       !Doxygen::suppressDocWarnings)
   {
-    if (!m_hasDocumentedParams)
+    if (!m_hasDocumentedParams && hasDocumentation())
     {
       warn_doc_error(docFile(),docLine(),
           "parameters of member {} are not documented",
