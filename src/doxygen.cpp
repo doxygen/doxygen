@@ -5094,6 +5094,17 @@ static void resolveTemplateInstanceInType(const Entry *root,const Definition *sc
   ttype.stripPrefix("typedef ");
   if (size_t ti=ttype.find('<'); ti!=DString::npos)
   {
+    // The template parameters of an enclosing template, like A<T> inside
+    // 'template<typename T> struct A<T>::B', do not name an instance. Adding one would make
+    // the members of A<T>::B end up in the instance instead of in A::B (see issue #11216)
+    DString templSpec = ttype.mid(ti);
+    for (const Entry *e=root; e; e=e->parent())
+    {
+      for (const ArgumentList &al : e->tArgLists)
+      {
+        if (templSpec==tempArgListToString(al,root->lang,false)) return;
+      }
+    }
     DString templateClassName = ttype.left(ti);
     SymbolResolver resolver(root->fileDef());
     ClassDefMutable *baseClass = resolver.resolveClassMutable(scope ? scope : Doxygen::globalScope,
@@ -5105,7 +5116,7 @@ static void resolveTemplateInstanceInType(const Entry *root,const Definition *sc
       TemplateNameMap templateNames = getTemplateArgumentsInName(tl,templateClassName.str());
       findTemplateInstanceRelation(root,md->getOuterScope(),
           baseClass,
-          ttype.mid(ti),
+          templSpec,
           templateNames,
           baseClass->isArtificial());
     }

@@ -66,7 +66,7 @@
     </detaileddescription>
     <inheritancegraph>
       <node id="3">
-        <label>A&lt; T &gt;</label>
+        <label>A&lt; U &gt;</label>
         <link refid="struct_a"/>
       </node>
       <node id="2">
@@ -84,7 +84,7 @@
     </inheritancegraph>
     <collaborationgraph>
       <node id="3">
-        <label>A&lt; T &gt;</label>
+        <label>A&lt; U &gt;</label>
         <link refid="struct_a"/>
       </node>
       <node id="2">
@@ -103,10 +103,6 @@
     <location file="142_template_inherit_docs.cpp" line="26" column="1" bodyfile="142_template_inherit_docs.cpp" bodystart="27" bodyend="32"/>
     <listofallmembers>
       <member refid="struct_c_1afee1e576b27c7b3bf9b8d78eaf0e88d4" prot="public" virt="virtual">
-        <scope>C</scope>
-        <name>apply</name>
-      </member>
-      <member refid="struct_a_1a268af8cb4720bcc8697bf24a11381cc0" prot="public" virt="virtual" ambiguityscope="B&lt; U &gt;::">
         <scope>C</scope>
         <name>apply</name>
       </member>
